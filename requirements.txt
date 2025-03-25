@@ -1,0 +1,13 @@
+asgiref==3.8.1
+Django==5.1.5
+django-extensions==3.2.3
+djangorestframework==3.15.2
+Faker==34.0.2
+graphviz==0.20.3
+psycopg2-binary==2.9.10
+pydot==3.0.4
+pyparsing==3.2.1
+python-dateutil==2.9.0.post0
+six==1.17.0
+sqlparse==0.5.3
+typing_extensions==4.12.2

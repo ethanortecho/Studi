@@ -6,14 +6,41 @@ from datetime import timedelta
 from django.utils.dateparse import parse_date
 from .serializers import StudySessionSerializer, StudySessionBreakdownSerializer, AggregateSerializer
 from .queries import StudyAnalytics
-from .models import Aggregate, StudySession, StudySessionBreakdown, Categories
+from .models import Aggregate, StudySession, StudySessionBreakdown, Categories, CustomUser
 from django.utils import timezone
 # Create your views here.
     
+def get_target_user(request):
+    """Get the target user based on request parameters and permissions"""
+    requesting_user = request.user
+    target_username = request.query_params.get('username')
+    
+    # If no username specified, use the requesting user
+    if not target_username:
+        return requesting_user
+        
+    # If requesting user is admin, allow access to any user
+    if requesting_user.is_staff:
+        try:
+            return CustomUser.objects.get(username=target_username)
+        except CustomUser.DoesNotExist:
+            return None
+            
+    # If requesting user is not admin, only allow access to their own data
+    if target_username == requesting_user.username:
+        return requesting_user
+    return None
+
 class DailyInsights(APIView):
 
     def get(self, request):
-        user = request.user
+        user = get_target_user(request)
+        if not user:
+            return Response(
+                {'error': 'User not found or access denied'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+            
         date_str = request.query_params.get('date')
         
         # Parse the date string into a date object
@@ -107,7 +134,13 @@ class DailyInsights(APIView):
 
 class WeeklyInsights(APIView):
     def get(self, request):
-        user = request.user
+        user = get_target_user(request)
+        if not user:
+            return Response(
+                {'error': 'User not found or access denied'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+            
         start_date = request.query_params.get('start_date')
         end_date = request.query_params.get('end_date')
 
@@ -181,7 +214,13 @@ class WeeklyInsights(APIView):
     
 class MonthlyInsights(APIView):
     def get(self, request):
-        user = request.user
+        user = get_target_user(request)
+        if not user:
+            return Response(
+                {'error': 'User not found or access denied'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+            
         start_date = request.query_params.get('start_date')
         end_date = request.query_params.get('end_date')
 

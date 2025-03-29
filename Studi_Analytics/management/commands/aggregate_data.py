@@ -1,119 +1,133 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from django.db.models import Sum, Count
-from datetime import timedelta, datetime, date
-from Studi_Analytics.models import StudySession, Aggregate, StudySessionBreakdown, Break
+from Studi_Analytics.models import StudySession, Aggregate, StudySessionBreakdown
+from datetime import timedelta
 from collections import defaultdict
+from functools import reduce
+from operator import add
 
 class Command(BaseCommand):
-    help = 'Aggregates existing study session data into daily, weekly, and monthly records'
-
-    def get_week_boundaries(self, date):
-        """Returns the Monday and Sunday dates for the week containing the given date"""
-        monday = date - timedelta(days=date.weekday())  # weekday() returns 0 for Monday, 1 for Tuesday, etc.
-        sunday = monday + timedelta(days=6)
-        return monday, sunday
+    help = 'Aggregates study session data into daily, weekly, and monthly aggregates'
 
     def handle(self, *args, **kwargs):
-        # Clear existing aggregates
-        Aggregate.objects.all().delete()
+        # Get all unique dates from study sessions
+        dates = StudySession.objects.dates('start_time', 'day')
         
-        # Get all unique users with study sessions
-        users = StudySession.objects.values_list('user', flat=True).distinct()
-        
-        for user_id in users:
-            # Get all sessions for this user
-            sessions = StudySession.objects.filter(user_id=user_id).order_by('start_time')
+        for date in dates:
+            # Get all sessions for this date
+            sessions = StudySession.objects.filter(start_time__date=date)
             
-            if not sessions:
+            if not sessions.exists():
                 continue
                 
-            # Get date range
-            first_session = sessions.first()
-            last_session = sessions.last()
-            current_date = first_session.start_time.date()
-            end_date = last_session.end_time.date()
+            # Calculate total duration using reduce with initial timedelta(0)
+            total_duration = reduce(add, (session.total_duration for session in sessions), timedelta(0))
             
-            # Create daily aggregates
-            while current_date <= end_date:
-                # For daily, use same date for start and end
-                self.create_aggregate(user_id, current_date, current_date, 'daily')
-                current_date += timedelta(days=1)
+            # Calculate category durations
+            category_durations = defaultdict(timedelta)
+            for session in sessions:
+                breakdowns = session.studysessionbreakdown_set.all()
+                for breakdown in breakdowns:
+                    category_durations[breakdown.category.name] += breakdown.duration
             
-            # Create weekly aggregates aligned to calendar weeks
-            current_date = first_session.start_time.date()
-            while current_date <= end_date:
-                week_start, week_end = self.get_week_boundaries(current_date)
-                self.create_aggregate(user_id, week_start, week_end, 'weekly')
-                current_date = week_end + timedelta(days=1)  # Start next week
-            
-            # Create monthly aggregates
-            current_date = first_session.start_time.date().replace(day=1)
-            while current_date <= end_date:
-                if current_date.month == 12:
-                    next_month = current_date.replace(year=current_date.year + 1, month=1)
-                else:
-                    next_month = current_date.replace(month=current_date.month + 1)
-                self.create_aggregate(user_id, current_date, next_month, 'monthly')
-                current_date = next_month
-
-    def create_aggregate(self, user_id, start_date, end_date, timeframe):
-        # For daily aggregates, only get sessions from that specific day
-        if timeframe == 'daily':
-            sessions = StudySession.objects.filter(
-                user_id=user_id,
-                start_time__date=start_date  # Only get sessions that started on this exact date
+            # Create or update daily aggregate
+            daily_aggregate, created = Aggregate.objects.get_or_create(
+                user=sessions.first().user,
+                start_date=date,
+                end_date=date,
+                time_frame='daily',
+                defaults={
+                    'total_duration': total_duration,
+                    'category_durations': {k: v.total_seconds() for k, v in category_durations.items()},
+                    'session_count': sessions.count()
+                }
             )
-        else:
-            # For weekly/monthly, keep the range query
-            sessions = StudySession.objects.filter(
-                user_id=user_id,
-                start_time__date__gte=start_date,
-                end_time__date__lte=end_date
-            )
-        
-        print(f"Creating {timeframe} aggregate for {start_date} to {end_date}")
-        print(f"Found sessions: {sessions.count()}")
-        for session in sessions:
-            print(f"  {session.start_time.date()}: {session.total_duration}")
-        
-        if not sessions.exists():
-            return
             
-        # Calculate basic metrics
-        total_duration = sessions.aggregate(total=Sum('total_duration'))['total'] or timedelta()
-        session_count = sessions.count()
-        
-        # Calculate break count
-        break_count = Break.objects.filter(study_session__in=sessions).count()
-        
-        # Calculate category durations
-        category_durations = defaultdict(timedelta)
-        breakdowns = StudySessionBreakdown.objects.filter(study_session__in=sessions)
-        
-        for breakdown in breakdowns:
-            category_durations[breakdown.category.name] += breakdown.duration
-        
-        # Convert timedelta to hours (float) for better readability in JSON
-        category_durations_json = {
-            cat: str(round(duration.total_seconds() / 3600, 2)) + " hours"
-            for cat, duration in category_durations.items()
-        }
-        
-        # Create aggregate record
-        Aggregate.objects.create(
-            user_id=user_id,
-            start_date=start_date,
-            end_date=end_date,
-            time_frame=timeframe,
-            total_duration=total_duration,
-            session_count=session_count,
-            break_count=break_count,
-            category_durations=category_durations_json
-        )
-        
-        self.stdout.write(
-            self.style.SUCCESS(
-                f'Created {timeframe} aggregate for {start_date} to {end_date}'
+            if not created:
+                daily_aggregate.total_duration = total_duration
+                daily_aggregate.category_durations = {k: v.total_seconds() for k, v in category_durations.items()}
+                daily_aggregate.session_count = sessions.count()
+                daily_aggregate.save()
+            
+            self.stdout.write(f"Created/Updated daily aggregate for {date}")
+            
+            # Create weekly aggregate
+            week_start = date - timedelta(days=date.weekday())
+            week_end = week_start + timedelta(days=6)
+            
+            weekly_sessions = StudySession.objects.filter(
+                start_time__date__gte=week_start,
+                start_time__date__lte=week_end
             )
-        ) 
+            
+            if weekly_sessions.exists():
+                weekly_total = reduce(add, (session.total_duration for session in weekly_sessions), timedelta(0))
+                weekly_categories = defaultdict(timedelta)
+                
+                for session in weekly_sessions:
+                    breakdowns = session.studysessionbreakdown_set.all()
+                    for breakdown in breakdowns:
+                        weekly_categories[breakdown.category.name] += breakdown.duration
+                
+                weekly_aggregate, created = Aggregate.objects.get_or_create(
+                    user=sessions.first().user,
+                    start_date=week_start,
+                    end_date=week_end,
+                    time_frame='weekly',
+                    defaults={
+                        'total_duration': weekly_total,
+                        'category_durations': {k: v.total_seconds() for k, v in weekly_categories.items()},
+                        'session_count': weekly_sessions.count()
+                    }
+                )
+                
+                if not created:
+                    weekly_aggregate.total_duration = weekly_total
+                    weekly_aggregate.category_durations = {k: v.total_seconds() for k, v in weekly_categories.items()}
+                    weekly_aggregate.session_count = weekly_sessions.count()
+                    weekly_aggregate.save()
+                
+                self.stdout.write(f"Created/Updated weekly aggregate for week starting {week_start}")
+            
+            # Create monthly aggregate
+            month_start = date.replace(day=1)
+            if date.month == 12:
+                month_end = date.replace(day=31)
+            else:
+                month_end = (date.replace(day=1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+            
+            monthly_sessions = StudySession.objects.filter(
+                start_time__date__gte=month_start,
+                start_time__date__lte=month_end
+            )
+            
+            if monthly_sessions.exists():
+                monthly_total = reduce(add, (session.total_duration for session in monthly_sessions), timedelta(0))
+                monthly_categories = defaultdict(timedelta)
+                
+                for session in monthly_sessions:
+                    breakdowns = session.studysessionbreakdown_set.all()
+                    for breakdown in breakdowns:
+                        monthly_categories[breakdown.category.name] += breakdown.duration
+                
+                monthly_aggregate, created = Aggregate.objects.get_or_create(
+                    user=sessions.first().user,
+                    start_date=month_start,
+                    end_date=month_end,
+                    time_frame='monthly',
+                    defaults={
+                        'total_duration': monthly_total,
+                        'category_durations': {k: v.total_seconds() for k, v in monthly_categories.items()},
+                        'session_count': monthly_sessions.count()
+                    }
+                )
+                
+                if not created:
+                    monthly_aggregate.total_duration = monthly_total
+                    monthly_aggregate.category_durations = {k: v.total_seconds() for k, v in monthly_categories.items()}
+                    monthly_aggregate.session_count = monthly_sessions.count()
+                    monthly_aggregate.save()
+                
+                self.stdout.write(f"Created/Updated monthly aggregate for {month_start.strftime('%B %Y')}")
+        
+        self.stdout.write(self.style.SUCCESS('Successfully aggregated all study session data')) 

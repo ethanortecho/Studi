@@ -80,36 +80,37 @@ class Command(BaseCommand):
         if not sessions.exists():
             return
             
-        # Calculate basic metrics
+        # Calculate basic metrics in seconds
         total_duration = sessions.aggregate(total=Sum('total_duration'))['total'] or timedelta()
+        total_duration_seconds = int(total_duration.total_seconds())
         session_count = sessions.count()
         
         # Calculate break count
         break_count = Break.objects.filter(study_session__in=sessions).count()
         
-        # Calculate category durations
+        # Calculate category durations in seconds
         category_durations = defaultdict(timedelta)
         breakdowns = StudySessionBreakdown.objects.filter(study_session__in=sessions)
         
         for breakdown in breakdowns:
             category_durations[breakdown.category.name] += breakdown.duration
         
-        # Convert timedelta to hours (float) for better readability in JSON
+        # Store durations in seconds
         category_durations_json = {
-            cat: str(round(duration.total_seconds() / 3600, 2)) + " hours"
+            cat: int(duration.total_seconds())
             for cat, duration in category_durations.items()
         }
         
-        # Create aggregate record
+        # Create aggregate record with durations in seconds
         Aggregate.objects.create(
             user_id=user_id,
             start_date=start_date,
             end_date=end_date,
             time_frame=timeframe,
-            total_duration=total_duration,
+            total_duration=total_duration_seconds,  # Store as seconds
             session_count=session_count,
             break_count=break_count,
-            category_durations=category_durations_json
+            category_durations=category_durations_json  # Store as seconds
         )
         
         self.stdout.write(

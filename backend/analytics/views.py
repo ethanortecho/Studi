@@ -72,7 +72,7 @@ class DailyInsights(APIView):
                 'end_time': session.end_time,
                 'breaks': session.break_set.all().values('start_time', 'end_time', 'duration'),
                 'breakdowns': session.studysessionbreakdown_set.all().values(
-                    'category__name', 
+                    'category', 
                     'start_time',
                     'end_time', 
                     'duration'

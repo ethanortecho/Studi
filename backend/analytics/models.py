@@ -24,15 +24,19 @@ class StudySession(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField(null=True, blank=True)
-    total_duration = models.DurationField(null=True, blank=True)
+    total_duration = models.IntegerField(null=True, blank=True)  # Duration in seconds
     productivity_rating = models.CharField(max_length=50)
 
+    def save(self, *args, **kwargs):
+        if self.end_time and self.start_time:
+            duration = self.end_time - self.start_time
+            self.total_duration = int(duration.total_seconds())
+        super().save(*args, **kwargs)
 
 
 class Categories(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
-
 
 
 class StudySessionBreakdown(models.Model):
@@ -41,7 +45,13 @@ class StudySessionBreakdown(models.Model):
     category = models.ForeignKey(Categories, on_delete=models.CASCADE)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
-    duration = models.DurationField()
+    duration = models.IntegerField()  # Duration in seconds
+
+    def save(self, *args, **kwargs):
+        if self.end_time and self.start_time:
+            duration = self.end_time - self.start_time
+            self.duration = int(duration.total_seconds())
+        super().save(*args, **kwargs)
 
 
 class Aggregate(models.Model):
@@ -53,8 +63,8 @@ class Aggregate(models.Model):
     user = models.ForeignKey('CustomUser', on_delete=models.CASCADE)
     start_date = models.DateField()
     end_date = models.DateField()
-    total_duration = models.DurationField(default=timedelta())
-    category_durations = models.JSONField(default=dict) 
+    total_duration = models.IntegerField(default=0)  # Store duration in seconds
+    category_durations = models.JSONField(default=dict)  # Store durations in seconds
     session_count = models.IntegerField(default=0)
     break_count = models.IntegerField(default=0)
     time_frame = models.CharField(max_length=10, choices=TIMEFRAME_CHOICES)
@@ -64,5 +74,11 @@ class Break(models.Model):
     study_session = models.ForeignKey('StudySession', on_delete = models.CASCADE)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
-    duration = models.DurationField(null=True, blank=True)
+    duration = models.IntegerField(null=True, blank=True)  # Duration in seconds
+
+    def save(self, *args, **kwargs):
+        if self.end_time and self.start_time:
+            duration = self.end_time - self.start_time
+            self.duration = int(duration.total_seconds())
+        super().save(*args, **kwargs)
 

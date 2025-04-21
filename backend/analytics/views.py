@@ -8,8 +8,10 @@ from .serializers import StudySessionSerializer, StudySessionBreakdownSerializer
 from .queries import StudyAnalytics
 from .models import Aggregate, StudySession, StudySessionBreakdown, Categories, CustomUser
 from django.utils import timezone
-# Create your views here.
-    
+
+
+# TODO: Move formatting logic into serializer for cleaner separation
+
 def get_target_user(request):
     """Get the target user based on request parameters and permissions"""
     requesting_user = request.user
@@ -40,6 +42,16 @@ class DailyInsights(APIView):
                 {'error': 'User not found or access denied'},
                 status=status.HTTP_403_FORBIDDEN
             )
+        user_categories = StudyAnalytics.get_category_list(user)
+        category_data = {}
+
+        for category in user_categories:
+
+            category_data[category.id] = {
+                "name" : category.name,
+                "color" : category.color
+        }
+
             
         date_str = request.query_params.get('date')
         
@@ -120,6 +132,7 @@ class DailyInsights(APIView):
         response_data = {
             'aggregate': AggregateSerializer(daily_aggregate).data,
             'timeline_data': timeline_data,
+            'category_metadata' : category_data,
             'statistics': {
                 'longest_session': longest_session,
                 'avg_break_duration': avg_break_duration,

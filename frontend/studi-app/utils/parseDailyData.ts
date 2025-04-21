@@ -1,9 +1,17 @@
-export function parseCategoryDurations(apiData:any) {
+export function parseCategoryDurations(apiData: any) {
     const categoryDurations = apiData?.aggregate?.category_durations || {};
+    const categoryMetadata = apiData?.category_metadata || {};
 
-    const chartData = Object.entries(categoryDurations).map(([label,value]) => ({
-        label: label as string,
+    // Create a map of category names to their metadata
+    const categoryNameToMeta = Object.entries(categoryMetadata).reduce((acc, [id, meta]: [string, any]) => {
+        acc[meta.name] = meta;
+        return acc;
+    }, {} as { [key: string]: { color: string } });
+
+    const chartData = Object.entries(categoryDurations).map(([label, value]) => ({
+        label,
         value: Number(value),
+        color: categoryNameToMeta[label]?.color || '#E8E8E8'
     }));
 
     return chartData;

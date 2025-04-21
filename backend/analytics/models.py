@@ -39,6 +39,18 @@ class Categories(models.Model):
     name = models.CharField(max_length=255)
     color = models.CharField(max_length=7, default="#000000")
 
+class UserGoals(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    targeted_minutes = models.IntegerField()
+    date = models.DateField()
+    carried_over_minutes = models.IntegerField(default=0)
+    carry_over = models.BooleanField(default=False)
+
+
+
+
+
+
 
 class StudySessionBreakdown(models.Model):
     #granular breakdown of the study session, including the start and end time of each task

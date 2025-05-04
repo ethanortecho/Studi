@@ -25,16 +25,21 @@ class Command(BaseCommand):
             user.set_password('testpass123')
             user.save()
 
-        # Create categories
+        # Create categories (limited to 5)
         categories = [
             'Mathematics',
             'Computer Science',
             'Physics',
             'Literature',
-            'History',
-            'Chemistry',
-            'Biology'
+            'History'
         ]
+        color_mapping = {
+            'Mathematics': '#FF6B6B',
+            'Computer Science': '#4ECDC4',
+            'Physics': '#45B7D1',
+            'Literature': '#96CEB4',
+            'History': '#7b59f7',
+        }
         
         category_objects = []
         for cat in categories:
@@ -42,6 +47,8 @@ class Command(BaseCommand):
                 user=user,
                 name=cat
             )
+            category.color = color_mapping.get(cat, "#000000")
+            category.save()
             category_objects.append(category)
 
         # Set reference date (January 23, 2025)

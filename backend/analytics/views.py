@@ -153,6 +153,17 @@ class WeeklyInsights(APIView):
                 {'error': 'User not found or access denied'},
                 status=status.HTTP_403_FORBIDDEN
             )
+        user_categories = StudyAnalytics.get_category_list(user)
+        category_data = {}
+
+        for category in user_categories:
+
+            category_data[category.id] = {
+                "name" : category.name,
+                "color" : category.color
+            }
+            
+
             
         start_date = request.query_params.get('start_date')
         end_date = request.query_params.get('end_date')
@@ -180,14 +191,10 @@ class WeeklyInsights(APIView):
 
         # Calculate average session duration in hours
         total_sessions = sum(day.session_count for day in daily_breakdown)
-        avg_session_duration = (weekly_aggregate.total_duration.total_seconds() / 3600 / total_sessions) if total_sessions > 0 else 0
         
         # Calculate average break duration in hours
         all_breaks = StudyAnalytics.get_all_breaks_in_range(user, start_date, end_date)
-        avg_break_duration = (
-            sum(break_.duration.total_seconds() / 3600 for break_ in all_breaks) / len(all_breaks)
-            if all_breaks else 0
-        )
+       
 
         # Ensure all days of the week are represented
         days_of_week = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU']
@@ -199,7 +206,7 @@ class WeeklyInsights(APIView):
         for aggregate in daily_aggregates:
             day_name = aggregate.start_date.strftime('%A')[:2].upper()
             complete_daily_breakdown[day_name] = {
-                'total': round(aggregate.total_duration.total_seconds() / 3600, 2),
+                'total': aggregate.total_duration,
                 'categories': aggregate.category_durations
             }
 
@@ -209,16 +216,18 @@ class WeeklyInsights(APIView):
             formatted_session_times.append({
                 'start_time': session['start_time'],
                 'end_time': session['end_time'],
-                'total_duration': session['total_duration'].total_seconds() / 3600  # Convert to hours
+                'total_duration': session['total_duration']  
             })
 
         response_data = {
-            'statistics': {
-                'total_hours': weekly_aggregate.total_duration.total_seconds() / 3600,  # Convert to hours
-                'avg_session_duration': avg_session_duration,  # Already in hours
-                'avg_break_duration': avg_break_duration  # Already in hours
-            },
-            'weekly_aggregate': AggregateSerializer(weekly_aggregate).data,
+            'aggregate': AggregateSerializer(weekly_aggregate).data,
+
+            
+                
+            
+            
+            'category_metadata' : category_data,
+
             'daily_breakdown': complete_daily_breakdown,
             'session_times': formatted_session_times,
         }
@@ -277,7 +286,6 @@ class MonthlyInsights(APIView):
         response_data = {
             'statistics': {
                 'total_hours': monthly_aggregate.total_duration.total_seconds() / 3600,
-                'avg_session_duration': avg_session_duration,
                 'total_sessions': total_sessions
             },
             'monthly_aggregate': AggregateSerializer(monthly_aggregate).data,

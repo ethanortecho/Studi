@@ -5,6 +5,8 @@ import MonthlyDashboard from './Insights/MonthlyDashboard';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Pressable, StyleSheet } from 'react-native';
+import { dashboardStyles as styles } from '@/styles/dashboard';
+
 
 export default function DashboardLayout() {
   const [selectedTab, setSelectedTab] = useState('daily');
@@ -23,7 +25,7 @@ export default function DashboardLayout() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={styles.tabContainer}>
       <ThemedView style={styles.tabRow}>
         <Pressable onPress={() => setSelectedTab('daily')} style={[styles.tab, selectedTab === 'daily' && styles.activeTab]}>
           <ThemedText style={styles.tabText}>Daily</ThemedText>
@@ -42,30 +44,3 @@ export default function DashboardLayout() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  tabRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 10,
-    marginBottom: 16,
-  },
-  tab: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    backgroundColor: '#EEE',
-    borderRadius: 12,
-  },
-  activeTab: {
-    backgroundColor: '#4CAF50',
-  },
-  tabText: {
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  dashboardContainer: {
-    flex: 1,
-  },
-});

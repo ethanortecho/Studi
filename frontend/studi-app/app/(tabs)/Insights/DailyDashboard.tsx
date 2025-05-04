@@ -1,8 +1,7 @@
 import React from 'react';
-import { StyleSheet } from 'react-native';
 import { useEffect, useMemo, useState } from 'react';
-import { parseCategoryDurations } from '@/utils/parseDailyData';
-import { format_Duration } from '@/utils/parseDailyData';
+import { parseCategoryDurations } from '@/utils/parseData';
+import { format_Duration } from '@/utils/parseData';
 import CustomPieChart from '@/components/charts/CustomPieChart';
 import SessionBreakdown from '@/components/charts/SessionBreakdown';
 import { DailyInsightsResponse } from '@/types/api';
@@ -13,131 +12,86 @@ import Insights from '@/app/Insights';
 import TotalHours from '@/components/TotalHoursLayout';
 import { Colors } from '@/constants/Colors';
 import GoalChart from '@/components/charts/GoalChart';
+import Legend from '@/components/ui/DashboardLegend';
+import { dashboardStyles as styles } from '@/styles/dashboard';
+import useAggregateData from '@/utils/fetchApi';
 
 export default function DailyDashboard() {
   const [dailyData, setDailyData] = useState<DailyInsightsResponse | null>(null);
 
-  useEffect(() => {
-    console.log('Starting fetch...');
-    const fetchData = async () => {
-      try {
-        console.log('Making API request...');
-        const response = await fetch('http://192.168.86.33:8000/api/insights/daily/?date=2025-01-21&username=testuser', {
-          headers: {
-            'Authorization': `Basic ${btoa('ethanortecho:Et8098d!')}`
-          }
-        });
-        console.log('Response received:', response.status);
-        const json = await response.json();
-        console.log('API Response Structure:', JSON.stringify(json, null, 2));
-        setDailyData(json);
-      } catch (error) {
-        console.error('Error fetching data:', error);
+  
+    const { data, loading } = useAggregateData('daily', '2025-01-10', null);
+    useEffect(() => {
+      if (data) {
+        setDailyData(data);
       }
-    };
+    }, [data]);
 
-    fetchData();
-  }, []);
+
+  
 
   const parsedDailyMetrics = useMemo(() => {
     if (!dailyData) return null;
 
     return {
-      categoryDurations: parseCategoryDurations(dailyData),
+      category_durations: dailyData.aggregate.category_durations,
+      pie_chart_durations: parseCategoryDurations(dailyData),
       total_daily_hours: format_Duration(dailyData),
-      timelineData: dailyData.timeline_data,
-      categoryMetadata: dailyData.category_metadata
+      timeline_data: dailyData.timeline_data,
+      category_metadata: dailyData.category_metadata,
     };
   }, [dailyData]);
 
   return (
-    <Insights>
-      <ScrollView>
-        <ThemedView style={styles.container}>
-         
+    <ScrollView>
+      <ThemedView style={styles.container}>
+        {/* Main Dashboard Content */}
+        <ThemedView style={styles.dashboardContainer}>
+          {/* Study Time */}
+          <ThemedView style={[styles.summarySection, { backgroundColor: Colors.light.surface }]}>
+            {parsedDailyMetrics?.total_daily_hours && (
+              <TotalHours
+                StudyTime={parsedDailyMetrics.total_daily_hours}
+              />
+            )}
+          </ThemedView>
 
-          {/* Main Dashboard Content */}
-          <ThemedView style={styles.dashboardContainer}>
-            {/* Summary Stats */}
-
-            <ThemedView style = {styles.row} >
-            <ThemedView style={[styles.summarySection, styles.box]}>
-              {parsedDailyMetrics?.total_daily_hours && (
-                <TotalHours
-                  StudyTime={parsedDailyMetrics.total_daily_hours}
-                />
-              )}
-            </ThemedView>
-            <ThemedView style={styles.box}>
-              <GoalChart/>
-            </ThemedView>
-
-            </ThemedView>
-            
-
-            {/* Session Breakdown */}
-            <ThemedView style={styles.sessionSection}>
-              {parsedDailyMetrics?.timelineData && (
-                <SessionBreakdown 
-                  timelineData={parsedDailyMetrics.timelineData}
-                  categoryMetadata={parsedDailyMetrics.categoryMetadata}
-                  width={300}
-                />
-              )}
-            </ThemedView>
-
+          {/* Subject Distribution and Colors Side by Side */}
+          <ThemedView style={styles.row}>
             {/* Subject Distribution */}
-            <ThemedView style={styles.subjectSection}>
-              {parsedDailyMetrics?.categoryDurations && (
+            <ThemedView style={[styles.subjectSection, { backgroundColor: Colors.light.surface }]}>
+              {parsedDailyMetrics?.pie_chart_durations && (
                 <CustomPieChart 
-                  data={parsedDailyMetrics.categoryDurations}
-                  size={150}
+                  data={parsedDailyMetrics.pie_chart_durations}
+                  size={100}
+                />
+              )}
+            </ThemedView>
+
+            {/* Colors Legend */}
+            <ThemedView style={[styles.summarySection, { backgroundColor: Colors.light.surface, flex: 1 }]}>
+              {parsedDailyMetrics?.category_durations && parsedDailyMetrics?.category_metadata && (
+                <Legend
+                  category_durations={parsedDailyMetrics.category_durations}
+                  category_metadata={parsedDailyMetrics.category_metadata}
                 />
               )}
             </ThemedView>
           </ThemedView>
+
+          {/* Session Breakdown */}
+          <ThemedView style={[styles.sessionSection, { backgroundColor: Colors.light.surface }]}>
+            {parsedDailyMetrics?.timeline_data && (
+              <SessionBreakdown 
+                timelineData={parsedDailyMetrics.timeline_data}
+                categoryMetadata={parsedDailyMetrics.category_metadata}
+                width={300}
+              />
+            )}
+          </ThemedView>
         </ThemedView>
-      </ScrollView>
-    </Insights>
+      </ThemedView>
+    </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row', // key to side-by-side
-    justifyContent: 'space-between', // or 'center', 'flex-start'
-    gap: 16, // optional spacing between items
-  },
-  box: {
-    flex: 1, // optional, makes them evenly split
-    
-  },
-  container: {
-    flex: 1,
-    padding: 20,
-  },
-  header: {
-    marginBottom: 0,
-  },
-  timeframeSection: {
-    marginBottom: 20,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: Colors.light.border,
-    borderRadius: 5,
-    backgroundColor: Colors.light.surface,
-  },
-  dashboardContainer: {
-    flex: 1,
-    gap: 20,
-  },
-  summarySection: {
-    width: '100%',
-  },
-  sessionSection: {
-    width: '100%',
-  },
-  subjectSection: {
-    width: '100%',
-  },
-});

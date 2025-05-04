@@ -1,6 +1,8 @@
 import { View, StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { Colors } from '@/constants/Colors';
+import { dashboardStyles as styles } from '@/styles/dashboard';
+
 
 interface TotalHoursProps {
   StudyTime: string;
@@ -8,30 +10,9 @@ interface TotalHoursProps {
 
 export default function TotalHours({ StudyTime }: TotalHoursProps) {
   return (
-    <View style={styles.container}>
-      <ThemedText style={styles.title}>Study Time</ThemedText>
-      <ThemedText style={styles.time}>{StudyTime}</ThemedText>
+    <View style={styles.totalTimeContainer}>
+      <ThemedText style={styles.title}>You've Studied for {StudyTime}</ThemedText>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-    backgroundColor: Colors.light.surface,
-    borderRadius: 15,
-    padding: 20,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 15,
-    color: Colors.light.text,
-  },
-  time: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: Colors.light.text,
-    textAlign: 'center',
-  },
-}); 

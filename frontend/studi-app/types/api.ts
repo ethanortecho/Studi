@@ -51,13 +51,17 @@ export interface WeeklyInsightsResponse {
   };
   daily_breakdown: {
     [date: string]: {
-      total_duration: number;
-      category_durations: { [key: string]: number };
-      session_count: number;
+      total: number;
+      categories: { [key: string]: number };
     };
   };
   category_metadata: { [key: string]: CategoryMetadata };
-  statistics: {
+  session_times: Array<{
+    start_time: string;
+    end_time: string;
+    total_duration: number;
+  }>;
+  statistics?: {
     longest_session: number | null;
     avg_break_duration: number;
     avg_daily_study_time: number;

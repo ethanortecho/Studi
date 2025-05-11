@@ -3,7 +3,10 @@ import React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 
 
-export default function useAggregateData(time_frame, start_date, end_date) {
+export default function useAggregateData(time_frame: string, 
+    start_date: string, 
+    end_date?: string
+  ) {
     const [data, setData] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);

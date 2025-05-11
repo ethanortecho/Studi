@@ -5,7 +5,7 @@ import { format_Duration } from '@/utils/parseData';
 import CustomPieChart from '@/components/charts/CustomPieChart';
 import SessionBreakdown from '@/components/charts/SessionBreakdown';
 import { DailyInsightsResponse } from '@/types/api';
-import { ScrollView } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import Insights from '@/app/Insights';
@@ -15,20 +15,17 @@ import GoalChart from '@/components/charts/GoalChart';
 import Legend from '@/components/ui/DashboardLegend';
 import { dashboardStyles as styles } from '@/styles/dashboard';
 import useAggregateData from '@/utils/fetchApi';
+import DebugDataViewer from '@/components/ui/DebugDataViewer';
 
 export default function DailyDashboard() {
   const [dailyData, setDailyData] = useState<DailyInsightsResponse | null>(null);
 
-  
-    const { data, loading } = useAggregateData('daily', '2025-01-10', null);
-    useEffect(() => {
-      if (data) {
-        setDailyData(data);
-      }
-    }, [data]);
-
-
-  
+  const { data, loading } = useAggregateData('daily', '2025-01-10', undefined);
+  useEffect(() => {
+    if (data) {
+      setDailyData(data);
+    }
+  }, [data]);
 
   const parsedDailyMetrics = useMemo(() => {
     if (!dailyData) return null;
@@ -43,7 +40,7 @@ export default function DailyDashboard() {
   }, [dailyData]);
 
   return (
-    <ScrollView>
+    <ScrollView contentContainerStyle={localStyles.scrollContent}>
       <ThemedView style={styles.container}>
         {/* Main Dashboard Content */}
         <ThemedView style={styles.dashboardContainer}>
@@ -89,9 +86,31 @@ export default function DailyDashboard() {
               />
             )}
           </ThemedView>
+          
+          {/* Debug Data Viewer */}
+          <View style={localStyles.debugContainer}>
+            {dailyData && (
+              <DebugDataViewer 
+                data={dailyData} 
+                label="Daily Dashboard Raw Data" 
+              />
+            )}
+          </View>
         </ThemedView>
       </ThemedView>
     </ScrollView>
   );
 }
+
+const localStyles = StyleSheet.create({
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 30, // Add padding at the bottom to ensure visibility
+  },
+  debugContainer: {
+    marginTop: 10,
+    marginBottom: 20,
+    width: '100%',
+  }
+});
 

@@ -6,6 +6,11 @@ class StudySessionSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudySession
         fields = '__all__'
+        read_only_fields = ['user', 'total_duration']
+
+        def create(self, validated_data):
+
+
 
 class StudySessionBreakdownSerializer(serializers.ModelSerializer):
     class Meta:

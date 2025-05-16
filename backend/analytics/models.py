@@ -21,11 +21,21 @@ class CustomUser(AbstractUser):
     )
 
 class StudySession(models.Model):
+    STATUS_CHOICES = [
+        ("active", "Active"),
+        ("completed", "Completed"),
+        ("cancelled", "Cancelled"),
+        ("paused", "Paused"),
+        ("interrupted", "Interrupted")
+    ]
+    pk = models.AutoField(primary_key=True)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField(null=True, blank=True)
     total_duration = models.IntegerField(null=True, blank=True)  # Duration in seconds
     productivity_rating = models.CharField(max_length=50)
+    status   =  models.CharField(max_length=50, choices=STATUS_CHOICES, default="active")
+
 
     def save(self, *args, **kwargs):
         if self.end_time and self.start_time:
@@ -58,7 +68,7 @@ class StudySessionBreakdown(models.Model):
     category = models.ForeignKey(Categories, on_delete=models.CASCADE)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
-    duration = models.IntegerField()  # Duration in seconds
+    duration = models.IntegerField()
 
     def save(self, *args, **kwargs):
         if self.end_time and self.start_time:

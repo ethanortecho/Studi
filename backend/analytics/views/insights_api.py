@@ -4,9 +4,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from datetime import timedelta
 from django.utils.dateparse import parse_date
-from .serializers import StudySessionSerializer, StudySessionBreakdownSerializer, AggregateSerializer
-from .queries import StudyAnalytics
-from .models import Aggregate, StudySession, StudySessionBreakdown, Categories, CustomUser
+from ..serializers import StudySessionSerializer, StudySessionBreakdownSerializer, AggregateSerializer
+from ..queries import StudyAnalytics
+from ..models import Aggregate, StudySession, StudySessionBreakdown, Categories, CustomUser
 from django.utils import timezone
 
 

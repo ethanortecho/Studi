@@ -6,7 +6,7 @@ class StudySessionSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudySession
         fields = '__all__'
-        read_only_fields = ['pk','user', 'total_duration']
+        read_only_fields = ['id','user', 'total_duration']
     
     def validate(self, data):
         start_time = data.get('start_time')
@@ -38,6 +38,52 @@ class StudySessionBreakdownSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudySessionBreakdown
         fields = '__all__'
+
+    def validate(self, data):
+        user = self.context['request'].user
+        start_time = data.get('start_time')
+        end_time = data.get('end_time')
+        category_id = data.get('category')
+        session_id = data.get('study_session')
+
+        try:
+            category = Categories.objects.get(id=category_id)
+
+            if category.user.id != user.id:
+                raise serializers.ValidationError("This subject doesn't belong to you")
+
+        except Categories.DoesNotExist:
+            raise serializers.ValidationError("Subject does not exist")
+        
+        if start_time and end_time and start_time >= end_time:
+            raise serializers.ValidationError("Start time must be before end time")
+        
+        if start_time and session and start_time < session.start_time:
+            raise serializers.ValidationError("Breakdown cannot start before session starts.")
+
+        if end_time and session and end_time > session.end_time:
+            raise serializers.ValidationError("Breakdown cannot end after session ends.")
+        
+
+        if category not in user.categories.all():
+            raise serializers.ValidationError("Subject does not exist")
+        
+        if session.user != user:
+            raise serializers.ValidationError("You do not have permission to access this session.")
+
+        return data
+    
+    def create(self, validated_data):
+        return StudySessionBreakdown.objects.create(**validated_data)
+    
+    def complete_breakdown(self, instance, validated_data):
+        instance.end_time = validated_data.get('end_time')
+        instance.save()
+        return instance
+
+
+    
+
 
         
 

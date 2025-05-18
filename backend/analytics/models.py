@@ -28,12 +28,11 @@ class StudySession(models.Model):
         ("paused", "Paused"),
         ("interrupted", "Interrupted")
     ]
-    pk = models.AutoField(primary_key=True)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField(null=True, blank=True)
     total_duration = models.IntegerField(null=True, blank=True)  # Duration in seconds
-    productivity_rating = models.CharField(max_length=50)
+    productivity_rating = models.CharField(null=True, blank=True, max_length=50)
     status   =  models.CharField(max_length=50, choices=STATUS_CHOICES, default="active")
 
 

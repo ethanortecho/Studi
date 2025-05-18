@@ -20,7 +20,7 @@ import DebugDataViewer from '@/components/ui/DebugDataViewer';
 export default function DailyDashboard() {
   const [dailyData, setDailyData] = useState<DailyInsightsResponse | null>(null);
 
-  const { data, loading } = useAggregateData('daily', '2025-01-10', undefined);
+  const { data, loading } = useAggregateData('daily', '2025-01-11', undefined);
   useEffect(() => {
     if (data) {
       setDailyData(data);

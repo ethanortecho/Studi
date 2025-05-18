@@ -20,12 +20,16 @@ class CreateStudySession(APIView):
 
 
 class EndStudySession(APIView):
-    def put(self, request, pk):
+    def put(self, request, id):
         try:
-            session = StudySession.objects.get(pk=pk, user=request.user)
-            serializer = StudySessionSerializer(instance=session)
-            updated_session = serializer.complete_session(instance=session, validated_data=request.data)
-            return Response(StudySessionSerializer(updated_session).data, status=status.HTTP_200_OK)
+            session = StudySession.objects.get(id=id, user=request.user)
+            serializer = StudySessionSerializer(instance=session, data=request.data, partial=True)
+            
+            if serializer.is_valid():
+                updated_session = serializer.complete_session(instance=session, validated_data=serializer.validated_data)
+                return Response(StudySessionSerializer(updated_session).data, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except StudySession.DoesNotExist:
             return Response({"error": "Study session not found"}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
@@ -33,21 +37,34 @@ class EndStudySession(APIView):
 
 
 
-
-        
+            
         
         
 class CreateStudySessionBreakdown(APIView):
     def post(self, request):
-        user = request.user
-        # TODO: Implement study session breakdown creation
-        return Response({"message": "Not yet implemented"}, status=status.HTTP_501_NOT_IMPLEMENTED)
+        serializer = StudySessionBreakdownSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            breakdown = serializer.save()
+            return Response({"id": breakdown.id}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class EndStudySessionBreakdown(APIView):
-    def post(self, request):
-        user = request.user
-        # TODO: Implement study session breakdown end
-        return Response({"message": "Not yet implemented"}, status=status.HTTP_501_NOT_IMPLEMENTED)
+    def put(self, request, id):
+
+        try:
+            breakdown = StudySessionBreakdown.objects.get(id=id, user=request.user)
+            serializer = StudySessionBreakdownSerializer(instance=breakdown, data=request.data, partial=True)
+
+            if serializer.is_valid():
+                updated_breakdown = serializer.complete_breakdown(instance=breakdown, validated_data=serializer.validated_data)
+                return Response(StudySessionBreakdownSerializer(updated_breakdown).data, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except StudySessionBreakdown.DoesNotExist:
+            return Response({"error": "breakdown instance not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CreateSubject(APIView):

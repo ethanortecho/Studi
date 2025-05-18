@@ -92,15 +92,7 @@ class DailyInsights(APIView):
             }
             timeline_data.append(session_data)
 
-        longest_session = StudyAnalytics.get_longest_session(user, date, date)
         
-        # Calculate average break duration
-        all_breaks = [break_ for session in daily_sessions for break_ in session.break_set.all()]
-        avg_break_duration = (
-            sum(break_.duration for break_ in all_breaks) / len(all_breaks)
-            if all_breaks else 0
-        )
-
         #if daily aggregate is not found (e.g its the current day) manually calculate and return data
         if not daily_aggregate:
             total_duration = sum(session.total_duration for session in daily_sessions)
@@ -133,10 +125,7 @@ class DailyInsights(APIView):
             'aggregate': AggregateSerializer(daily_aggregate).data,
             'timeline_data': timeline_data,
             'category_metadata' : category_data,
-            'statistics': {
-                'longest_session': longest_session,
-                'avg_break_duration': avg_break_duration,
-            }
+            
         }
 
         return Response(response_data, status=status.HTTP_200_OK)

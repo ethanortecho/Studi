@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import CustomUser, StudySession, Categories, StudySessionBreakdown, Aggregate
+from .models import CustomUser, StudySession, Categories, CategoryBlock, Aggregate
 from django.utils.timezone import localtime
 
 @admin.register(StudySession)
@@ -23,8 +23,8 @@ class CategoriesAdmin(admin.ModelAdmin):
     list_filter = ('user',)
     search_fields = ('name', 'user__username')
 
-@admin.register(StudySessionBreakdown)
-class StudySessionBreakdownAdmin(admin.ModelAdmin):
+@admin.register(CategoryBlock)
+class CategoryBlockAdmin(admin.ModelAdmin):
     list_display = ('study_session', 'category', 'formatted_start_time', 'formatted_end_time', 'duration')
     list_filter = ('category', 'study_session__user')
     search_fields = ('category__name', 'study_session__user__username')

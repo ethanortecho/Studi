@@ -23,8 +23,8 @@ export const RecordScreenStyles = StyleSheet.create({
     mainContent: {
         flex: 1,
         width: '100%',
-        justifyContent: 'center',
         alignItems: 'center',
+        paddingTop: 20,
     },
     row: {
         width: '80%',
@@ -36,12 +36,10 @@ export const RecordScreenStyles = StyleSheet.create({
         borderRadius: 8,
     },
     categoryContainer: {
-        width: '80%',
+        width: '100%',
         padding: 20,
         alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#cccccc',
-        borderRadius: 8,
+        marginTop: 20,
     },
     
     // Text styles
@@ -60,6 +58,20 @@ export const RecordScreenStyles = StyleSheet.create({
     categoryText: {
         fontSize: 14,
         color: Colors.light.text,
+        textAlign: 'center',
+    },
+    button: {
+        backgroundColor: '#007AFF',
+        paddingVertical: 12,
+        paddingHorizontal: 30,
+        borderRadius: 8,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    buttonText: {
+        color: 'white',
+        fontSize: 18,
+        fontWeight: 'bold',
         textAlign: 'center',
     },
     

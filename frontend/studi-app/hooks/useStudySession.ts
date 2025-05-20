@@ -1,106 +1,82 @@
-import { useState, useEffect } from 'react';
-
-// Types for study session
-interface StudySession {
-  id: string;
-  startTime: Date;
-  endTime?: Date;
-  status: 'active' | 'paused' | 'completed';
-}
+import { useState } from 'react';
+import { createStudySession, endStudySession, createCategoryBlock, endCategoryBlock } from '../utils/studySession';
 
 export function useStudySession() {
-  const [session, setSession] = useState<StudySession | null>(null);
-  const [elapsed, setElapsed] = useState<number>(0);
-  const [timerActive, setTimerActive] = useState<boolean>(false);
+  const [sessionId, setSessionId] = useState<number | null>(null);
+  const [currentCategoryBlockId, setCategoryBlockId] = useState<number | null>(null);
+  const [pausedCategoryId, setPausedCategoryId] = useState<number | null>(null);
+  
 
-  // Start a new study session
-  const startSession = () => {
-    const newSession = {
-      id: generateTempId(), // In a real app, this would come from the API
-      startTime: new Date(),
-      status: 'active' as const,
-    };
-    setSession(newSession);
-    setTimerActive(true);
-    setElapsed(0);
-    
-    // In a real implementation, you would make an API call here
-    // to create the session on the backend
-    // Example: api.post('/study-sessions', { start_time: newSession.startTime })
-  };
-
-  // Pause the current session
-  const pauseSession = () => {
-    if (session) {
-      setTimerActive(false);
-      setSession({
-        ...session,
-        status: 'paused',
-      });
-      
-      // In a real implementation, update the session status in the backend
+  const startSession = async () => {
+    console.log("Hook: startSession called");
+    try {
+      const res = await createStudySession(new Date());
+      console.log("Hook: setSessionId to", res.id);
+      setSessionId(res.id);
+      return res;
+    } catch (error) {
+      console.error("Hook error in startSession:", error);
+      throw error;
     }
   };
 
-  // Resume a paused session
-  const resumeSession = () => {
-    if (session && session.status === 'paused') {
-      setTimerActive(true);
-      setSession({
-        ...session,
-        status: 'active',
-      });
-      
-      // In a real implementation, update the session status in the backend
+  const stopSession = async () => {
+    console.log("Hook: stopSession called, sessionId:", sessionId);
+    if (sessionId) {
+      try {
+        const res = await endStudySession(String(sessionId), new Date());
+        setSessionId(null);
+        return res;
+      } catch (error) {
+        console.error("Hook error in stopSession:", error);
+        throw error;
+      }
+    }
+  };
+  const pauseCategoryBlock = async (currentCategoryId: number, breakCategoryId: number) => {
+    console.log("Hook: pauseCategoryBlock called", currentCategoryId, breakCategoryId);
+    if (currentCategoryBlockId) {
+      try {
+        await endCategoryBlock(String(currentCategoryBlockId), new Date());
+        const res = await createCategoryBlock(String(sessionId), String(breakCategoryId), new Date());
+        setPausedCategoryId(currentCategoryId);
+        setCategoryBlockId(res.id);
+        return res;
+      } catch (error) {
+        console.error("Hook error in pauseCategoryBlock:", error);
+        throw error;
+      }
     }
   };
 
-  // End the current session
-  const endSession = () => {
-    if (session) {
-      const endTime = new Date();
-      setTimerActive(false);
-      setSession({
-        ...session,
-        endTime,
-        status: 'completed',
-      });
-      
-      // In a real implementation, update the session in the backend
-      // Example: api.put(`/study-sessions/${session.id}`, { 
-      //   end_time: endTime,
-      //   status: 'completed'
-      // })
-    }
-  };
+  const switchCategory = async (newCategoryId: number) => {
+    console.log("Hook: switchCategory called", newCategoryId);
+    console.log("Hook: SessionID when switchCategory is called", sessionId);
+    try {
+      if (currentCategoryBlockId) {
+        console.log("Hook: endCategoryBlock called", currentCategoryBlockId);
 
-  // Timer logic to update elapsed time
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    
-    if (timerActive && session) {
-      interval = setInterval(() => {
-        const now = new Date();
-        const start = session.startTime;
-        setElapsed(Math.floor((now.getTime() - start.getTime()) / 1000));
-      }, 1000);
-    }
-    
-    return () => clearInterval(interval);
-  }, [timerActive, session]);
+        await endCategoryBlock(String(currentCategoryBlockId), new Date());
+      }
+      //if session is running, create a new category block
+      if (sessionId) {
+        
+        const res = await createCategoryBlock(String(sessionId), String(newCategoryId), new Date());
+        setCategoryBlockId(res.id);
 
-  // Utility function to generate a temporary ID
-  const generateTempId = () => {
-    return Math.random().toString(36).substring(2, 15);
+        return res;
+      }
+    } catch (error) {
+      console.error("Hook error in switchCategory:", error);
+      throw error;
+    }
   };
 
   return {
-    session,
-    elapsed,
-    timerActive,
+    sessionId,
     startSession,
-    pauseSession,
-    resumeSession,
-    endSession,
+    stopSession,
+    switchCategory,
+    pauseCategoryBlock,
   };
-} 
+}

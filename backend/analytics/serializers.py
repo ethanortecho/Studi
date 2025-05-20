@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import StudySession, StudySessionBreakdown, Categories, Aggregate
+from .models import StudySession, CategoryBlock, Categories, Aggregate
 
 
 class StudySessionSerializer(serializers.ModelSerializer):
@@ -25,7 +25,7 @@ class StudySessionSerializer(serializers.ModelSerializer):
 
     def complete_session(self, instance, validated_data):
         instance.end_time = validated_data.get('end_time')
-        instance.status = validated_data.get('status')
+        instance.status = validated_data.get('status', 'completed')
         instance.save()
         return instance
 
@@ -34,9 +34,9 @@ class StudySessionSerializer(serializers.ModelSerializer):
 
 
 
-class StudySessionBreakdownSerializer(serializers.ModelSerializer):
+class CategoryBlockSerializer(serializers.ModelSerializer):
     class Meta:
-        model = StudySessionBreakdown
+        model = CategoryBlock
         fields = '__all__'
 
     def validate(self, data):
@@ -48,35 +48,36 @@ class StudySessionBreakdownSerializer(serializers.ModelSerializer):
 
         try:
             category = Categories.objects.get(id=category_id)
-
             if category.user.id != user.id:
                 raise serializers.ValidationError("This subject doesn't belong to you")
-
         except Categories.DoesNotExist:
             raise serializers.ValidationError("Subject does not exist")
         
         if start_time and end_time and start_time >= end_time:
             raise serializers.ValidationError("Start time must be before end time")
         
-        if start_time and session and start_time < session.start_time:
-            raise serializers.ValidationError("Breakdown cannot start before session starts.")
+        try:
+            study_session = StudySession.objects.get(id=session_id)
+            if start_time and study_session and start_time < study_session.start_time:
+                raise serializers.ValidationError("Category block cannot start before session starts.")
 
-        if end_time and session and end_time > session.end_time:
-            raise serializers.ValidationError("Breakdown cannot end after session ends.")
-        
+            if end_time and study_session and study_session.end_time and end_time > study_session.end_time:
+                raise serializers.ValidationError("Category block cannot end after session ends.")
+            
+            if study_session.user != user:
+                raise serializers.ValidationError("You do not have permission to access this session.")
+        except StudySession.DoesNotExist:
+            raise serializers.ValidationError("Study session does not exist")
 
         if category not in user.categories.all():
             raise serializers.ValidationError("Subject does not exist")
         
-        if session.user != user:
-            raise serializers.ValidationError("You do not have permission to access this session.")
-
         return data
     
     def create(self, validated_data):
-        return StudySessionBreakdown.objects.create(**validated_data)
+        return CategoryBlock.objects.create(**validated_data)
     
-    def complete_breakdown(self, instance, validated_data):
+    def complete_category_block(self, instance, validated_data):
         instance.end_time = validated_data.get('end_time')
         instance.save()
         return instance

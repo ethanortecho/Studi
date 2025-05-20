@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from analytics.models import CustomUser, StudySession, Categories, StudySessionBreakdown
+from analytics.models import CustomUser, StudySession, Categories, CategoryBlock
 from faker import Faker
 from datetime import timedelta, datetime, date
 import random
@@ -12,7 +12,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         # Clear existing data
-        StudySessionBreakdown.objects.all().delete()
+        CategoryBlock.objects.all().delete()
         StudySession.objects.all().delete()
         Categories.objects.all().delete()
 
@@ -116,7 +116,7 @@ class Command(BaseCommand):
                     
                     breakdown_duration = timedelta(minutes=breakdown_minutes)
                     
-                    StudySessionBreakdown.objects.create(
+                    CategoryBlock.objects.create(
                         study_session=session,
                         category=random.choice(category_objects),
                         start_time=current_time,

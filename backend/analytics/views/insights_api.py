@@ -4,9 +4,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from datetime import timedelta
 from django.utils.dateparse import parse_date
-from ..serializers import StudySessionSerializer, StudySessionBreakdownSerializer, AggregateSerializer
+from ..serializers import StudySessionSerializer, CategoryBlockSerializer, AggregateSerializer
 from ..queries import StudyAnalytics
-from ..models import Aggregate, StudySession, StudySessionBreakdown, Categories, CustomUser
+from ..models import Aggregate, StudySession, CategoryBlock, Categories, CustomUser
 from django.utils import timezone
 
 
@@ -33,6 +33,7 @@ def get_target_user(request):
         return requesting_user
     return None
 
+ 
 class DailyInsights(APIView):
 
     def get(self, request):
@@ -83,7 +84,7 @@ class DailyInsights(APIView):
                 'start_time': session.start_time,
                 'end_time': session.end_time,
                 'breaks': session.break_set.all().values('start_time', 'end_time', 'duration'),
-                'breakdowns': session.studysessionbreakdown_set.all().values(
+                'breakdowns': session.categoryblock_set.all().values(
                     'category', 
                     'start_time',
                     'end_time', 
@@ -102,7 +103,7 @@ class DailyInsights(APIView):
             category_durations = {}
             for session in daily_sessions:
                 # Get breakdowns for this session
-                breakdowns = session.studysessionbreakdown_set.all()
+                breakdowns = session.categoryblock_set.all()
                 for breakdown in breakdowns:
                     category_name = breakdown.category.name
                     if category_name not in category_durations:

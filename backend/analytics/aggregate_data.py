@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 from django.db.models import Sum, Count
 from datetime import timedelta, datetime, date
-from analytics.models import StudySession, Aggregate, StudySessionBreakdown, Break
+from analytics.models import StudySession, Aggregate, CategoryBlock, Break
 from collections import defaultdict
 
 class Command(BaseCommand):
@@ -90,7 +90,7 @@ class Command(BaseCommand):
         
         # Calculate category durations in seconds
         category_durations = defaultdict(timedelta)
-        breakdowns = StudySessionBreakdown.objects.filter(study_session__in=sessions)
+        breakdowns = CategoryBlock.objects.filter(study_session__in=sessions)
         
         for breakdown in breakdowns:
             category_durations[breakdown.category.name] += breakdown.duration

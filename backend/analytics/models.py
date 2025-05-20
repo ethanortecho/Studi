@@ -61,7 +61,7 @@ class UserGoals(models.Model):
 
 
 
-class StudySessionBreakdown(models.Model):
+class CategoryBlock(models.Model):
     #granular breakdown of the study session, including the start and end time of each task
     study_session = models.ForeignKey(StudySession, on_delete=models.CASCADE)
     category = models.ForeignKey(Categories, on_delete=models.CASCADE)

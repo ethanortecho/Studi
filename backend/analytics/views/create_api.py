@@ -4,8 +4,8 @@ from datetime import timedelta
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from ..models import StudySession, Categories
-from ..serializers import StudySessionSerializer, StudySessionBreakdownSerializer, AggregateSerializer
+from ..models import StudySession, CategoryBlock
+from ..serializers import StudySessionSerializer, CategoryBlockSerializer, AggregateSerializer
 
 
 class CreateStudySession(APIView):
@@ -40,29 +40,29 @@ class EndStudySession(APIView):
             
         
         
-class CreateStudySessionBreakdown(APIView):
+class CreateCategoryBlock(APIView):
     def post(self, request):
-        serializer = StudySessionBreakdownSerializer(data=request.data, context={'request': request})
+        serializer = CategoryBlockSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
-            breakdown = serializer.save()
-            return Response({"id": breakdown.id}, status=status.HTTP_201_CREATED)
+            category_block = serializer.save()
+            return Response({"id": category_block.id}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class EndStudySessionBreakdown(APIView):
+class EndCategoryBlock(APIView):
     def put(self, request, id):
 
         try:
-            breakdown = StudySessionBreakdown.objects.get(id=id, user=request.user)
-            serializer = StudySessionBreakdownSerializer(instance=breakdown, data=request.data, partial=True)
+            category_block = CategoryBlock.objects.get(id=id, user=request.user)
+            serializer = CategoryBlockSerializer(instance=category_block, data=request.data, partial=True)
 
             if serializer.is_valid():
-                updated_breakdown = serializer.complete_breakdown(instance=breakdown, validated_data=serializer.validated_data)
-                return Response(StudySessionBreakdownSerializer(updated_breakdown).data, status=status.HTTP_200_OK)
+                updated_category_block = serializer.complete_category_block(instance=category_block, validated_data=serializer.validated_data)
+                return Response(CategoryBlockSerializer(updated_category_block).data, status=status.HTTP_200_OK)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except StudySessionBreakdown.DoesNotExist:
-            return Response({"error": "breakdown instance not found"}, status=status.HTTP_404_NOT_FOUND)
+        except CategoryBlock.DoesNotExist:
+            return Response({"error": "category block not found"}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 

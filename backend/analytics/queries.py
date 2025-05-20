@@ -1,7 +1,7 @@
 from django.db.models import Sum, Avg, Count
 from django.utils import timezone
 from datetime import timedelta
-from .models import StudySession, StudySessionBreakdown, Categories, Aggregate, Break
+from .models import StudySession, CategoryBlock, Categories, Aggregate, Break
 
 class StudyAnalytics:
 
@@ -48,7 +48,7 @@ class StudyAnalytics:
         return StudySession.objects.filter(
             user=user,
             start_time__date=date
-        ).prefetch_related('studysessionbreakdown_set').order_by('start_time')
+        ).prefetch_related('categoryblock_set').order_by('start_time')
     
     def get_weekly_session_times(user, week_start, week_end):
         return StudySession.objects.filter(
@@ -110,7 +110,7 @@ class StudyAnalytics:
         else:
             start_date = None
 
-        return StudySessionBreakdown.objects.filter(
+        return CategoryBlock.objects.filter(
             study_session__user=user,
             start_time__gte=start_date
         ).values('category__name').annotate(

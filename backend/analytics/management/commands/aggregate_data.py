@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from analytics.models import StudySession, Aggregate, StudySessionBreakdown
+from analytics.models import StudySession, Aggregate, CategoryBlock
 from datetime import timedelta
 from collections import defaultdict
 
@@ -24,7 +24,7 @@ class Command(BaseCommand):
             # Calculate category durations
             category_durations = defaultdict(int)
             for session in sessions:
-                breakdowns = session.studysessionbreakdown_set.all()
+                breakdowns = session.categoryblock_set.all()
                 for breakdown in breakdowns:
                     category_durations[breakdown.category.name] += breakdown.duration or 0
             
@@ -63,7 +63,7 @@ class Command(BaseCommand):
                 weekly_categories = defaultdict(int)
                 
                 for session in weekly_sessions:
-                    breakdowns = session.studysessionbreakdown_set.all()
+                    breakdowns = session.categoryblock_set.all()
                     for breakdown in breakdowns:
                         weekly_categories[breakdown.category.name] += breakdown.duration or 0
                 
@@ -104,7 +104,7 @@ class Command(BaseCommand):
                 monthly_categories = defaultdict(int)
                 
                 for session in monthly_sessions:
-                    breakdowns = session.studysessionbreakdown_set.all()
+                    breakdowns = session.categoryblock_set.all()
                     for breakdown in breakdowns:
                         monthly_categories[breakdown.category.name] += breakdown.duration or 0
                 

@@ -35,46 +35,53 @@ class StudySessionSerializer(serializers.ModelSerializer):
 
 
 class CategoryBlockSerializer(serializers.ModelSerializer):
+    category = serializers.PrimaryKeyRelatedField(queryset=Categories.objects.all())
+    study_session = serializers.PrimaryKeyRelatedField(queryset=StudySession.objects.all())
     class Meta:
         model = CategoryBlock
         fields = '__all__'
 
     def validate(self, data):
         user = self.context['request'].user
+        
+        # For partial updates (like ending a block), only validate end_time
+        if self.partial:
+            end_time = data.get('end_time')
+            if end_time:
+                # Get the existing start_time from the instance
+                start_time = self.instance.start_time
+                if start_time and end_time and start_time >= end_time:
+                    raise serializers.ValidationError({
+                        "end_time": "End time must be after start time"
+                    })
+            return data
+
+        # Full validation for creation
+        category = data.get('category')
+        study_session = data.get('study_session')
         start_time = data.get('start_time')
         end_time = data.get('end_time')
-        category_id = data.get('category')
-        session_id = data.get('study_session')
 
-        try:
-            category = Categories.objects.get(id=category_id)
+        if not user.is_superuser:
             if category.user.id != user.id:
-                raise serializers.ValidationError("This subject doesn't belong to you")
-        except Categories.DoesNotExist:
-            raise serializers.ValidationError("Subject does not exist")
-        
-        if start_time and end_time and start_time >= end_time:
-            raise serializers.ValidationError("Start time must be before end time")
-        
-        try:
-            study_session = StudySession.objects.get(id=session_id)
-            if start_time and study_session and start_time < study_session.start_time:
-                raise serializers.ValidationError("Category block cannot start before session starts.")
-
-            if end_time and study_session and study_session.end_time and end_time > study_session.end_time:
-                raise serializers.ValidationError("Category block cannot end after session ends.")
+                raise serializers.ValidationError({
+                    "category": f"Category ownership mismatch: category.user.id={category.user.id}, user.id={user.id}"
+                })
             
             if study_session.user != user:
-                raise serializers.ValidationError("You do not have permission to access this session.")
-        except StudySession.DoesNotExist:
-            raise serializers.ValidationError("Study session does not exist")
+                raise serializers.ValidationError({
+                    "session": f"Session ownership mismatch: session.user={study_session.user}, user={user}"
+                })
 
-        if category not in user.categories.all():
-            raise serializers.ValidationError("Subject does not exist")
-        
+        if start_time and end_time and start_time >= end_time:
+            raise serializers.ValidationError({
+                "timing": f"Invalid timing: block starts at {start_time}, session starts at {study_session.start_time}"
+            })
+
         return data
     
     def create(self, validated_data):
+        # Remove the ID conversion - we want to keep the model instance
         return CategoryBlock.objects.create(**validated_data)
     
     def complete_category_block(self, instance, validated_data):
@@ -105,8 +112,3 @@ class AggregateSerializer(serializers.ModelSerializer):
         return obj.category_durations
 
 
-class CategorySerializer(serializers.ModelSerializer):
-    
-    class Meta:
-        model = Categories
-        fields = '__all__'

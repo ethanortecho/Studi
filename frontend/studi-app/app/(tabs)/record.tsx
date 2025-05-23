@@ -6,18 +6,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Timer } from '@/components/Timer';
 import { CategoryCarousel } from '@/components/CategoryCarousel';
 import { fetchCategories, Category } from '@/utils/studySession';
-
+import { StudySessionContext, StudySessionProvider } from '@/context/StudySessionContext';
 export default function RecordSessionScreen() {
-    const [categories, setCategories] = useState<Category[]>([]);
-
-    useEffect(() => {
-        fetchCategories()
-            .then(setCategories)
-            .catch(error => console.error('Error fetching categories:', error));
-    }, []);
 
     return (
-        <SafeAreaView style={styles.contentContainer}>
+        <StudySessionProvider>
+            <SafeAreaView style={styles.contentContainer}>
             <ThemedView style={styles.headerContainer}>
                 <ThemedText style={styles.title}>Record Session</ThemedText>
             </ThemedView>
@@ -25,12 +19,15 @@ export default function RecordSessionScreen() {
             <ThemedView style={styles.mainContent}>
                 
                 <Timer />
-                <CategoryCarousel categories={categories} />
+                <CategoryCarousel/>
 
                 
                 <ThemedView style={styles.categoryContainer}>
                 </ThemedView>
             </ThemedView>
         </SafeAreaView>
+
+        </StudySessionProvider>
+        
     );
 }

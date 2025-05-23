@@ -66,8 +66,8 @@ class CategoryBlock(models.Model):
     study_session = models.ForeignKey(StudySession, on_delete=models.CASCADE)
     category = models.ForeignKey(Categories, on_delete=models.CASCADE)
     start_time = models.DateTimeField()
-    end_time = models.DateTimeField()
-    duration = models.IntegerField()
+    end_time = models.DateTimeField(null=True, blank=True)
+    duration = models.IntegerField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if self.end_time and self.start_time:

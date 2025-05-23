@@ -4,12 +4,13 @@ import { ThemedText } from './ThemedText';
 import { ThemedView } from './ThemedView';
 import { useStudySession } from '@/hooks/useStudySession';
 import { Category } from '@/utils/studySession';
+import { StudySessionContext } from '@/context/StudySessionContext';
+import { useContext } from 'react';
 
-interface CategoryCarouselProps {
-  categories: Category[];
-}
 
-export function CategoryCarousel({ categories }: CategoryCarouselProps) {
+
+export function CategoryCarousel() {
+  const { categories } = useContext(StudySessionContext);
   const { switchCategory } = useStudySession();
   const [currentIndex, setCurrentIndex] = useState(0);
 

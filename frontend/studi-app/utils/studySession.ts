@@ -54,7 +54,7 @@ export const createStudySession = async (startTime: Date) => {
   };
   
   export const createCategoryBlock = async (sessionId: string, categoryId: string, startTime: Date) => {
-    console.log("API: createCategoryBlock called with", sessionId, categoryId, startTime);
+    console.log("API: createCategoryBlock called with", categoryId, );
     const res = await fetch(`${API_BASE_URL}/create-category-block/`, {
       method: "POST",
       headers: { 
@@ -63,6 +63,8 @@ export const createStudySession = async (startTime: Date) => {
       },
       body: JSON.stringify({ study_session: sessionId, category: categoryId, start_time: startTime }),
     });
+    console.log("API: createCategoryBlock body:", JSON.stringify({ study_session: sessionId, category: categoryId, start_time: startTime }));
+    console.log("API: createCategoryBlock response status:", res.status);
     const data = await res.json();
     return data;
   };

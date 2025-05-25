@@ -52,11 +52,11 @@ export default function DailyDashboard() {
           {/* Subject Distribution and Colors Side by Side */}
           <View className="flex-row gap-2.5">
             {/* Subject Distribution */}
-            <View className="flex-1 items-center justify-center bg-white rounded-lg p-4">
+            <View className="flex-1 items-center justify-center bg-white rounded-lg p-2 min-h-[180px]">
               {parsedDailyMetrics?.pie_chart_durations && (
                 <CustomPieChart 
                   data={parsedDailyMetrics.pie_chart_durations}
-                  size={100}
+                  size={150}
                 />
               )}
             </View>

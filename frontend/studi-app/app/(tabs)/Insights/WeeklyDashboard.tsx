@@ -76,9 +76,10 @@ export default function WeeklyDashboard() {
                     
                     {/* Weekly Trends Graph */}
                     <View className="bg-white rounded-lg p-4">
-                        {parsedWeeklyMetrics?.trend_data && (
+                        {weeklyData?.daily_breakdown && weeklyData?.category_metadata && (
                             <WeeklyTrendsGraph
-                                data={parsedWeeklyMetrics.trend_data}
+                                data={weeklyData.daily_breakdown}
+                                categoryMetadata={weeklyData.category_metadata}
                             />
                         )}
                     </View>

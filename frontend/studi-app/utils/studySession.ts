@@ -20,6 +20,66 @@ export const fetchCategories = async (): Promise<Category[]> => {
   return data;
 };
 
+export const createCategory = async (name: string, color: string): Promise<Category> => {
+  console.log("API: createCategory called with", name, color);
+  const res = await fetch(`${API_BASE_URL}/category-list/?username=testuser`, {
+    method: "POST",
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': AUTH_HEADER,
+    },
+    body: JSON.stringify({ name, color }),
+  });
+  
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.message || 'Failed to create category');
+  }
+  
+  const data = await res.json();
+  console.log("API: createCategory data:", data);
+  return data;
+};
+
+export const updateCategory = async (id: string, name: string, color: string): Promise<Category> => {
+  console.log("API: updateCategory called with", id, name, color);
+  const res = await fetch(`${API_BASE_URL}/categories/${id}/?username=testuser`, {
+    method: "PUT",
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': AUTH_HEADER,
+    },
+    body: JSON.stringify({ name, color }),
+  });
+  
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.message || 'Failed to update category');
+  }
+  
+  const data = await res.json();
+  console.log("API: updateCategory data:", data);
+  return data;
+};
+
+export const deleteCategory = async (id: string): Promise<void> => {
+  console.log("API: deleteCategory called with", id);
+  const res = await fetch(`${API_BASE_URL}/categories/${id}/?username=testuser`, {
+    method: "DELETE",
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': AUTH_HEADER,
+    },
+  });
+  
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.message || 'Failed to delete category');
+  }
+  
+  console.log("API: deleteCategory successful");
+};
+
 export const createStudySession = async (startTime: Date) => {
     console.log("API: createStudySession called with", startTime);
     const res = await fetch(`${API_BASE_URL}/create-session/`, {

@@ -1,6 +1,45 @@
 from rest_framework import serializers
 from .models import StudySession, CategoryBlock, Categories, Aggregate
 
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Categories
+        fields = ['id', 'name', 'color']
+        read_only_fields = ['id']
+
+    def validate_name(self, value):
+        if not value or not value.strip():
+            raise serializers.ValidationError("Category name cannot be empty")
+        return value.strip()
+
+    def validate_color(self, value):
+        if not value:
+            raise serializers.ValidationError("Color is required")
+        # Validate hex color format
+        if not value.startswith('#') or len(value) != 7:
+            raise serializers.ValidationError("Color must be in hex format (#RRGGBB)")
+        try:
+            int(value[1:], 16)
+        except ValueError:
+            raise serializers.ValidationError("Invalid hex color format")
+        return value
+
+    def validate(self, data):
+        user = self.context['request'].user
+        name = data.get('name')
+        
+        # Check for duplicate category names for the same user
+        if name:
+            existing_query = Categories.objects.filter(user=user, name__iexact=name)
+            if self.instance:
+                existing_query = existing_query.exclude(pk=self.instance.pk)
+            
+            if existing_query.exists():
+                raise serializers.ValidationError({
+                    "name": "You already have a category with this name"
+                })
+        
+        return data
 
 class StudySessionSerializer(serializers.ModelSerializer):
     class Meta:

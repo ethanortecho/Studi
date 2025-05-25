@@ -1,19 +1,14 @@
 import React from 'react';
-import { ThemedText } from '../../../components/ThemedText';
-import { ThemedView } from '../../../components/ThemedView';
-import { StyleSheet, View } from 'react-native';
-import { ScrollView } from 'react-native';
-import TotalHours from '@/components/TotalHoursLayout';
-import GoalChart from '@/components/charts/GoalChart';
-import { Colors } from '@/constants/Colors';
-import CustomPieChart from '@/components/charts/CustomPieChart';
 import { useEffect, useMemo, useState } from 'react';
-import Insights from '@/app/Insights';
-import { WeeklyInsightsResponse } from '@/types/api';
 import { parseCategoryDurations, ParseStudyTrends } from '@/utils/parseData';
 import { format_Duration } from '@/utils/parseData';
-import { dashboardStyles as styles } from '@/styles/dashboard';
+import CustomPieChart from '@/components/charts/CustomPieChart';
+import { WeeklyInsightsResponse } from '@/types/api';
+import { ScrollView, View, StyleSheet } from 'react-native';
+import { ThemedView } from '@/components/ThemedView';
+import TotalHours from '@/components/TotalHoursLayout';
 import Legend from '@/components/ui/DashboardLegend';
+import { dashboardStyles as styles } from '@/styles/dashboard';
 import useAggregateData from '@/utils/fetchApi';
 import WeeklyTrendsGraph from '@/components/charts/WeeklyTrendsGraph';
 import StudyHeatmap from '@/components/charts/StudyHeatmap';
@@ -48,57 +43,57 @@ export default function WeeklyDashboard() {
                 {/* Main Dashboard Content */}
                 <ThemedView style={styles.dashboardContainer}>
                     {/* Study Time */}
-                    <ThemedView style={[styles.summarySection, { backgroundColor: Colors.light.surface }]}>
+                    <View className="bg-white rounded-lg p-4">
                         {parsedWeeklyMetrics?.total_weekly_hours && (
                             <TotalHours
                                 StudyTime={parsedWeeklyMetrics.total_weekly_hours}
                             />
                         )}
-                    </ThemedView>
+                    </View>
 
                     {/* Subject Distribution and Colors Side by Side */}
-                    <ThemedView style={styles.row}>
+                    <View className="flex-row gap-2.5">
                         {/* Subject Distribution */}
-                        <ThemedView style={[styles.subjectSection, { backgroundColor: Colors.light.surface }]}>
+                        <View className="flex-1 items-center justify-center bg-white rounded-lg p-4">
                             {parsedWeeklyMetrics?.pie_chart_durations && (
                                 <CustomPieChart 
                                     data={parsedWeeklyMetrics.pie_chart_durations}
                                     size={100}
                                 />
                             )}
-                        </ThemedView>
+                        </View>
 
                         {/* Colors Legend */}
-                        <ThemedView style={[styles.summarySection, { backgroundColor: Colors.light.surface, flex: 1 }]}>
+                        <View className="flex-1 bg-white rounded-lg p-4">
                             {parsedWeeklyMetrics?.category_durations && parsedWeeklyMetrics?.category_metadata && (
                                 <Legend
                                     category_durations={parsedWeeklyMetrics.category_durations}
                                     category_metadata={parsedWeeklyMetrics.category_metadata}
                                 />
                             )}
-                        </ThemedView>
-                    </ThemedView>
+                        </View>
+                    </View>
                     
                     {/* Weekly Trends Graph */}
-                    <ThemedView>
+                    <View className="bg-white rounded-lg p-4">
                         {parsedWeeklyMetrics?.trend_data && (
                             <WeeklyTrendsGraph
                                 data={parsedWeeklyMetrics.trend_data}
                             />
                         )}
-                    </ThemedView>
+                    </View>
                   
                     {/* Study Time Heatmap */}
-                    <ThemedView>
+                    <View className="bg-white rounded-lg p-4">
                         {parsedWeeklyMetrics?.session_times && (
                             <StudyHeatmap
                                 sessionTimes={parsedWeeklyMetrics.session_times}
                             />
                         )}
-                    </ThemedView>
+                    </View>
                   
                     {/* Debug Data Viewer */}
-                    <View style={localStyles.debugContainer}>
+                    <View className="mt-2.5 mb-5 w-full">
                         {weeklyData && (
                             <DebugDataViewer 
                                 data={weeklyData} 
@@ -116,11 +111,6 @@ const localStyles = StyleSheet.create({
     scrollContent: {
         flexGrow: 1,
         paddingBottom: 30, // Add padding at the bottom to ensure visibility
-    },
-    debugContainer: {
-        marginTop: 10,
-        marginBottom: 20,
-        width: '100%',
     }
 });
 

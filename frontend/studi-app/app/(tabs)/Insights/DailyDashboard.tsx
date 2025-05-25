@@ -5,13 +5,9 @@ import { format_Duration } from '@/utils/parseData';
 import CustomPieChart from '@/components/charts/CustomPieChart';
 import SessionBreakdown from '@/components/charts/SessionBreakdown';
 import { DailyInsightsResponse } from '@/types/api';
-import { ScrollView, StyleSheet, View } from 'react-native';
-import { ThemedText } from '@/components/ThemedText';
+import { ScrollView, View, StyleSheet } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
-import Insights from '@/app/Insights';
 import TotalHours from '@/components/TotalHoursLayout';
-import { Colors } from '@/constants/Colors';
-import GoalChart from '@/components/charts/GoalChart';
 import Legend from '@/components/ui/DashboardLegend';
 import { dashboardStyles as styles } from '@/styles/dashboard';
 import useAggregateData from '@/utils/fetchApi';
@@ -45,39 +41,39 @@ export default function DailyDashboard() {
         {/* Main Dashboard Content */}
         <ThemedView style={styles.dashboardContainer}>
           {/* Study Time */}
-          <ThemedView style={[styles.summarySection, { backgroundColor: Colors.light.surface }]}>
+          <View className="bg-white rounded-lg p-4">
             {parsedDailyMetrics?.total_daily_hours && (
               <TotalHours
                 StudyTime={parsedDailyMetrics.total_daily_hours}
               />
             )}
-          </ThemedView>
+          </View>
 
           {/* Subject Distribution and Colors Side by Side */}
-          <ThemedView style={styles.row}>
+          <View className="flex-row gap-2.5">
             {/* Subject Distribution */}
-            <ThemedView style={[styles.subjectSection, { backgroundColor: Colors.light.surface }]}>
+            <View className="flex-1 items-center justify-center bg-white rounded-lg p-4">
               {parsedDailyMetrics?.pie_chart_durations && (
                 <CustomPieChart 
                   data={parsedDailyMetrics.pie_chart_durations}
                   size={100}
                 />
               )}
-            </ThemedView>
+            </View>
 
             {/* Colors Legend */}
-            <ThemedView style={[styles.summarySection, { backgroundColor: Colors.light.surface, flex: 1 }]}>
+            <View className="flex-1 bg-white rounded-lg p-4">
               {parsedDailyMetrics?.category_durations && parsedDailyMetrics?.category_metadata && (
                 <Legend
                   category_durations={parsedDailyMetrics.category_durations}
                   category_metadata={parsedDailyMetrics.category_metadata}
                 />
               )}
-            </ThemedView>
-          </ThemedView>
+            </View>
+          </View>
 
           {/* Session Breakdown */}
-          <ThemedView style={[styles.sessionSection, { backgroundColor: Colors.light.surface }]}>
+          <View className="bg-white rounded-lg p-4">
             {parsedDailyMetrics?.timeline_data && (
               <SessionBreakdown 
                 timelineData={parsedDailyMetrics.timeline_data}
@@ -85,10 +81,10 @@ export default function DailyDashboard() {
                 width={300}
               />
             )}
-          </ThemedView>
+          </View>
           
           {/* Debug Data Viewer */}
-          <View style={localStyles.debugContainer}>
+          <View className="mt-2.5 mb-5 w-full">
             {dailyData && (
               <DebugDataViewer 
                 data={dailyData} 
@@ -105,12 +101,7 @@ export default function DailyDashboard() {
 const localStyles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 30, // Add padding at the bottom to ensure visibility
-  },
-  debugContainer: {
-    marginTop: 10,
-    marginBottom: 20,
-    width: '100%',
+    paddingBottom: 30,
   }
 });
 

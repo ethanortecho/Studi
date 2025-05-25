@@ -1,8 +1,5 @@
-import { ThemedView } from './ThemedView';
-import { ThemedText } from './ThemedText';  
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Text, View, Pressable } from 'react-native';
 import { useTimer } from '@/hooks/useTimer';
-import { RecordScreenStyles as styles } from '@/styles/record';
 import { useEffect } from 'react';
 
 export function Timer() {
@@ -29,41 +26,34 @@ export function Timer() {
     };
     
     return (
-        <ThemedView style={styles.container}>
-            <ThemedView style={styles.row}>
-                <ThemedText style={styles.startButton}>{formatTime()}</ThemedText>
-            </ThemedView>
+        <View className="items-center p-6 bg-white rounded-xl">
+            <View className="mb-4">
+                <Text className="text-4xl font-bold text-gray-800">{formatTime()}</Text>
+            </View>
             
-            <ThemedView style={styles.row}>
+            <View className="w-full">
                 <Pressable 
                     onPress={handlePlayPause}
-                    style={styles.button}
+                    className="bg-green-500 py-3 px-6 rounded-full items-center"
                 >
-                    <ThemedText style={styles.buttonText}>
+                    <Text className="text-white font-medium text-lg">
                         {status === 'running' ? 'Pause' : (status === 'paused' ? 'Resume' : 'Start')}
-                    </ThemedText>
+                    </Text>
                 </Pressable>
-            </ThemedView>
+            </View>
             
             {(status === 'running' || status === 'paused') && (
-                <ThemedView style={styles.row}>
+                <View className="w-full mt-4">
                     <Pressable 
                         onPress={stopTimer}
-                        style={[styles.button, localStyles.endButton]}
+                        className="bg-red-500 py-3 px-6 rounded-full items-center mt-2"
                     >
-                        <ThemedText style={styles.buttonText}>
+                        <Text className="text-white font-medium text-lg">
                             End Session
-                        </ThemedText>
+                        </Text>
                     </Pressable>
-                </ThemedView>
+                </View>
             )}
-        </ThemedView>
+        </View>
     );
 }
-
-const localStyles = StyleSheet.create({
-    endButton: {
-        backgroundColor: '#FF4545',  // Red color for end button
-        marginTop: 20,
-    }
-});

@@ -1,13 +1,8 @@
 import React, { useState } from 'react';
-import { Pressable, StyleSheet } from 'react-native';
-import { ThemedText } from './ThemedText';
-import { ThemedView } from './ThemedView';
+import { Pressable, Text, View } from 'react-native';
 import { useStudySession } from '@/hooks/useStudySession';
-import { Category } from '@/utils/studySession';
 import { StudySessionContext } from '@/context/StudySessionContext';
 import { useContext } from 'react';
-
-
 
 export function CategoryCarousel() {
   const { categories } = useContext(StudySessionContext);
@@ -16,9 +11,9 @@ export function CategoryCarousel() {
 
   if (!categories || categories.length === 0) {
     return (
-      <ThemedView style={styles.container}>
-        <ThemedText>No categories available</ThemedText>
-      </ThemedView>
+      <View className="items-center justify-center p-4">
+        <Text className="text-gray-600">No categories available</Text>
+      </View>
     );
   }
 
@@ -37,54 +32,23 @@ export function CategoryCarousel() {
   const currentCategory = categories[currentIndex];
 
   return (
-    <ThemedView style={styles.container}>
-      <Pressable onPress={handlePrev} style={styles.arrow}>
-        <ThemedText style={styles.arrowText}>←</ThemedText>
+    <View className="flex-row items-center justify-center w-full py-2.5">
+      <Pressable onPress={handlePrev} className="p-2.5">
+        <Text className="text-2xl text-gray-600">←</Text>
       </Pressable>
       
-      <ThemedView 
-        style={[
-          styles.categoryItem,
-          { backgroundColor: currentCategory.color }
-        ]}
+      <View 
+        style={{ backgroundColor: currentCategory.color }}
+        className="py-3 px-5 rounded-lg mx-2.5 min-w-[150px] items-center"
       >
-        <ThemedText style={styles.categoryName}>
+        <Text className="text-base font-semibold text-white">
           {currentCategory.name}
-        </ThemedText>
-      </ThemedView>
+        </Text>
+      </View>
       
-      <Pressable onPress={handleNext} style={styles.arrow}>
-        <ThemedText style={styles.arrowText}>→</ThemedText>
+      <Pressable onPress={handleNext} className="p-2.5">
+        <Text className="text-2xl text-gray-600">→</Text>
       </Pressable>
-    </ThemedView>
+    </View>
   );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-    paddingVertical: 10,
-  },
-  arrow: {
-    padding: 10,
-  },
-  arrowText: {
-    fontSize: 24,
-  },
-  categoryItem: {
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    marginHorizontal: 10,
-    minWidth: 150,
-    alignItems: 'center',
-  },
-  categoryName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF', // White text for better contrast on colored backgrounds
-  },
-}); 
+} 

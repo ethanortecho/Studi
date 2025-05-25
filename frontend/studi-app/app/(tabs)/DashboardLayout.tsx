@@ -2,11 +2,9 @@ import React, { useState } from 'react';
 import DailyDashboard from './Insights/DailyDashboard';
 import WeeklyDashboard from './Insights/WeeklyDashboard';
 import MonthlyDashboard from './Insights/MonthlyDashboard';
-import { ThemedText } from '@/components/ThemedText';
+import { Text } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
-import { Pressable, StyleSheet } from 'react-native';
-import { dashboardStyles as styles } from '@/styles/dashboard';
-
+import { Pressable, View } from 'react-native';
 
 export default function DashboardLayout() {
   const [selectedTab, setSelectedTab] = useState('daily');
@@ -25,21 +23,36 @@ export default function DashboardLayout() {
   };
 
   return (
-    <ThemedView style={styles.tabContainer}>
-      <ThemedView style={styles.tabRow}>
-        <Pressable onPress={() => setSelectedTab('daily')} style={[styles.tab, selectedTab === 'daily' && styles.activeTab]}>
-          <ThemedText style={styles.tabText}>Daily</ThemedText>
+    <ThemedView style={{ flex: 1 }}>
+      <View className="flex-row rounded-full bg-gray-100 p-1 mx-4">
+        <Pressable 
+          onPress={() => setSelectedTab('daily')} 
+          className={`flex-1 items-center py-2 px-4 rounded-full ${selectedTab === 'daily' ? 'bg-green-500' : ''}`}
+        >
+          <Text className={`font-medium ${selectedTab === 'daily' ? 'text-white' : 'text-gray-600'}`}>
+            Daily
+          </Text>
         </Pressable>
-        <Pressable onPress={() => setSelectedTab('weekly')} style={[styles.tab, selectedTab === 'weekly' && styles.activeTab]}>
-          <ThemedText style={styles.tabText}>Weekly</ThemedText>
+        <Pressable 
+          onPress={() => setSelectedTab('weekly')} 
+          className={`flex-1 items-center py-2 px-4 rounded-full ${selectedTab === 'weekly' ? 'bg-green-500' : ''}`}
+        >
+          <Text className={`font-medium ${selectedTab === 'weekly' ? 'text-white' : 'text-gray-600'}`}>
+            Weekly
+          </Text>
         </Pressable>
-        <Pressable onPress={() => setSelectedTab('monthly')} style={[styles.tab, selectedTab === 'monthly' && styles.activeTab]}>
-          <ThemedText style={styles.tabText}>Monthly</ThemedText>
+        <Pressable 
+          onPress={() => setSelectedTab('monthly')} 
+          className={`flex-1 items-center py-2 px-4 rounded-full ${selectedTab === 'monthly' ? 'bg-green-500' : ''}`}
+        >
+          <Text className={`font-medium ${selectedTab === 'monthly' ? 'text-white' : 'text-gray-600'}`}>
+            Monthly
+          </Text>
         </Pressable>
-      </ThemedView>
-      <ThemedView style={styles.dashboardContainer}>
+      </View>
+      <View className="flex-1">
         {renderDashboard()}
-      </ThemedView>
+      </View>
     </ThemedView>
   );
 }

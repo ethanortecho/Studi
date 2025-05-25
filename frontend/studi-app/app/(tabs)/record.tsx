@@ -1,33 +1,26 @@
-import React, { useEffect, useState } from 'react';
-import { ThemedText } from '@/components/ThemedText';
+import React from 'react';
+import { Text, View } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
-import { RecordScreenStyles as styles } from '@/styles/record';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Timer } from '@/components/Timer';
 import { CategoryCarousel } from '@/components/CategoryCarousel';
-import { fetchCategories, Category } from '@/utils/studySession';
-import { StudySessionContext, StudySessionProvider } from '@/context/StudySessionContext';
-export default function RecordSessionScreen() {
+import { StudySessionProvider } from '@/context/StudySessionContext';
 
+export default function RecordSessionScreen() {
     return (
         <StudySessionProvider>
-            <SafeAreaView style={styles.contentContainer}>
-            <ThemedView style={styles.headerContainer}>
-                <ThemedText style={styles.title}>Record Session</ThemedText>
-            </ThemedView>
-            
-            <ThemedView style={styles.mainContent}>
+            <SafeAreaView className="flex-1">
+                <View className="p-4">
+                    <Text className="text-2xl font-bold text-gray-800">Record Session</Text>
+                </View>
                 
-                <Timer />
-                <CategoryCarousel/>
-
-                
-                <ThemedView style={styles.categoryContainer}>
+                <ThemedView style={{ flex: 1 }}>
+                    <View className="flex-1 p-4 gap-6">
+                        <Timer />
+                        <CategoryCarousel />
+                    </View>
                 </ThemedView>
-            </ThemedView>
-        </SafeAreaView>
-
+            </SafeAreaView>
         </StudySessionProvider>
-        
     );
 }

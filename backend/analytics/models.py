@@ -47,6 +47,7 @@ class Categories(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     color = models.CharField(max_length=7, default="#000000")
+    is_active = models.BooleanField(default=True)
 
 class UserGoals(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)

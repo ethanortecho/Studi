@@ -75,5 +75,6 @@ class CategoryDetail(APIView):
         if not category:
             return Response({'error': 'Category not found'}, status=status.HTTP_404_NOT_FOUND)
         
-        category.delete()
+        category.is_active = False
+        category.save()
         return Response({'message': 'Category deleted successfully'}, status=status.HTTP_204_NO_CONTENT)

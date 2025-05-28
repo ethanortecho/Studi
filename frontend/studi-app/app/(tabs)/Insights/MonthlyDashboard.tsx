@@ -3,7 +3,7 @@ import { ThemedText } from '../../../components/ThemedText';
 import { ThemedView } from '../../../components/ThemedView';
 import { StyleSheet, View, ScrollView } from 'react-native';
 import { Colors } from '@/constants/Colors';
-import DebugDataViewer from '@/components/ui/DebugDataViewer';
+import DebugDataViewer from '@/components/analytics/DebugDataViewer';
 
 export default function MonthlyDashboard() {
     // Placeholder for when data is available

@@ -2,17 +2,17 @@ import React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { parseCategoryDurations, ParseStudyTrends } from '@/utils/parseData';
 import { format_Duration } from '@/utils/parseData';
-import CustomPieChart from '@/components/charts/CustomPieChart';
+import CustomPieChart from '@/components/analytics/CustomPieChart';
 import { WeeklyInsightsResponse } from '@/types/api';
 import { ScrollView, View, StyleSheet } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
-import TotalHours from '@/components/TotalHoursLayout';
-import Legend from '@/components/ui/DashboardLegend';
+import TotalHours from '@/components/analytics/TotalHoursLayout';
+import Legend from '@/components/analytics/DashboardLegend';
 import { dashboardStyles as styles } from '@/styles/dashboard';
 import useAggregateData from '@/utils/fetchApi';
-import WeeklyTrendsGraph from '@/components/charts/WeeklyTrendsGraph';
-import StudyHeatmap from '@/components/charts/StudyHeatmap';
-import DebugDataViewer from '@/components/ui/DebugDataViewer';
+import WeeklyTrendsGraph from '@/components/analytics/WeeklyTrendsGraph';
+import StudyHeatmap from '@/components/analytics/StudyHeatmap';
+import DebugDataViewer from '@/components/analytics/DebugDataViewer';
 
 export default function WeeklyDashboard() {
     const [weeklyData, setWeeklyData] = useState<WeeklyInsightsResponse | null>(null);

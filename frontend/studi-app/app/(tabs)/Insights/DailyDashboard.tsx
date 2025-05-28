@@ -2,16 +2,16 @@ import React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { parseCategoryDurations } from '@/utils/parseData';
 import { format_Duration } from '@/utils/parseData';
-import CustomPieChart from '@/components/charts/CustomPieChart';
-import SessionBreakdown from '@/components/charts/SessionBreakdown';
+import CustomPieChart from '@/components/analytics/CustomPieChart';
+import SessionBreakdown from '@/components/analytics/SessionBreakdown';
 import { DailyInsightsResponse } from '@/types/api';
 import { ScrollView, View, StyleSheet } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
-import TotalHours from '@/components/TotalHoursLayout';
-import Legend from '@/components/ui/DashboardLegend';
+import TotalHours from '@/components/analytics/TotalHoursLayout';
+import Legend from '@/components/analytics/DashboardLegend';
 import { dashboardStyles as styles } from '@/styles/dashboard';
 import useAggregateData from '@/utils/fetchApi';
-import DebugDataViewer from '@/components/ui/DebugDataViewer';
+import DebugDataViewer from '@/components/analytics/DebugDataViewer';
 
 export default function DailyDashboard() {
   const [dailyData, setDailyData] = useState<DailyInsightsResponse | null>(null);

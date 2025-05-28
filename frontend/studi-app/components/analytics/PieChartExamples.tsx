@@ -2,7 +2,7 @@ import React from 'react';
 import { View, ScrollView } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import CustomPieChart from './CustomPieChart';
+import CustomPieChart from '../analytics/CustomPieChart';
 
 // Sample data
 const sampleData = [

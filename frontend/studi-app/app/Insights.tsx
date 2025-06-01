@@ -5,9 +5,9 @@ import { ThemedView } from '@/components/ThemedView';
 
 const Insights = ({ children }: { children: ReactNode }) => {
     return (
-        <SafeAreaView style={{ flex: 1 }}>
-            <View className="p-4">
-                <Text className="text-2xl font-bold text-gray-800">Your Insights</Text>
+        <SafeAreaView style={{ flex: 1 }}className="bg-primary">
+            <View className="pt-20 pb-8 pl-5">
+                <Text className="text-5xl font-bold text-white">Your insights</Text>
             </View>
             <ThemedView style={{ flex: 1 }}>
                 {children}

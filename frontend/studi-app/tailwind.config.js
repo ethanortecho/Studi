@@ -9,7 +9,35 @@ module.exports = {
   ],
   presets: [require("nativewind/preset")],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        // Primary brand colors
+        primary: '#282257',        // Dark purple
+        accent: '#E05F61',         // Coral accent
+        
+        // Layout colors
+        layout: {
+          'off-white': '#EEEDED',
+          'faded-grey': '#959595',
+          'dark-grey': '#656565',
+          'grey-blue': '#828BB6',
+        },
+        
+        // Category colors
+        category: {
+          coral: '#F46D75',
+          teal: '#2EC4B6',
+          yellow: '#F3C44B',
+          'light-purple': '#5A4FCF',
+          blue: '#4F9DDE',
+        },
+      },
+      fontFamily: {
+        sans: ['Poppins'],
+        body: ['Poppins'],
+        heading: ['Poppins'],
+      },
+    },
   },
   plugins: [],
 }

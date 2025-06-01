@@ -1,4 +1,4 @@
-import DailyDashboard from "@/app/(tabs)/Insights/DailyDashboard";
+import DailyDashboard from "@/app/screens/Insights/DailyDashboard";
 
 export function parseCategoryDurations(apiData: any) {
     const categoryDurations = apiData?.aggregate?.category_durations || {};

@@ -15,7 +15,7 @@ export default function HomeScreen() {
                 <View className="p-4 flex-row justify-between items-center">
                     <Text className="text-2xl font-bold text-gray-800">Start Studying</Text>
                     <Pressable 
-                        onPress={() => router.push('/(tabs)/record')}
+                        onPress={() => router.push('/screens/record')}
                         className="bg-blue-500 py-2 px-4 rounded-full"
                     >
                         <Text className="text-white font-medium">Start Studying</Text>

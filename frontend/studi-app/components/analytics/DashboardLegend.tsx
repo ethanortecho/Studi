@@ -9,7 +9,7 @@ interface LegendProps {
 export default function Legend({ category_durations, category_metadata }: LegendProps) {
     return (
         <View>
-            <Text className="text-primary text-lg font-semibold mb-4">
+            <Text className="text-category-purple text-lg font-bold mb-2.5">
                 Your Colors
             </Text>
             <View className="flex-row flex-wrap items-center gap-4">

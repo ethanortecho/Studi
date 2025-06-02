@@ -19,18 +19,12 @@ export function parseCategoryDurations(apiData: any) {
     return chartData;
 }
 
-export function format_Duration(apiData:any){
-    
-    
+export function secondsToHours(apiData:any){
     const seconds = apiData?.aggregate?.total_duration;
-    const hrs = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-
-
-    if (hrs > 0){
-        return `${hrs} hr${hrs !== 1 ? 's' : ''} ${mins} min${mins !== 1 ? 's' : ''}`;
-    }
-    return `${mins} min${mins !== 1 ? 's' : ''}`;
+    const totalHours = seconds / 3600;
+    
+    // Round to 1 decimal place
+    return totalHours.toFixed(2);
 }
 
 export function formatDuration(seconds: number): string {

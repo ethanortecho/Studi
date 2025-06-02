@@ -1,8 +1,8 @@
 import React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { parseCategoryDurations, ParseStudyTrends } from '@/utils/parseData';
-import { format_Duration } from '@/utils/parseData';
-import CustomPieChart from '@/components/analytics/CustomPieChart';
+import { formatDuration } from '@/utils/parseData';
+import CustomPieChart from '@/components/analytics/charts/CustomPieChart';
 import { WeeklyInsightsResponse } from '@/types/api';
 import { ScrollView, View, StyleSheet } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
@@ -30,7 +30,7 @@ export default function WeeklyDashboard() {
         return {
            category_durations: weeklyData.aggregate.category_durations,
             pie_chart_durations: parseCategoryDurations(weeklyData),
-            total_weekly_hours: format_Duration(weeklyData),
+            total_weekly_hours: formatDuration(weeklyData),
             category_metadata: weeklyData.category_metadata,
             trend_data: ParseStudyTrends(weeklyData.daily_breakdown, 'all'),
             session_times: weeklyData.session_times,
@@ -46,7 +46,7 @@ export default function WeeklyDashboard() {
                     <View className="bg-white rounded-lg p-4">
                         {parsedWeeklyMetrics?.total_weekly_hours && (
                             <TotalHours
-                                StudyTime={parsedWeeklyMetrics.total_weekly_hours}
+                                dailyData={weeklyData}
                             />
                         )}
                     </View>

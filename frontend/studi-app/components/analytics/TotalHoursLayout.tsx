@@ -1,17 +1,32 @@
-import { View, StyleSheet } from 'react-native';
+import { View, Text } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
-import { Colors } from '@/constants/Colors';
-import { dashboardStyles as styles } from '@/styles/dashboard';
-
+import { secondsToHours } from '@/utils/parseData';
+import { DailyInsightsResponse } from '@/types/api';
+import { useMemo } from 'react';
 
 interface TotalHoursProps {
-  StudyTime: string;
+  dailyData: DailyInsightsResponse | null;
 }
 
-export default function TotalHours({ StudyTime }: TotalHoursProps) {
+export default function TotalHours({ dailyData }: TotalHoursProps) {
+  const studyTime = useMemo(() => 
+    dailyData ? secondsToHours(dailyData) : '0 hours', 
+    [dailyData]
+  );
+
   return (
-    <View style={styles.totalTimeContainer}>
-      <ThemedText style={styles.title}>You've Studied for {StudyTime}</ThemedText>
+    <View>
+      <Text className="text-white text-sm pb-3 font-semibold mb-2">
+        You've Studied
+      </Text>
+      <View className="flex-row items-end">
+        <Text className="text-white text-5xl font-bold">
+          {studyTime}
+        </Text>
+        <Text className="text-white text-lg font-semibold ml-1 mb-1">
+          hours
+        </Text>
+      </View>
     </View>
   );
 }

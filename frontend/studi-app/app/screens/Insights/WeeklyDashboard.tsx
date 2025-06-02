@@ -4,13 +4,13 @@ import { parseCategoryDurations, ParseStudyTrends, secondsToHours } from '@/util
 import CustomPieChart from '@/components/analytics/charts/CustomPieChart';
 import { WeeklyInsightsResponse } from '@/types/api';
 import { ScrollView, View, Text } from 'react-native';
-import TotalHours from '@/components/analytics/TotalHoursLayout';
+import TotalHours from '@/components/analytics/TotalHoursContainer';
 import Legend from '@/components/analytics/DashboardLegend';
 import useAggregateData from '@/utils/fetchApi';
 import WeeklyTrendsGraph from '@/components/analytics/WeeklyTrendsGraph';
 import StudyHeatmap from '@/components/analytics/StudyHeatmap';
 import DebugDataViewer from '@/components/analytics/DebugDataViewer';
-import DashboardCard from '@/components/insights/DashboardCard';
+import DashboardCard from '@/components/insights/DashboardContainer';
 
 
 export default function WeeklyDashboard() {

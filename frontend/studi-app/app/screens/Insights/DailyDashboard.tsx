@@ -3,11 +3,11 @@ import { useEffect, useState } from 'react';
 import CustomPieChart from '@/components/analytics/charts/CustomPieChart';
 import { DailyInsightsResponse } from '@/types/api';
 import { ScrollView, View, Text } from 'react-native';
-import TotalHours from '@/components/analytics/TotalHoursLayout';
+import TotalHours from '@/components/analytics/TotalHoursContainer';
 import Legend from '@/components/analytics/DashboardLegend';
 import useAggregateData from '@/utils/fetchApi';
 import DebugDataViewer from '@/components/analytics/DebugDataViewer';
-import DashboardCard from '@/components/insights/DashboardCard';
+import DashboardCard from '@/components/insights/DashboardContainer';
 import SubjectBreakdown from '@/components/analytics/layout/SubjectBreakdown';
 import SessionBarchart from '@/components/analytics/SessionBarchart';
 

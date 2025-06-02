@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { View, Text } from 'react-native';
 import CustomPieChart from '../charts/CustomPieChart';
-import DashboardCard from '@/components/insights/DashboardCard';
+import DashboardCard from '@/components/insights/DashboardContainer';
 import { parseCategoryDurations } from '@/utils/parseData';
 import { DailyInsightsResponse } from '@/types/api';
 

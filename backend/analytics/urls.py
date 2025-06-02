@@ -14,4 +14,4 @@ urlpatterns = [
     path('end-category-block/<int:id>/', EndCategoryBlock.as_view(), name='end-category-block'),
     path('category-list/', CategoryList.as_view(), name='category-list'),
     path('categories/<int:pk>/', CategoryDetail.as_view(), name='category-detail'),
-]
+] 

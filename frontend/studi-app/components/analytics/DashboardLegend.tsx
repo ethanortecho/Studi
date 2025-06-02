@@ -1,9 +1,5 @@
 import React from 'react';
-import { View } from 'react-native';
-import { ThemedText } from '@/components/ThemedText';
-import { Colors } from '@/constants/Colors';
-import { ThemedView } from '../ThemedView';
-import { dashboardStyles as styles } from '@/styles/dashboard';
+import { View, Text } from 'react-native';
 
 interface LegendProps {
     category_durations: { [key: string]: number };
@@ -12,27 +8,24 @@ interface LegendProps {
 
 export default function Legend({ category_durations, category_metadata }: LegendProps) {
     return (
-        <ThemedView style={[styles.section, { backgroundColor: Colors.light.surface }]}>
-            <ThemedText style={styles.title}>
+        <View>
+            <Text className="text-primary text-lg font-semibold mb-4">
                 Your Colors
-            </ThemedText>
-            {Object.entries(category_metadata).map(([id, { name, color }]) => {
-                if (category_durations?.[name]) {
-                    return (
-                        <ThemedView key={id} style={[styles.legendItem, { backgroundColor: Colors.light.surface }]}>
-                            <ThemedView
-                                style={[
-                                    styles.legendColor,
-                                    { backgroundColor: color }
-                                ]}
-                            />
-                            <ThemedText style={[styles.legendText, { backgroundColor: Colors.light.surface }]}>{name}</ThemedText>
-                        </ThemedView>
-                    );
-                }
-                return null;
-            })}
-        </ThemedView>
+            </Text>
+            <View className="flex-row flex-wrap items-center gap-4">
+                {Object.entries(category_metadata).map(([id, { name, color }]) => (
+                    <View key={id} className="flex-row items-center">
+                        <View 
+                            style={{ backgroundColor: color }}
+                            className="w-3 h-3 rounded-sm mr-2"
+                        />
+                        <Text className="text-layout-dark-grey text-sm">
+                            {name}
+                        </Text>
+                    </View>
+                ))}
+            </View>
+        </View>
     );
 }
 

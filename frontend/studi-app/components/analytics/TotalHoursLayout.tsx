@@ -1,16 +1,14 @@
 import { View, Text } from 'react-native';
-import { ThemedText } from '@/components/ThemedText';
 import { secondsToHours } from '@/utils/parseData';
-import { DailyInsightsResponse } from '@/types/api';
 import { useMemo } from 'react';
 
 interface TotalHoursProps {
-  dailyData: DailyInsightsResponse | null;
+  dailyData: { aggregate: { total_duration: string } } | null;
 }
 
 export default function TotalHours({ dailyData }: TotalHoursProps) {
   const studyTime = useMemo(() => 
-    dailyData ? secondsToHours(dailyData) : '0 hours', 
+    dailyData ? secondsToHours(dailyData) : '0.00', 
     [dailyData]
   );
 

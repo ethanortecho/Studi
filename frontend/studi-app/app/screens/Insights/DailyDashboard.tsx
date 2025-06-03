@@ -1,25 +1,39 @@
 import React from 'react';
-import { useEffect, useState } from 'react';
-import CustomPieChart from '@/components/analytics/charts/CustomPieChart';
-import { DailyInsightsResponse } from '@/types/api';
 import { ScrollView, View, Text } from 'react-native';
 import TotalHours from '@/components/analytics/TotalHoursContainer';
 import Legend from '@/components/analytics/DashboardLegend';
-import useAggregateData from '@/utils/fetchApi';
 import DebugDataViewer from '@/components/analytics/DebugDataViewer';
 import DashboardCard from '@/components/insights/DashboardContainer';
 import SubjectBreakdown from '@/components/analytics/layout/SubjectBreakdown';
 import SessionBarchart from '@/components/analytics/SessionBarchart';
+import { CategoryMetadata, TimelineSession } from '@/types/api';
 
-export default function DailyDashboard() {
-  const [dailyData, setDailyData] = useState<DailyInsightsResponse | null>(null);
+interface DailyDashboardProps {
+  totalHours: string;
+  categoryDurations?: { [key: string]: number };
+  categoryMetadata?: { [key: string]: CategoryMetadata };
+  pieChartData?: Array<{ label: string; value: number; color: string }>;
+  timelineData?: TimelineSession[];
+  rawData?: any;
+  loading: boolean;
+}
 
-  const { data, loading } = useAggregateData('daily', '2025-01-23', undefined);
-  useEffect(() => {
-    if (data) {
-      setDailyData(data);
-    }
-  }, [data]);
+export default function DailyDashboard({
+  totalHours,
+  categoryDurations,
+  categoryMetadata,
+  pieChartData,
+  timelineData,
+  rawData,
+  loading
+}: DailyDashboardProps) {
+  if (loading) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView 
@@ -33,10 +47,10 @@ export default function DailyDashboard() {
         {/* Top Row: Legend in white card */}
         <View className="p-4 pb-0">
           <DashboardCard>
-            {dailyData?.aggregate.category_durations && dailyData?.category_metadata && (
+            {categoryDurations && categoryMetadata && (
               <Legend
-                category_durations={dailyData.aggregate.category_durations}
-                category_metadata={dailyData.category_metadata}
+                category_durations={categoryDurations}
+                category_metadata={categoryMetadata}
               />
             )}
           </DashboardCard>
@@ -46,14 +60,14 @@ export default function DailyDashboard() {
         <View className="flex-row gap-4 px-4 ">
           {/* Subject Breakdown (Pie Chart) */}
           <View className="flex-1">
-            <SubjectBreakdown dailyData={dailyData} />
+            <SubjectBreakdown pieChartData={pieChartData} />
           </View>
 
           {/* Right Column: Total Hours + Placeholder */}
           <View className="flex-1">
             {/* Total Hours with grey-blue background */}
             <View className="bg-layout-grey-blue rounded-lg p-4 mb-2.5">
-              <TotalHours dailyData={dailyData} />
+              <TotalHours totalHours={totalHours} />
             </View>
             
             {/* Placeholder component */}
@@ -66,10 +80,10 @@ export default function DailyDashboard() {
         {/* Bottom Row: Sessions (full width) */}
         <View className="px-4 pb-4">
           <DashboardCard className="mb-0">
-            {dailyData?.timeline_data && (
+            {timelineData && categoryMetadata && (
               <SessionBarchart
-                timelineData={dailyData.timeline_data}
-                categoryMetadata={dailyData.category_metadata}
+                timelineData={timelineData}
+                categoryMetadata={categoryMetadata}
                 width={300}
               />
             )}
@@ -79,9 +93,9 @@ export default function DailyDashboard() {
       
       {/* Debug Data Viewer (outside off-white container) */}
       <View className="mb-5 px-4">
-        {dailyData && (
+        {rawData && (
           <DebugDataViewer 
-            data={dailyData} 
+            data={rawData} 
             label="Daily Dashboard Raw Data" 
           />
         )}

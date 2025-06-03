@@ -33,41 +33,30 @@ export function formatDuration(seconds: number): string {
     return `${hours}hrs ${minutes}min`;
 }
 
-
-export function ParseStudyTrends(trend_data: Record<string, any>,  // <- quick fix
-    category: string
-  ) {
-
+export function ParseStudyTrends(trend_data: Record<string, any>, category: string) {
     let chartData = Object.entries(trend_data).map(([day, data]) => {
-
         if (category === 'all') {
-            // ✅ This part is already good
             return {
                 day: day,
                 total_time: data.total
             };
-
-            
-            // for granular trend breakdown as shown in mockups 
         } else {
-            // ❌ You don't need a map here because you're only looking for ONE category per day.
-            // ✅ Instead of mapping through categories, just check if the category exists:
+            // For specific categories, use the same structure but call it total_time
             if (data.categories[category]) {
                 return {
                     day: day,
-                    time: data.categories[category]  // get the time for that category
+                    total_time: data.categories[category]
                 };
             } else {
-                // If the category doesn't exist for that day, maybe return 0 or null to show no data.
                 return {
                     day: day,
-                    time: 0
+                    total_time: 0
                 };
             }
         }
     });
 
-    return chartData;  // ✅ Don't forget to return the result
+    return chartData;
 }
     
 

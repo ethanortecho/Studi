@@ -1,17 +1,10 @@
 import { View, Text } from 'react-native';
-import { secondsToHours } from '@/utils/parseData';
-import { useMemo } from 'react';
 
 interface TotalHoursProps {
-  dailyData: { aggregate: { total_duration: string } } | null;
+  totalHours: string;
 }
 
-export default function TotalHours({ dailyData }: TotalHoursProps) {
-  const studyTime = useMemo(() => 
-    dailyData ? secondsToHours(dailyData) : '0.00', 
-    [dailyData]
-  );
-
+export default function TotalHours({ totalHours }: TotalHoursProps) {
   return (
     <View>
       <Text className="text-white text-sm pb-3 font-semibold mb-2">
@@ -19,7 +12,7 @@ export default function TotalHours({ dailyData }: TotalHoursProps) {
       </Text>
       <View className="flex-row items-end">
         <Text className="text-white text-5xl font-bold">
-          {studyTime}
+          {totalHours}
         </Text>
         <Text className="text-white text-lg font-semibold ml-1 mb-1">
           hours

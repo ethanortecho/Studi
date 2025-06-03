@@ -1,33 +1,84 @@
 import React from 'react';
 import { ThemedText } from '../../../components/ThemedText';
 import { ThemedView } from '../../../components/ThemedView';
-import { StyleSheet, View, ScrollView } from 'react-native';
+import { StyleSheet, View, ScrollView, Text } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import DebugDataViewer from '@/components/analytics/DebugDataViewer';
+import TotalHours from '@/components/analytics/TotalHoursContainer';
+import Legend from '@/components/analytics/DashboardLegend';
+import DashboardCard from '@/components/insights/DashboardContainer';
+import { CategoryMetadata } from '@/types/api';
 
-export default function MonthlyDashboard() {
-    // Placeholder for when data is available
-    const placeholderData = {
-        message: "Monthly dashboard is under construction. Real data will be displayed here when available."
-    };
-    
+interface MonthlyDashboardProps {
+  totalHours: string;
+  categoryDurations?: { [key: string]: number };
+  categoryMetadata?: { [key: string]: CategoryMetadata };
+  rawData?: any;
+  loading: boolean;
+}
+
+export default function MonthlyDashboard({
+  totalHours,
+  categoryDurations,
+  categoryMetadata,
+  rawData,
+  loading
+}: MonthlyDashboardProps) {
+  if (loading) {
     return (
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-            <View style={styles.container}>
-                <ThemedView style={styles.messageContainer}>
-                    <ThemedText style={styles.messageText}>Monthly Dashboard - Under Construction</ThemedText>
-                </ThemedView>
-                
-                {/* Debug Data Viewer */}
-                <View style={styles.debugContainer}>
-                    <DebugDataViewer 
-                        data={placeholderData} 
-                        label="Monthly Dashboard Placeholder" 
-                    />
-                </View>
-            </View>
-        </ScrollView>
+      <View className="flex-1 justify-center items-center">
+        <Text>Loading...</Text>
+      </View>
     );
+  }
+
+  return (
+    <ScrollView contentContainerStyle={styles.scrollContent}>
+      <View style={styles.container}>
+        {/* Off-white container for dashboard content */}
+        <View className="bg-layout-off-white rounded-3xl mx-4 mb-4 px-3 py-4">
+          
+          {/* Legend */}
+          <View className="p-4 pb-0">
+            <DashboardCard>
+              {categoryDurations && categoryMetadata && (
+                <Legend
+                  category_durations={categoryDurations}
+                  category_metadata={categoryMetadata}
+                />
+              )}
+            </DashboardCard>
+          </View>
+
+          {/* Total Hours */}
+          <View className="px-4 pb-4">
+            <View className="bg-layout-grey-blue rounded-lg p-4">
+              <TotalHours totalHours={totalHours} />
+            </View>
+          </View>
+
+          {/* Placeholder for additional monthly content */}
+          <View className="px-4 pb-4">
+            <ThemedView style={styles.messageContainer}>
+              <ThemedText style={styles.messageText}>
+                Additional monthly analytics coming soon...
+              </ThemedText>
+            </ThemedView>
+          </View>
+        </View>
+        
+        {/* Debug Data Viewer */}
+        <View style={styles.debugContainer}>
+          {rawData && (
+            <DebugDataViewer 
+              data={rawData} 
+              label="Monthly Dashboard Raw Data" 
+            />
+          )}
+        </View>
+      </View>
+    </ScrollView>
+  );
 }
 
 const styles = StyleSheet.create({

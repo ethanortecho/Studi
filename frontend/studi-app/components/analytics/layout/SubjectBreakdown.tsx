@@ -1,20 +1,13 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { View, Text } from 'react-native';
 import CustomPieChart from '../charts/CustomPieChart';
 import DashboardCard from '@/components/insights/DashboardContainer';
-import { parseCategoryDurations } from '@/utils/parseData';
-import { DailyInsightsResponse } from '@/types/api';
 
 interface SubjectBreakdownProps {
-    dailyData: DailyInsightsResponse | null;
+    pieChartData?: Array<{ label: string; value: number; color: string }>;
 }
 
-export default function SubjectBreakdown({ dailyData }: SubjectBreakdownProps) {
-    const pieChartData = useMemo(() => 
-        dailyData ? parseCategoryDurations(dailyData) : null, 
-        [dailyData]
-    );
-
+export default function SubjectBreakdown({ pieChartData }: SubjectBreakdownProps) {
     return (
         <DashboardCard >
             <View className="flex-row items-center justify-between">
@@ -27,9 +20,7 @@ export default function SubjectBreakdown({ dailyData }: SubjectBreakdownProps) {
                     size={125}
                 />
             )}
-
             </View>
-            
         </DashboardCard>
     );
 }

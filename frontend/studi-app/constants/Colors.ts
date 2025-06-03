@@ -8,25 +8,29 @@ const tintColorDark = '#fff';
 
 export const Colors = {
   light: {
-    text: '#2C2C2C',          // textPrimary
-    background: '#F8F8F8',    // background
-    surface: '#FFFFFF',       // surface
-    primary: '#3A4A8C',      // primary
-    secondary: '#2B2B2B',    // secondary
-    muted: '#A0A0A0',        // muted text
-    border: '#E6E6E6',       // borders
-    tabIconDefault: '#D0D0D0', // tabInactive
-    tabIconSelected: '#4CAF50', // tabActive
+    text: '#11181C',
+    background: '#fff',
+    tint: tintColorLight,
+    icon: '#687076',
+    tabIconDefault: '#687076',
+    tabIconSelected: tintColorLight,
+    surface: '#f5f5f5',
   },
   dark: {
-    text: '#FFFFFF',          // textInverse
-    background: '#202037',    // dark background
-    surface: '#2B2B2B',      // secondary as surface in dark mode
-    primary: '#3A4A8C',      // keep primary consistent
-    secondary: '#2B2B2B',    // secondary
-    muted: '#A0A0A0',        // keep muted consistent
-    border: '#404040',       // darker border for dark mode
-    tabIconDefault: '##F8F8F8', // muted icon color
-    tabIconSelected: '#4CAF50', // keep active tab color consistent
-  }
+    text: '#ECEDEE',
+    background: '#151718',
+    tint: tintColorDark,
+    icon: '#9BA1A6',
+    tabIconDefault: '#9BA1A6',
+    tabIconSelected: tintColorDark,
+    surface: '#2a2a2a',
+  },
 };
+
+export const CATEGORY_COLORS = [
+  { name: 'Purple', value: '#5A4FCF' },
+  { name: 'Blue', value: '#4F9DDE' },
+  { name: 'Yellow', value: '#F3C44B' },
+  { name: 'Coral', value: '#F46D75' },
+  { name: 'Teal', value: '#2EC4B6' },
+];

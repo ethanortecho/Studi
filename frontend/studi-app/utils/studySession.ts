@@ -33,7 +33,7 @@ export const createCategory = async (name: string, color: string): Promise<Categ
   
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(errorData.message || 'Failed to create category');
+    throw new Error(errorData.error || errorData.message || 'Failed to create category');
   }
   
   const data = await res.json();
@@ -54,7 +54,7 @@ export const updateCategory = async (id: string, name: string, color: string): P
   
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(errorData.message || 'Failed to update category');
+    throw new Error(errorData.error || errorData.message || 'Failed to update category');
   }
   
   const data = await res.json();
@@ -74,7 +74,7 @@ export const deleteCategory = async (id: string): Promise<void> => {
   
   if (!res.ok) {
     const errorData = await res.json();
-    throw new Error(errorData.message || 'Failed to delete category');
+    throw new Error(errorData.error || errorData.message || 'Failed to delete category');
   }
   
   console.log("API: deleteCategory successful");

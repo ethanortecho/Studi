@@ -2,7 +2,6 @@ import React from 'react';
 import { View } from 'react-native';
 import DailyDashboard from '@/app/screens/Insights/DailyDashboard';
 import WeeklyDashboard from '@/app/screens/Insights/WeeklyDashboard';
-import MonthlyDashboard from '@/app/screens/Insights/MonthlyDashboard';
 import { useDashboardData } from '@/hooks/useDashboardData';
 
 interface DashboardContentProps {
@@ -10,7 +9,7 @@ interface DashboardContentProps {
 }
 
 export default function DashboardContent({ selectedTab }: DashboardContentProps) {
-    const { daily, weekly, monthly, loading } = useDashboardData();
+    const { daily, weekly, loading } = useDashboardData();
 
     const renderDashboard = () => {
         switch (selectedTab) {
@@ -38,16 +37,6 @@ export default function DashboardContent({ selectedTab }: DashboardContentProps)
                         dailyBreakdown={weekly?.dailyBreakdown}
                         rawData={weekly?.rawData}
                         loading={loading.weekly}
-                    />
-                );
-            case 'monthly':
-                return (
-                    <MonthlyDashboard 
-                        totalHours={monthly?.totalHours || '0.00'}
-                        categoryDurations={monthly?.categoryDurations}
-                        categoryMetadata={monthly?.categoryMetadata}
-                        rawData={monthly?.rawData}
-                        loading={loading.monthly}
                     />
                 );
             default:

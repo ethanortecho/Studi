@@ -26,14 +26,6 @@ export default function DashboardTabs() {
                             Weekly
                         </Text>
                     </Pressable>
-                    <Pressable 
-                        onPress={() => setSelectedTab('monthly')} 
-                        className={`flex-1 items-center py-2 px-4 rounded-2xl ${selectedTab === 'monthly' ? 'bg-primary' : ''}`}
-                    >
-                        <Text className={`font-bold text-xl ${selectedTab === 'monthly' ? 'text-white' : 'text-layout-faded-grey'}`}>
-                            Monthly
-                        </Text>
-                    </Pressable>
                 </View>
             </View>
             

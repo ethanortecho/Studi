@@ -1,9 +1,23 @@
 import React, { useState } from 'react';
 import { Text, View, Pressable } from 'react-native';
 import DashboardContent from './DashboardContent';
+import DateNavigationHeader from './DateNavigationHeader';
+import { getDefaultDate, navigateDate } from '@/utils/dateUtils';
 
 export default function DashboardTabs() {
     const [selectedTab, setSelectedTab] = useState('daily');
+    const [dailyDate, setDailyDate] = useState(getDefaultDate('daily'));
+    const [weeklyDate, setWeeklyDate] = useState(getDefaultDate('weekly'));
+
+    const handleDateNavigation = (direction: 'prev' | 'next') => {
+        if (selectedTab === 'daily') {
+            setDailyDate(current => navigateDate(current, direction, 'daily'));
+        } else {
+            setWeeklyDate(current => navigateDate(current, direction, 'weekly'));
+        }
+    };
+
+    const currentDate = selectedTab === 'daily' ? dailyDate : weeklyDate;
 
     return (
         <View className="flex-1">
@@ -28,9 +42,20 @@ export default function DashboardTabs() {
                     </Pressable>
                 </View>
             </View>
+
+            {/* Date Navigation Header */}
+            <DateNavigationHeader
+                currentDate={currentDate}
+                type={selectedTab as 'daily' | 'weekly'}
+                onNavigate={handleDateNavigation}
+            />
             
             {/* Dashboard Content */}
-            <DashboardContent selectedTab={selectedTab} />
+            <DashboardContent 
+                selectedTab={selectedTab} 
+                dailyDate={dailyDate}
+                weeklyDate={weeklyDate}
+            />
         </View>
     );
 } 

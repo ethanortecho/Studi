@@ -25,7 +25,7 @@ class Command(BaseCommand):
             user.set_password('testpass123')
             user.save()
 
-        # Create categories (limited to 5)
+        # Create categories (limited to 5) with frontend-matching colors
         categories = [
             'Mathematics',
             'Computer Science',
@@ -34,11 +34,11 @@ class Command(BaseCommand):
             'History'
         ]
         color_mapping = {
-            'Mathematics': '#FF6B6B',
-            'Computer Science': '#4ECDC4',
-            'Physics': '#45B7D1',
-            'Literature': '#96CEB4',
-            'History': '#7b59f7',
+            'Mathematics': '#5A4FCF',      # Purple
+            'Computer Science': '#4F9DDE', # Blue  
+            'Physics': '#F3C44B',          # Yellow
+            'Literature': '#F46D75',       # Coral
+            'History': '#2EC4B6',          # Teal
         }
         
         category_objects = []
@@ -51,13 +51,19 @@ class Command(BaseCommand):
             category.save()
             category_objects.append(category)
 
-        # Set reference date (January 23, 2025)
-        reference_date = date(2025, 1, 23)
+        # Use current date as reference (today)
+        reference_date = date.today()
 
         # Create study sessions over the last 30 days
         for day in range(30):
-            # 1-3 study sessions per day
-            for _ in range(random.randint(1, 3)):
+            # 1-3 study sessions per day, with higher probability for recent days
+            sessions_count = random.randint(1, 3)
+            
+            # Add some probability that older days have no sessions
+            if day > 20 and random.random() < 0.3:  # 30% chance of no sessions for days 21-30
+                sessions_count = 0
+            
+            for _ in range(sessions_count):
                 # Calculate the date for this session (going backwards from reference date)
                 session_date = reference_date - timedelta(days=day)
                 
@@ -127,4 +133,4 @@ class Command(BaseCommand):
                     current_time += breakdown_duration
                     remaining_minutes -= breakdown_minutes
 
-        self.stdout.write(self.style.SUCCESS('Successfully generated mock data')) 
+        self.stdout.write(self.style.SUCCESS(f'Successfully generated mock data for the last 30 days starting from {reference_date}')) 

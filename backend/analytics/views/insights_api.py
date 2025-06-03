@@ -175,7 +175,16 @@ class WeeklyInsights(APIView):
             )
         
         weekly_aggregate = StudyAnalytics.get_aggregate_data(user, start_date=start_date, end_date=end_date, timeframe='weekly')
-        print(f"Weekly Aggregate: {weekly_aggregate}")
+        print(f"Weekly Aggregate Query - Start: {start_date}, End: {end_date}, Timeframe: weekly")
+        print(f"Weekly Aggregate Result: {weekly_aggregate}")
+        if weekly_aggregate:
+            print(f"Found aggregate: {weekly_aggregate.start_date} to {weekly_aggregate.end_date} - {weekly_aggregate.total_duration} seconds")
+        else:
+            print("No weekly aggregate found - checking what exists in DB")
+            from analytics.models import Aggregate
+            all_weekly = Aggregate.objects.filter(user=user, time_frame='weekly')
+            print(f"All weekly aggregates for user: {[(a.start_date, a.end_date, a.total_duration) for a in all_weekly]}")
+        
         daily_breakdown = StudyAnalytics.get_aggregates_in_range(user, start_date, end_date, timeframe='daily')
         session_times = StudyAnalytics.get_weekly_session_times(user, start_date, end_date)
 

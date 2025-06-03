@@ -96,11 +96,15 @@ export default function WeeklyDashboard({
         <View className="px-4 pb-4">
           <Text className="text-lg font-semibold text-layout-dark-grey mb-3">Weekly Trends</Text>
           <DashboardCard className="mb-0">
-            {dailyBreakdown && categoryMetadata && (
+            {dailyBreakdown && categoryMetadata && Object.keys(dailyBreakdown).length > 0 ? (
               <WeeklyTrendsGraph
                 data={dailyBreakdown}
                 categoryMetadata={categoryMetadata}
               />
+            ) : (
+              <View className="p-4">
+                <Text className="text-gray-500">Loading weekly trends...</Text>
+              </View>
             )}
           </DashboardCard>
         </View>

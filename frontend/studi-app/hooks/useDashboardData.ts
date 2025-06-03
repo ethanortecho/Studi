@@ -2,14 +2,41 @@ import { useEffect, useMemo, useState } from 'react';
 import useAggregateData from '@/utils/fetchApi';
 import { parseCategoryDurations, ParseStudyTrends, secondsToHours } from '@/utils/parseData';
 import { DailyInsightsResponse, WeeklyInsightsResponse } from '@/types/api';
+import { formatDateForAPI, getWeekEnd, getWeekStart, navigateDate } from '@/utils/dateUtils';
 
-export function useDashboardData() {
+interface UseDashboardDataParams {
+    dailyDate?: Date;
+    weeklyDate?: Date;
+}
+
+export function useDashboardData({ dailyDate, weeklyDate }: UseDashboardDataParams = {}) {
     const [dailyData, setDailyData] = useState<DailyInsightsResponse | null>(null);
     const [weeklyData, setWeeklyData] = useState<WeeklyInsightsResponse | null>(null);
 
+    // Format dates for API
+    const dailyDateStr = dailyDate ? formatDateForAPI(dailyDate) : formatDateForAPI(new Date());
+    const currentWeekStart = weeklyDate || getWeekStart(new Date());
+    const weeklyStartStr = formatDateForAPI(currentWeekStart);
+    const weeklyEndStr = formatDateForAPI(getWeekEnd(currentWeekStart));
+
     // Fetch data for daily and weekly dashboards
-    const { data: dailyResponse, loading: dailyLoading } = useAggregateData('daily', '2025-01-23', undefined);
-    const { data: weeklyResponse, loading: weeklyLoading } = useAggregateData('weekly', '2025-01-13', '2025-01-19');
+    const { data: dailyResponse, loading: dailyLoading } = useAggregateData('daily', dailyDateStr, undefined);
+    const { data: weeklyResponse, loading: weeklyLoading } = useAggregateData('weekly', weeklyStartStr, weeklyEndStr);
+
+    // Prefetch adjacent dates for faster navigation
+    const currentDaily = dailyDate || new Date();
+    const currentWeekly = weeklyDate || getWeekStart(new Date());
+    
+    // Prefetch previous/next day (but don't use the results - just for caching)
+    const prevDay = navigateDate(currentDaily, 'prev', 'daily');
+    const nextDay = navigateDate(currentDaily, 'next', 'daily');
+    const prevWeek = navigateDate(currentWeekly, 'prev', 'weekly');
+    const nextWeek = navigateDate(currentWeekly, 'next', 'weekly');
+
+    useAggregateData('daily', formatDateForAPI(prevDay), undefined);
+    useAggregateData('daily', formatDateForAPI(nextDay), undefined);
+    useAggregateData('weekly', formatDateForAPI(getWeekStart(prevWeek)), formatDateForAPI(getWeekEnd(prevWeek)));
+    useAggregateData('weekly', formatDateForAPI(getWeekStart(nextWeek)), formatDateForAPI(getWeekEnd(nextWeek)));
 
     // Update state when data comes in
     useEffect(() => {
@@ -19,6 +46,19 @@ export function useDashboardData() {
     useEffect(() => {
         if (weeklyResponse) setWeeklyData(weeklyResponse);
     }, [weeklyResponse]);
+
+    // Check if data is empty
+    const isDailyEmpty = useMemo(() => {
+        if (!dailyData || dailyLoading) return false;
+        const totalDuration = parseInt(dailyData.aggregate?.total_duration) || 0;
+        return totalDuration === 0;
+    }, [dailyData, dailyLoading]);
+
+    const isWeeklyEmpty = useMemo(() => {
+        if (!weeklyData || weeklyLoading) return false;
+        const totalDuration = parseInt(weeklyData.aggregate?.total_duration) || 0;
+        return totalDuration === 0;
+    }, [weeklyData, weeklyLoading]);
 
     // Process data for each dashboard
     const processedDailyData = useMemo(() => {
@@ -30,9 +70,10 @@ export function useDashboardData() {
             categoryMetadata: dailyData.category_metadata,
             pieChartData: parseCategoryDurations(dailyData),
             timelineData: dailyData.timeline_data,
-            rawData: dailyData
+            rawData: dailyData,
+            isEmpty: isDailyEmpty
         };
-    }, [dailyData]);
+    }, [dailyData, isDailyEmpty]);
 
     const processedWeeklyData = useMemo(() => {
         if (!weeklyData) return null;
@@ -45,9 +86,10 @@ export function useDashboardData() {
             trendData: ParseStudyTrends(weeklyData.daily_breakdown, 'all'),
             sessionTimes: weeklyData.session_times,
             dailyBreakdown: weeklyData.daily_breakdown,
-            rawData: weeklyData
+            rawData: weeklyData,
+            isEmpty: isWeeklyEmpty
         };
-    }, [weeklyData]);
+    }, [weeklyData, isWeeklyEmpty]);
 
     return {
         daily: processedDailyData,

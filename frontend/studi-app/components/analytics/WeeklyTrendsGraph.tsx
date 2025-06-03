@@ -20,7 +20,7 @@ const DAY_MAP: Record<string, string> = {
 interface DailyBreakdownData {
   [date: string]: {
     total: number;
-    categories: { [key: string]: number };
+    categories?: { [key: string]: number };
   };
 }
 
@@ -30,8 +30,8 @@ interface CategoryMetadata {
 }
 
 interface WeeklyTrendsGraphProps {
-  data: DailyBreakdownData;
-  categoryMetadata: { [key: string]: CategoryMetadata };
+  data?: DailyBreakdownData;
+  categoryMetadata?: { [key: string]: CategoryMetadata };
   width?: number;
   height?: number;
 }
@@ -42,6 +42,16 @@ const WeeklyTrendsGraph: React.FC<WeeklyTrendsGraphProps> = ({
   width = 350,
   height = 300
 }) => {
+  // Add safety check for undefined data
+  if (!data || !categoryMetadata) {
+    return (
+      <View className="bg-white rounded-lg p-4">
+        <ThemedText className="text-lg font-semibold mb-4">Weekly Study Trends</ThemedText>
+        <ThemedText className="text-gray-500">Loading weekly data...</ThemedText>
+      </View>
+    );
+  }
+
   const [showCategories, setShowCategories] = useState(true);
   const switchAnim = useRef(new Animated.Value(1)).current;
   const font = useFont(require('@/assets/fonts/SpaceMono-Regular.ttf'), 12);
@@ -81,7 +91,10 @@ const WeeklyTrendsGraph: React.FC<WeeklyTrendsGraphProps> = ({
 
     const allCategories = new Set<string>();
     Object.values(data).forEach(dayData => {
-      Object.keys(dayData.categories).forEach(cat => allCategories.add(cat));
+      // Only process categories if they exist (days with no study time might not have categories field)
+      if (dayData.categories) {
+        Object.keys(dayData.categories).forEach(cat => allCategories.add(cat));
+      }
     });
     const categoryList = Array.from(allCategories);
 
@@ -98,7 +111,7 @@ const WeeklyTrendsGraph: React.FC<WeeklyTrendsGraphProps> = ({
       };
       
       categoryList.forEach(category => {
-        const seconds = data[day]?.categories[category] || 0;
+        const seconds = data[day]?.categories?.[category] || 0;
         const hours = Math.round(seconds / 3600 * 100) / 100;
         dayData[category] = hours;
       });
@@ -212,7 +225,7 @@ const WeeklyTrendsGraph: React.FC<WeeklyTrendsGraphProps> = ({
                   <Bar
                     chartBounds={chartBounds}
                     points={points.total}
-                    color={Colors.light.primary}
+                    color="#5A4FCF"
                     animate={{ type: "spring" }}
                     barWidth={30}
                     roundedCorners={{ topLeft: 6, topRight: 6, bottomLeft: 6, bottomRight: 6 }}

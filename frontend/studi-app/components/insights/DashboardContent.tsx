@@ -61,6 +61,7 @@ export default function DashboardContent({ selectedTab, dailyDate, weeklyDate }:
             return (
                 <DailyDashboard 
                     totalHours={daily.totalHours || '0.00'}
+                    totalTime={daily.totalTime}
                     categoryDurations={daily.categoryDurations}
                     categoryMetadata={daily.categoryMetadata}
                     pieChartData={daily.pieChartData}
@@ -73,6 +74,7 @@ export default function DashboardContent({ selectedTab, dailyDate, weeklyDate }:
             return (
                 <WeeklyDashboard 
                     totalHours={weekly.totalHours || '0.00'}
+                    totalTime={weekly.totalTime}
                     categoryDurations={weekly.categoryDurations}
                     categoryMetadata={weekly.categoryMetadata}
                     pieChartData={weekly.pieChartData}

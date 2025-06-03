@@ -11,6 +11,7 @@ import { CategoryMetadata } from '@/types/api';
 
 interface WeeklyDashboardProps {
   totalHours: string;
+  totalTime?: { hours: number; minutes: number };
   categoryDurations?: { [key: string]: number };
   categoryMetadata?: { [key: string]: CategoryMetadata };
   pieChartData?: Array<{ label: string; value: number; color: string }>;
@@ -23,6 +24,7 @@ interface WeeklyDashboardProps {
 
 export default function WeeklyDashboard({
   totalHours,
+  totalTime,
   categoryDurations,
   categoryMetadata,
   pieChartData,
@@ -82,7 +84,7 @@ export default function WeeklyDashboard({
           <View className="flex-1">
             {/* Total Hours with grey-blue background */}
             <View className="bg-layout-grey-blue rounded-lg p-4 mb-2.5">
-              <TotalHours totalHours={totalHours} />
+              <TotalHours totalHours={totalHours} totalTime={totalTime} />
             </View>
             
             {/* Placeholder component */}

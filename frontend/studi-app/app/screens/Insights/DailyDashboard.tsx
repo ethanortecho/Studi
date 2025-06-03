@@ -10,6 +10,7 @@ import { CategoryMetadata, TimelineSession } from '@/types/api';
 
 interface DailyDashboardProps {
   totalHours: string;
+  totalTime?: { hours: number; minutes: number };
   categoryDurations?: { [key: string]: number };
   categoryMetadata?: { [key: string]: CategoryMetadata };
   pieChartData?: Array<{ label: string; value: number; color: string }>;
@@ -20,6 +21,7 @@ interface DailyDashboardProps {
 
 export default function DailyDashboard({
   totalHours,
+  totalTime,
   categoryDurations,
   categoryMetadata,
   pieChartData,
@@ -67,7 +69,7 @@ export default function DailyDashboard({
           <View className="flex-1">
             {/* Total Hours with grey-blue background */}
             <View className="bg-layout-grey-blue rounded-lg p-4 mb-2.5">
-              <TotalHours totalHours={totalHours} />
+              <TotalHours totalHours={totalHours} totalTime={totalTime} />
             </View>
             
             {/* Placeholder component */}

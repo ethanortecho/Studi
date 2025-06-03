@@ -27,6 +27,14 @@ export function secondsToHours(apiData:any){
     return totalHours.toFixed(2);
 }
 
+export function secondsToHoursAndMinutes(apiData: any): { hours: number; minutes: number } {
+    const seconds = parseInt(apiData?.aggregate?.total_duration) || 0;
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    
+    return { hours, minutes };
+}
+
 export function formatDuration(seconds: number): string {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);

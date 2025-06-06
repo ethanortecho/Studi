@@ -8,12 +8,17 @@ class Command(BaseCommand):
     help = 'Aggregates study session data into daily, weekly, and monthly aggregates'
 
     def handle(self, *args, **kwargs):
-        # Get all unique dates from study sessions
-        dates = StudySession.objects.dates('start_time', 'day')
+        # Get all unique dates from active study sessions only
+        dates = StudySession.objects.filter(
+            status__in=['completed', 'active']
+        ).dates('start_time', 'day')
         
         for date in dates:
-            # Get all sessions for this date
-            sessions = StudySession.objects.filter(start_time__date=date)
+            # Get all active sessions for this date
+            sessions = StudySession.objects.filter(
+                start_time__date=date,
+                status__in=['completed', 'active']  # Exclude cancelled sessions
+            )
             
             if not sessions.exists():
                 continue
@@ -21,10 +26,12 @@ class Command(BaseCommand):
             # Calculate total duration by summing seconds
             total_duration = sum(session.total_duration or 0 for session in sessions)
             
-            # Calculate category durations
+            # Calculate category durations (only from active sessions)
             category_durations = defaultdict(int)
             for session in sessions:
-                breakdowns = session.categoryblock_set.all()
+                breakdowns = session.categoryblock_set.filter(
+                    study_session__status__in=['completed', 'active']
+                )
                 for breakdown in breakdowns:
                     category_durations[breakdown.category.name] += breakdown.duration or 0
             
@@ -55,7 +62,8 @@ class Command(BaseCommand):
             
             weekly_sessions = StudySession.objects.filter(
                 start_time__date__gte=week_start,
-                start_time__date__lte=week_end
+                start_time__date__lte=week_end,
+                status__in=['completed', 'active']  # Exclude cancelled sessions
             )
             
             if weekly_sessions.exists():
@@ -63,7 +71,9 @@ class Command(BaseCommand):
                 weekly_categories = defaultdict(int)
                 
                 for session in weekly_sessions:
-                    breakdowns = session.categoryblock_set.all()
+                    breakdowns = session.categoryblock_set.filter(
+                        study_session__status__in=['completed', 'active']
+                    )
                     for breakdown in breakdowns:
                         weekly_categories[breakdown.category.name] += breakdown.duration or 0
                 
@@ -96,7 +106,8 @@ class Command(BaseCommand):
             
             monthly_sessions = StudySession.objects.filter(
                 start_time__date__gte=month_start,
-                start_time__date__lte=month_end
+                start_time__date__lte=month_end,
+                status__in=['completed', 'active']  # Exclude cancelled sessions
             )
             
             if monthly_sessions.exists():
@@ -104,7 +115,9 @@ class Command(BaseCommand):
                 monthly_categories = defaultdict(int)
                 
                 for session in monthly_sessions:
-                    breakdowns = session.categoryblock_set.all()
+                    breakdowns = session.categoryblock_set.filter(
+                        study_session__status__in=['completed', 'active']
+                    )
                     for breakdown in breakdowns:
                         monthly_categories[breakdown.category.name] += breakdown.duration or 0
                 

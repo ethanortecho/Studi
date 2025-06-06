@@ -161,3 +161,24 @@ export const createStudySession = async (startTime: Date) => {
     const data = await res.json();
     return data;
   };
+
+export const cancelStudySession = async (sessionId: string) => {
+  console.log("API: cancelStudySession called with", sessionId);
+  const res = await fetch(`${API_BASE_URL}/cancel-session/${sessionId}/`, {
+    method: "PUT",
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': AUTH_HEADER
+    },
+    body: JSON.stringify({}), // Empty body for cancel
+  });
+  
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.error || errorData.message || 'Failed to cancel session');
+  }
+  
+  const data = await res.json();
+  console.log("API: cancelStudySession data:", data);
+  return data;
+};

@@ -20,6 +20,11 @@ class CustomUser(AbstractUser):
         verbose_name='user permissions',
     )
 
+class StudySessionManager(models.Manager):
+    def active_sessions(self):
+        """Get only active and completed sessions, excluding cancelled ones"""
+        return self.filter(status__in=['active', 'completed'])
+
 class StudySession(models.Model):
     STATUS_CHOICES = [
         ("active", "Active"),
@@ -33,8 +38,12 @@ class StudySession(models.Model):
     end_time = models.DateTimeField(null=True, blank=True)
     total_duration = models.IntegerField(null=True, blank=True)  # Duration in seconds
     productivity_rating = models.CharField(null=True, blank=True, max_length=50)
-    status   =  models.CharField(max_length=50, choices=STATUS_CHOICES, default="active")
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default="active")
 
+    objects = StudySessionManager()
+
+    class Meta:
+        ordering = ['-start_time']
 
     def save(self, *args, **kwargs):
         if self.end_time and self.start_time:

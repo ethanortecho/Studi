@@ -7,6 +7,7 @@ from rest_framework import status
 from ..models import StudySession, CategoryBlock
 from ..serializers import StudySessionSerializer, CategoryBlockSerializer, AggregateSerializer
 from rest_framework import serializers
+from django.utils import timezone
 
 
 class CreateStudySession(APIView):
@@ -31,6 +32,37 @@ class EndStudySession(APIView):
                 return Response(StudySessionSerializer(updated_session).data, status=status.HTTP_200_OK)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except StudySession.DoesNotExist:
+            return Response({"error": "Study session not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CancelStudySession(APIView):
+    def put(self, request, id):
+        try:
+            session = StudySession.objects.get(id=id, user=request.user)
+            
+            # Mark session as cancelled and set end time
+            session.status = "cancelled"
+            session.end_time = timezone.now()
+            session.save()
+            
+            # Also end any open category blocks
+            open_blocks = CategoryBlock.objects.filter(
+                study_session=session,
+                end_time__isnull=True
+            )
+            for block in open_blocks:
+                block.end_time = timezone.now()
+                block.save()
+            
+            return Response({
+                "message": "Session cancelled successfully",
+                "session_id": session.id,
+                "status": session.status
+            }, status=status.HTTP_200_OK)
+            
         except StudySession.DoesNotExist:
             return Response({"error": "Study session not found"}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:

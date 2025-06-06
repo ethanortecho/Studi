@@ -2,9 +2,12 @@ import { Text, View, Pressable } from 'react-native';
 import { useStopwatch } from '@/hooks/timer';
 import { useEffect } from 'react';
 import { useState } from 'react';
+import { CancelSessionModal } from '@/components/modals/CancelSessionModal';
 
 export function Timer() {
-    const { startTimer, pauseTimer, resumeTimer, stopTimer, elapsed, status, formatTime } = useStopwatch();
+    const { startTimer, pauseTimer, resumeTimer, stopTimer, cancelTimer, elapsed, status, formatTime } = useStopwatch();
+    const [showCancelModal, setShowCancelModal] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     
     useEffect(() => {
         console.log("Timer component: status changed to", status);
@@ -26,8 +29,30 @@ export function Timer() {
         }
     };
     
+    const handleCancel = async () => {
+        setIsLoading(true);
+        try {
+            await cancelTimer();
+            setShowCancelModal(false);
+        } catch (error) {
+            console.error("Timer component: cancelTimer error:", error);
+            // Could show error toast here
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <View className="items-center p-6 bg-white rounded-xl">
+            {(status === 'running' || status === 'paused') && (
+                <Pressable 
+                    onPress={() => setShowCancelModal(true)}
+                    className="absolute top-2 right-2 p-2"
+                >
+                    <Text className="text-red-500 text-lg font-bold">✕</Text>
+                </Pressable>
+            )}
+            
             <View className="mb-4">
                 <Text className="text-4xl font-bold text-gray-800">{formatTime()}</Text>
             </View>
@@ -55,6 +80,13 @@ export function Timer() {
                     </Pressable>
                 </View>
             )}
+            
+            <CancelSessionModal
+                visible={showCancelModal}
+                onClose={() => setShowCancelModal(false)}
+                onConfirm={handleCancel}
+                isLoading={isLoading}
+            />
         </View>
     );
 }

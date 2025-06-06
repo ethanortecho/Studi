@@ -18,12 +18,17 @@ class Command(BaseCommand):
         # Clear existing aggregates
         Aggregate.objects.all().delete()
         
-        # Get all unique users with study sessions
-        users = StudySession.objects.values_list('user', flat=True).distinct()
+        # Get all unique users with study sessions (excluding cancelled ones)
+        users = StudySession.objects.filter(
+            status__in=['completed', 'active']
+        ).values_list('user', flat=True).distinct()
         
         for user_id in users:
-            # Get all sessions for this user
-            sessions = StudySession.objects.filter(user_id=user_id).order_by('start_time')
+            # Get all active sessions for this user
+            sessions = StudySession.objects.filter(
+                user_id=user_id,
+                status__in=['completed', 'active']  # Exclude cancelled sessions
+            ).order_by('start_time')
             
             if not sessions:
                 continue
@@ -58,18 +63,20 @@ class Command(BaseCommand):
                 current_date = next_month
 
     def create_aggregate(self, user_id, start_date, end_date, timeframe):
-        # For daily aggregates, only get sessions from that specific day
+        # For daily aggregates, only get active sessions from that specific day
         if timeframe == 'daily':
             sessions = StudySession.objects.filter(
                 user_id=user_id,
-                start_time__date=start_date  # Only get sessions that started on this exact date
+                start_time__date=start_date,  # Only get sessions that started on this exact date
+                status__in=['completed', 'active']  # Exclude cancelled sessions
             )
         else:
-            # For weekly/monthly, keep the range query
+            # For weekly/monthly, keep the range query but exclude cancelled
             sessions = StudySession.objects.filter(
                 user_id=user_id,
                 start_time__date__gte=start_date,
-                end_time__date__lte=end_date
+                end_time__date__lte=end_date,
+                status__in=['completed', 'active']  # Exclude cancelled sessions
             )
         
         print(f"Creating {timeframe} aggregate for {start_date} to {end_date}")
@@ -85,12 +92,18 @@ class Command(BaseCommand):
         total_duration_seconds = int(total_duration.total_seconds())
         session_count = sessions.count()
         
-        # Calculate break count
-        break_count = Break.objects.filter(study_session__in=sessions).count()
+        # Calculate break count (only from active sessions)
+        break_count = Break.objects.filter(
+            study_session__in=sessions,
+            study_session__status__in=['completed', 'active']
+        ).count()
         
-        # Calculate category durations in seconds
+        # Calculate category durations in seconds (only from active sessions)
         category_durations = defaultdict(timedelta)
-        breakdowns = CategoryBlock.objects.filter(study_session__in=sessions)
+        breakdowns = CategoryBlock.objects.filter(
+            study_session__in=sessions,
+            study_session__status__in=['completed', 'active']
+        )
         
         for breakdown in breakdowns:
             category_durations[breakdown.category.name] += breakdown.duration

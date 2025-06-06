@@ -2,7 +2,7 @@ import { useBaseTimer } from './useBaseTimer';
 import { useStudySession } from '../useStudySession';
 
 export function useStopwatch() {
-    const { startSession, stopSession, pauseSession, resumeSession } = useStudySession();
+    const { startSession, stopSession, pauseSession, resumeSession, cancelSession } = useStudySession();
     
     const baseTimer = useBaseTimer({
         onStart: async () => {
@@ -60,6 +60,18 @@ export function useStopwatch() {
         baseTimer.stop();
     };
 
+    const cancelTimer = async () => {
+        try {
+            await cancelSession();
+            // Reset timer state without triggering onStop callback
+            baseTimer.resetWithoutCallbacks();
+            console.log("Stopwatch: cancelSession completed");
+        } catch (error) {
+            console.error("Stopwatch: cancelSession error:", error);
+            throw error;
+        }
+    };
+
     return {
         // State (same as original useTimer)
         startTime: baseTimer.startTime,
@@ -73,6 +85,7 @@ export function useStopwatch() {
         stopTimer,
         
         // Utilities
-        formatTime: baseTimer.formatTime
+        formatTime: baseTimer.formatTime,
+        cancelTimer,
     };
 } 

@@ -70,6 +70,15 @@ export function useBaseTimer(config?: BaseTimerConfig) {
         }
     };
 
+    const resetWithoutCallbacks = () => {
+        console.log("BaseTimer: resetWithoutCallbacks called");
+        setStatus('idle');
+        setElapsed(0);
+        setPausedTime(0);
+        setStartTime(null);
+        // Note: No callback is triggered here
+    };
+
     // Format elapsed time to mm:ss
     const formatTime = () => {
         const minutes = Math.floor(elapsed / 60);
@@ -89,6 +98,7 @@ export function useBaseTimer(config?: BaseTimerConfig) {
         resume,
         stop,
         reset,
+        resetWithoutCallbacks,
         
         // Utilities
         formatTime

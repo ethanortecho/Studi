@@ -1,6 +1,6 @@
 import { useState, useEffect, createContext, ReactNode } from "react";
 import { fetchCategories, Category, fetchBreakCategory } from '@/utils/studySession';
-import { createStudySession, endStudySession, createCategoryBlock, endCategoryBlock } from '../utils/studySession';
+import { createStudySession, endStudySession, createCategoryBlock, endCategoryBlock, cancelStudySession } from '../utils/studySession';
 
 
 interface StudySessionContextType {
@@ -17,6 +17,7 @@ interface StudySessionContextType {
   resumeSession: () => Promise<void>;
   pauseCategoryBlock: (currentCategoryId: number, breakCategoryId: number) => Promise<void>;
   switchCategory: (newCategoryId: number) => Promise<void>;
+  cancelSession: () => Promise<void>;
 }
 
 export const StudySessionContext = createContext<StudySessionContextType>({
@@ -33,6 +34,7 @@ export const StudySessionContext = createContext<StudySessionContextType>({
   resumeSession: () => Promise.resolve(),
   pauseCategoryBlock: () => Promise.resolve(),
   switchCategory: () => Promise.resolve(),
+  cancelSession: () => Promise.resolve(),
 });
 
 export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
@@ -182,6 +184,25 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const cancelSession = async () => {
+    console.log("Hook: cancelSession called, sessionId:", sessionId);
+    if (sessionId) {
+      try {
+        const res = await cancelStudySession(String(sessionId));
+        // Reset all session state
+        setSessionId(null);
+        setCurrentCategoryBlockId(null);
+        setCurrentCategoryId(null);
+        setPausedCategoryId(null);
+        console.log("Hook: cancelSession completed");
+        return res;
+      } catch (error) {
+        console.error("Hook error in cancelSession:", error);
+        throw error;
+      }
+    }
+  };
+
   return (
     <StudySessionContext.Provider value={{
       sessionId,
@@ -196,7 +217,8 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
       pauseSession,
       resumeSession,
       pauseCategoryBlock,
-      switchCategory
+      switchCategory,
+      cancelSession,
     }}>
       {children}
     </StudySessionContext.Provider>

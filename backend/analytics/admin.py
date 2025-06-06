@@ -4,8 +4,8 @@ from django.utils.timezone import localtime
 
 @admin.register(StudySession)
 class StudySessionAdmin(admin.ModelAdmin):
-    list_display = ('user', 'formatted_start_time', 'formatted_end_time', 'total_duration', 'productivity_rating')
-    list_filter = ('productivity_rating', 'start_time')
+    list_display = ('user', 'formatted_start_time', 'formatted_end_time', 'total_duration', 'status', 'productivity_rating')
+    list_filter = ('status', 'productivity_rating', 'start_time')
     search_fields = ('user__username',)
     ordering = ('-start_time',)  # Most recent first
 
@@ -14,19 +14,21 @@ class StudySessionAdmin(admin.ModelAdmin):
     formatted_start_time.short_description = 'Start Time'
 
     def formatted_end_time(self, obj):
-        return localtime(obj.end_time).strftime("%b %d, %Y, %I:%M %p")
+        if obj.end_time:
+            return localtime(obj.end_time).strftime("%b %d, %Y, %I:%M %p")
+        return "Ongoing"
     formatted_end_time.short_description = 'End Time'
 
 @admin.register(Categories)
 class CategoriesAdmin(admin.ModelAdmin):
-    list_display = ('name', 'user')
-    list_filter = ('user',)
+    list_display = ('name', 'user', 'color', 'is_active', 'is_system', 'category_type')
+    list_filter = ('is_active', 'is_system', 'category_type', 'user')
     search_fields = ('name', 'user__username')
 
 @admin.register(CategoryBlock)
 class CategoryBlockAdmin(admin.ModelAdmin):
     list_display = ('study_session', 'category', 'formatted_start_time', 'formatted_end_time', 'duration')
-    list_filter = ('category', 'study_session__user')
+    list_filter = ('category', 'study_session__user', 'study_session__status')
     search_fields = ('category__name', 'study_session__user__username')
 
     def formatted_start_time(self, obj):
@@ -34,7 +36,9 @@ class CategoryBlockAdmin(admin.ModelAdmin):
     formatted_start_time.short_description = 'Start Time'
 
     def formatted_end_time(self, obj):
-        return localtime(obj.end_time).strftime("%b %d, %Y, %I:%M %p")
+        if obj.end_time:
+            return localtime(obj.end_time).strftime("%b %d, %Y, %I:%M %p")
+        return "Ongoing"
     formatted_end_time.short_description = 'End Time'
 
 @admin.register(CustomUser)

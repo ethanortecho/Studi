@@ -18,11 +18,11 @@ class Command(BaseCommand):
 
         # Create test user if doesn't exist
         user, created = CustomUser.objects.get_or_create(
-            username='testuser',
-            defaults={'email': 'test@example.com'}
+            username='ethanortecho',
+            defaults={'email': 'ethan@example.com'}
         )
         if created:
-            user.set_password('testpass123')
+            user.set_password('EthanVer2010!')
             user.save()
 
         # Create categories (limited to 5) with frontend-matching colors

@@ -59,8 +59,16 @@ export default function useAggregateData(time_frame: string,
 
     useEffect(() => {
         const fetchData = async() => {
-            // Check cache first
-            if (apiCache.has(cacheKey)) {
+            // Check cache first - but only for potentially final data
+            // Use local date to match how sessions are stored
+            const today = new Date();
+            const localToday = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+            
+            const isCurrentDay = (time_frame === 'daily' && start_date === localToday) || 
+                                 (time_frame === 'weekly' && start_date <= localToday && (!end_date || end_date >= localToday));
+            
+            // Only use cache for non-current periods (they should be final/immutable)
+            if (!isCurrentDay && apiCache.has(cacheKey)) {
                 console.log('Using cached data for:', cacheKey);
                 cacheAccessTimes.set(cacheKey, Date.now()); // Update access time
                 setData(apiCache.get(cacheKey));
@@ -90,16 +98,16 @@ export default function useAggregateData(time_frame: string,
             // Create the request promise
             const requestPromise = (async () => {
                 try {
-                    console.log('Making API request for:', cacheKey);
+                    console.log('Making API request for:', cacheKey, isCurrentDay ? '(LIVE - no cache)' : '(cacheable)', 'localToday:', localToday);
 
                     let response;
                     
                     if (time_frame === 'daily') {
-                        response = await fetch(`http://127.0.0.1:8000/api/insights/${time_frame}/?date=${start_date}&username=testuser`, {
+                        response = await fetch(`http://127.0.0.1:8000/api/insights/${time_frame}/?date=${start_date}&username=ethanortecho`, {
                             headers: headers
                         });
                     } else { 
-                        response = await fetch(`http://127.0.0.1:8000/api/insights/${time_frame}/?start_date=${start_date}&end_date=${end_date}&username=testuser`, {
+                        response = await fetch(`http://127.0.0.1:8000/api/insights/${time_frame}/?start_date=${start_date}&end_date=${end_date}&username=ethanortecho`, {
                             headers: headers
                         });
                     }
@@ -107,11 +115,15 @@ export default function useAggregateData(time_frame: string,
                     console.log('Response received:', response.status);
                     const json = await response.json();
                     
-                    // Cache the result
-                    apiCache.set(cacheKey, json);
-                    cacheAccessTimes.set(cacheKey, Date.now());
-                    manageCacheSize(); // Clean up old entries if needed
-                    console.log('Cached data for:', cacheKey);
+                    // Only cache final/historical data (not current day data)
+                    if (!isCurrentDay && json.aggregate?.is_final !== false) {
+                        apiCache.set(cacheKey, json);
+                        cacheAccessTimes.set(cacheKey, Date.now());
+                        manageCacheSize(); // Clean up old entries if needed
+                        console.log('Cached data for:', cacheKey);
+                    } else {
+                        console.log('NOT caching (current/non-final data):', cacheKey);
+                    }
                     
                     return json;
                 } catch (error) {

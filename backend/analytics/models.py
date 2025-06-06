@@ -103,6 +103,8 @@ class Aggregate(models.Model):
     session_count = models.IntegerField(default=0)
     break_count = models.IntegerField(default=0)
     time_frame = models.CharField(max_length=10, choices=TIMEFRAME_CHOICES)
+    is_final = models.BooleanField(default=False)  # True when period is complete
+    last_updated = models.DateTimeField(auto_now=True)  # Track when last updated
 
 
 class Break(models.Model):

@@ -9,7 +9,7 @@ export interface Category {
 
 export const fetchCategories = async (): Promise<Category[]> => {
   console.log("API: fetchCategories called");
-  const res = await fetch(`${API_BASE_URL}/category-list/?username=testuser`, {
+  const res = await fetch(`${API_BASE_URL}/category-list/?username=ethanortecho`, {
     headers: { 
       'Content-Type': 'application/json',
       'Authorization': AUTH_HEADER,
@@ -22,7 +22,7 @@ export const fetchCategories = async (): Promise<Category[]> => {
 
 export const createCategory = async (name: string, color: string): Promise<Category> => {
   console.log("API: createCategory called with", name, color);
-  const res = await fetch(`${API_BASE_URL}/category-list/?username=testuser`, {
+  const res = await fetch(`${API_BASE_URL}/category-list/?username=ethanortecho`, {
     method: "POST",
     headers: { 
       'Content-Type': 'application/json',
@@ -43,7 +43,7 @@ export const createCategory = async (name: string, color: string): Promise<Categ
 
 export const updateCategory = async (id: string, name: string, color: string): Promise<Category> => {
   console.log("API: updateCategory called with", id, name, color);
-  const res = await fetch(`${API_BASE_URL}/categories/${id}/?username=testuser`, {
+  const res = await fetch(`${API_BASE_URL}/categories/${id}/?username=ethanortecho`, {
     method: "PUT",
     headers: { 
       'Content-Type': 'application/json',
@@ -64,7 +64,7 @@ export const updateCategory = async (id: string, name: string, color: string): P
 
 export const deleteCategory = async (id: string): Promise<void> => {
   console.log("API: deleteCategory called with", id);
-  const res = await fetch(`${API_BASE_URL}/categories/${id}/?username=testuser`, {
+  const res = await fetch(`${API_BASE_URL}/categories/${id}/?username=ethanortecho`, {
     method: "DELETE",
     headers: { 
       'Content-Type': 'application/json',
@@ -82,7 +82,7 @@ export const deleteCategory = async (id: string): Promise<void> => {
 
 export const fetchBreakCategory = async (): Promise<Category> => {
   console.log("API: fetchBreakCategory called");
-  const res = await fetch(`${API_BASE_URL}/break-category/?username=testuser`, {
+  const res = await fetch(`${API_BASE_URL}/break-category/?username=ethanortecho`, {
     headers: { 
       'Content-Type': 'application/json',
       'Authorization': AUTH_HEADER,
@@ -101,13 +101,18 @@ export const fetchBreakCategory = async (): Promise<Category> => {
 
 export const createStudySession = async (startTime: Date) => {
     console.log("API: createStudySession called with", startTime);
+    
+    // Preserve local calendar date by adjusting for timezone offset
+    const localStartTime = new Date(startTime.getTime() - (startTime.getTimezoneOffset() * 60000));
+    console.log("API: Adjusted start time for timezone:", localStartTime);
+    
     const res = await fetch(`${API_BASE_URL}/create-session/`, {
       method: "POST",
       headers: { 
         'Content-Type': 'application/json',
         'Authorization': AUTH_HEADER
       },
-      body: JSON.stringify({ start_time: startTime }),
+      body: JSON.stringify({ start_time: localStartTime }),
     });
     console.log("API: createStudySession response status:", res.status);
     const data = await res.json();
@@ -117,6 +122,11 @@ export const createStudySession = async (startTime: Date) => {
   
   export const endStudySession = async (sessionId: string, endTime: Date) => {
     console.log("API: endStudySession called with", sessionId, endTime);
+    
+    // Preserve local calendar date by adjusting for timezone offset
+    const localEndTime = new Date(endTime.getTime() - (endTime.getTimezoneOffset() * 60000));
+    console.log("API: Adjusted end time for timezone:", localEndTime);
+    
     const res = await fetch(`${API_BASE_URL}/end-session/${sessionId}/`, {
       method: "PUT",
       headers: { 
@@ -124,7 +134,7 @@ export const createStudySession = async (startTime: Date) => {
         'Authorization': AUTH_HEADER
       },
       body: JSON.stringify({ 
-        end_time: endTime,
+        end_time: localEndTime,
         status: "completed"
       }),
     });
@@ -134,15 +144,20 @@ export const createStudySession = async (startTime: Date) => {
   
   export const createCategoryBlock = async (sessionId: string, categoryId: string, startTime: Date) => {
     console.log("API: createCategoryBlock called with", categoryId, );
+    
+    // Preserve local calendar date by adjusting for timezone offset
+    const localStartTime = new Date(startTime.getTime() - (startTime.getTimezoneOffset() * 60000));
+    console.log("API: Adjusted category block start time for timezone:", localStartTime);
+    
     const res = await fetch(`${API_BASE_URL}/create-category-block/`, {
       method: "POST",
       headers: { 
         'Content-Type': 'application/json',
         'Authorization': AUTH_HEADER
       },
-      body: JSON.stringify({ study_session: sessionId, category: categoryId, start_time: startTime }),
+      body: JSON.stringify({ study_session: sessionId, category: categoryId, start_time: localStartTime }),
     });
-    console.log("API: createCategoryBlock body:", JSON.stringify({ study_session: sessionId, category: categoryId, start_time: startTime }));
+    console.log("API: createCategoryBlock body:", JSON.stringify({ study_session: sessionId, category: categoryId, start_time: localStartTime }));
     console.log("API: createCategoryBlock response status:", res.status);
     const data = await res.json();
     return data;
@@ -150,13 +165,18 @@ export const createStudySession = async (startTime: Date) => {
   
   export const endCategoryBlock = async (categoryBlockId: string, endTime: Date) => {
     console.log("API: endCategoryBlock called with", categoryBlockId, endTime);
+    
+    // Preserve local calendar date by adjusting for timezone offset
+    const localEndTime = new Date(endTime.getTime() - (endTime.getTimezoneOffset() * 60000));
+    console.log("API: Adjusted category block end time for timezone:", localEndTime);
+    
     const res = await fetch(`${API_BASE_URL}/end-category-block/${categoryBlockId}/`, {
       method: "PUT",
       headers: { 
         'Content-Type': 'application/json',
         'Authorization': AUTH_HEADER
       },
-      body: JSON.stringify({ end_time: endTime }),
+      body: JSON.stringify({ end_time: localEndTime }),
     });
     const data = await res.json();
     return data;

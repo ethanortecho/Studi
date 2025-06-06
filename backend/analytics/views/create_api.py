@@ -8,6 +8,7 @@ from ..models import StudySession, CategoryBlock
 from ..serializers import StudySessionSerializer, CategoryBlockSerializer, AggregateSerializer
 from rest_framework import serializers
 from django.utils import timezone
+from ..services.aggregate_service import AggregateUpdateService
 
 
 class CreateStudySession(APIView):
@@ -29,6 +30,26 @@ class EndStudySession(APIView):
             
             if serializer.is_valid():
                 updated_session = serializer.complete_session(instance=session, validated_data=serializer.validated_data)
+                
+                # End any open category blocks when completing the session
+                open_blocks = CategoryBlock.objects.filter(
+                    study_session=updated_session,
+                    end_time__isnull=True
+                )
+                for block in open_blocks:
+                    block.end_time = updated_session.end_time
+                    block.save()
+                    print(f"Ended CategoryBlock {block.id} at {block.end_time}")
+                
+                # Update aggregates immediately after session completion
+                try:
+                    AggregateUpdateService.update_for_session(updated_session)
+                    print(f"Successfully updated aggregates for session {updated_session.id}")
+                except Exception as e:
+                    print(f"Failed to update aggregates for session {updated_session.id}: {str(e)}")
+                    # Fail fast - if aggregate update fails, the operation should fail
+                    return Response({"error": f"Session completed but aggregate update failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                
                 return Response(StudySessionSerializer(updated_session).data, status=status.HTTP_200_OK)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

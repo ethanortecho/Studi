@@ -51,13 +51,17 @@ export function useDashboardData({ dailyDate, weeklyDate }: UseDashboardDataPara
     const isDailyEmpty = useMemo(() => {
         if (!dailyData || dailyLoading) return false;
         const totalDuration = parseInt(dailyData.aggregate?.total_duration) || 0;
-        return totalDuration === 0;
+        const sessionCount = dailyData.aggregate?.session_count || 0;
+        // Period is empty only if both duration AND session count are 0
+        return totalDuration === 0 && sessionCount === 0;
     }, [dailyData, dailyLoading]);
 
     const isWeeklyEmpty = useMemo(() => {
         if (!weeklyData || weeklyLoading) return false;
         const totalDuration = parseInt(weeklyData.aggregate?.total_duration) || 0;
-        return totalDuration === 0;
+        const sessionCount = weeklyData.aggregate?.session_count || 0;
+        // Period is empty only if both duration AND session count are 0
+        return totalDuration === 0 && sessionCount === 0;
     }, [weeklyData, weeklyLoading]);
 
     // Process data for each dashboard

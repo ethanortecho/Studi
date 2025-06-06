@@ -28,6 +28,8 @@ export interface DailyInsightsResponse {
     break_count: number;
     time_frame: string;
     user: number;
+    is_final: boolean;
+    last_updated: string;
   };
   timeline_data: TimelineSession[];
   category_metadata: { [key: string]: CategoryMetadata };
@@ -48,6 +50,8 @@ export interface WeeklyInsightsResponse {
     break_count: number;
     time_frame: string;
     user: number;
+    is_final: boolean;
+    last_updated: string;
   };
   daily_breakdown: {
     [date: string]: {

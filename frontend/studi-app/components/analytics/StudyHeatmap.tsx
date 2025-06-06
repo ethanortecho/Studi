@@ -65,7 +65,7 @@ const StudyHeatmap: React.FC<StudyHeatmapProps> = ({
 
   return (
     <ThemedView style={[dashboardStyles.section, { backgroundColor: Colors.light.surface }]}>
-      <ThemedText style={dashboardStyles.title}>Study Time Heatmap</ThemedText>
+      <ThemedText style={dashboardStyles.title}>Study Schedule</ThemedText>
       
       <View style={{ marginTop: 15, flexDirection: 'row' }}>
         {/* Time labels (y-axis) */}
@@ -81,7 +81,7 @@ const StudyHeatmap: React.FC<StudyHeatmapProps> = ({
                 justifyContent: 'center'
               }}
             >
-              <ThemedText style={{ fontSize: 10, color: Colors.light.muted }}>
+              <ThemedText style={{ fontSize: 10, color: Colors.light.icon }}>
                 {label}
               </ThemedText>
             </View>

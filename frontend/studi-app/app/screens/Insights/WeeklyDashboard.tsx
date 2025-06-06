@@ -3,7 +3,7 @@ import { ScrollView, View, Text } from 'react-native';
 import CustomPieChart from '@/components/analytics/charts/CustomPieChart';
 import TotalHours from '@/components/analytics/TotalHoursContainer';
 import Legend from '@/components/analytics/DashboardLegend';
-import WeeklyTrendsGraph from '@/components/analytics/WeeklyTrendsGraph';
+import WeeklyBarchartContainer from '@/components/analytics/WeeklyBarchartContainer';
 import StudyHeatmap from '@/components/analytics/StudyHeatmap';
 import DebugDataViewer from '@/components/analytics/DebugDataViewer';
 import DashboardCard from '@/components/insights/DashboardContainer';
@@ -66,7 +66,7 @@ export default function WeeklyDashboard({
         {/* Second Row: Subject Breakdown + Total Hours */}
         <View className="flex-row gap-4 px-4">
           {/* Subject Breakdown */}
-          <View className="flex-1">
+          <View className="flex-2">
             <DashboardCard>
               <Text className="text-md font-bold text-category-purple mb-3">Subject Breakdown</Text>
               <View className="items-center justify-center">
@@ -94,26 +94,37 @@ export default function WeeklyDashboard({
           </View>
         </View>
         
-        {/* Weekly Trends Graph */}
-        <View className="px-4 pb-4">
-          <Text className="text-lg font-semibold text-layout-dark-grey mb-3">Weekly Trends</Text>
-          <DashboardCard className="mb-0">
-            {dailyBreakdown && categoryMetadata && Object.keys(dailyBreakdown).length > 0 ? (
-              <WeeklyTrendsGraph
-                data={dailyBreakdown}
-                categoryMetadata={categoryMetadata}
-              />
-            ) : (
-              <View className="p-4">
-                <Text className="text-gray-500">Loading weekly trends...</Text>
+        {/* Third Row: Weekly Trends + Another Component */}
+        <View className="flex-row gap-4 px-4 pb-4">
+          {/* Weekly Trends Graph */}
+          <View className="flex-">
+            <DashboardCard className="mb-0">
+              {dailyBreakdown && categoryMetadata && Object.keys(dailyBreakdown).length > 0 ? (
+                <WeeklyBarchartContainer
+                  data={dailyBreakdown}
+                  categoryMetadata={categoryMetadata}
+                />
+              ) : (
+                <View className="p-4">
+                  <Text className="text-gray-500">Loading weekly trends...</Text>
+                </View>
+              )}
+            </DashboardCard>
+          </View>
+
+          {/* Right Component - Placeholder for your new component */}
+          <View className="flex-1">
+            <DashboardCard className="mb-0">
+              <View className="p-4 min-h-[150px] items-center justify-center">
+                <Text className="text-gray-500">Your new component goes here</Text>
               </View>
-            )}
-          </DashboardCard>
+            </DashboardCard>
+          </View>
         </View>
 
         {/* Study Time Heatmap */}
         <View className="px-4 pb-4">
-          <Text className="text-lg font-semibold text-layout-dark-grey mb-3">Study Heatmap</Text>
+          <Text className="text-lg font-semibold text-layout-dark-grey mb-3">Study Schedule</Text>
           <DashboardCard className="mb-0">
             {sessionTimes && (
               <StudyHeatmap

@@ -2,7 +2,7 @@ import React from 'react';
 import { Text, View } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Timer } from '@/components/record/Timer';
+import { Timer } from '@/components/record/StopWatch';
 import { CategoryCarousel } from '@/components/record/CategoryCarousel';
 import { StudySessionProvider } from '@/context/StudySessionContext';
 

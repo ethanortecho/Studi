@@ -1,10 +1,10 @@
 import { Text, View, Pressable } from 'react-native';
-import { useTimer } from '@/hooks/useTimer';
+import { useStopwatch } from '@/hooks/timer';
 import { useEffect } from 'react';
 import { useState } from 'react';
 
 export function Timer() {
-    const { startTimer, pauseTimer, resumeTimer, stopTimer, elapsed, status, formatTime } = useTimer();
+    const { startTimer, pauseTimer, resumeTimer, stopTimer, elapsed, status, formatTime } = useStopwatch();
     
     useEffect(() => {
         console.log("Timer component: status changed to", status);

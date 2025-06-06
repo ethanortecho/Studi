@@ -1,7 +1,7 @@
 from django.urls import path
 from .views.insights_api import DailyInsights, WeeklyInsights, MonthlyInsights
 from .views.create_api import CreateStudySession, EndStudySession, CreateSubject, CreateCategoryBlock, EndCategoryBlock
-from .views.category_api import CategoryList, CategoryDetail
+from .views.category_api import CategoryList, CategoryDetail, BreakCategory
 
 urlpatterns = [
     path('insights/daily/', DailyInsights.as_view(), name='daily-insights'),
@@ -14,4 +14,5 @@ urlpatterns = [
     path('end-category-block/<int:id>/', EndCategoryBlock.as_view(), name='end-category-block'),
     path('category-list/', CategoryList.as_view(), name='category-list'),
     path('categories/<int:pk>/', CategoryDetail.as_view(), name='category-detail'),
+    path('break-category/', BreakCategory.as_view(), name='break-category'),
 ] 

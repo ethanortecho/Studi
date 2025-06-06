@@ -80,6 +80,25 @@ export const deleteCategory = async (id: string): Promise<void> => {
   console.log("API: deleteCategory successful");
 };
 
+export const fetchBreakCategory = async (): Promise<Category> => {
+  console.log("API: fetchBreakCategory called");
+  const res = await fetch(`${API_BASE_URL}/break-category/?username=testuser`, {
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': AUTH_HEADER,
+    }
+  });
+  
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.error || errorData.message || 'Failed to fetch break category');
+  }
+  
+  const data = await res.json();
+  console.log("API: fetchBreakCategory data:", data);
+  return data;
+};
+
 export const createStudySession = async (startTime: Date) => {
     console.log("API: createStudySession called with", startTime);
     const res = await fetch(`${API_BASE_URL}/create-session/`, {

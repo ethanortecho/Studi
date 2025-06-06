@@ -48,6 +48,9 @@ class Categories(models.Model):
     name = models.CharField(max_length=255)
     color = models.CharField(max_length=7, default="#000000")
     is_active = models.BooleanField(default=True)
+    is_system = models.BooleanField(default=False)
+    category_type = models.CharField(max_length=20, default='study')
+
 
 class UserGoals(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)

@@ -1,5 +1,30 @@
 import DailyDashboard from "@/app/screens/Insights/DailyDashboard";
 
+// Filter out Break category from categoryDurations for visual displays
+export function filterBreakCategory(categoryDurations: { [key: string]: number }) {
+    const filtered = { ...categoryDurations };
+    delete filtered['Break'];
+    return filtered;
+}
+
+// Filter out Break category from dailyBreakdown data for visual displays
+export function filterBreakFromDailyBreakdown(dailyBreakdown: { [date: string]: { total: number; categories: { [key: string]: number } } }) {
+    const filtered = { ...dailyBreakdown };
+    
+    Object.keys(filtered).forEach(date => {
+        if (filtered[date].categories) {
+            const filteredCategories = { ...filtered[date].categories };
+            delete filteredCategories['Break'];
+            filtered[date] = {
+                ...filtered[date],
+                categories: filteredCategories
+            };
+        }
+    });
+    
+    return filtered;
+}
+
 export function parseCategoryDurations(apiData: any) {
     const categoryDurations = apiData?.aggregate?.category_durations || {};
     const categoryMetadata = apiData?.category_metadata || {};
@@ -10,11 +35,13 @@ export function parseCategoryDurations(apiData: any) {
         return acc;
     }, {} as { [key: string]: { color: string } });
 
-    const chartData = Object.entries(categoryDurations).map(([label, value]) => ({
-        label,
-        value: Number(value),
-        color: categoryNameToMeta[label]?.color || '#E8E8E8'
-    }));
+    const chartData = Object.entries(categoryDurations)
+        .filter(([label, _]) => label !== 'Break') // Filter out Break category from visual displays
+        .map(([label, value]) => ({
+            label,
+            value: Number(value),
+            color: categoryNameToMeta[label]?.color || '#E8E8E8'
+        }));
 
     return chartData;
 }

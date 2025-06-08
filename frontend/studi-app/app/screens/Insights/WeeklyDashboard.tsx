@@ -57,8 +57,6 @@ export default function WeeklyDashboard({
               pieChartData={pieChartData || []}
               timelineData={undefined}
               weeklyChartData={dailyBreakdown}
-              title="Weekly Chart Analysis"
-              showTitle={false}
             />
           </View>
       {/* Off-white container for all dashboard content - edge to edge */}

@@ -52,7 +52,6 @@ export default function DailyDashboard({
         pieChartData={pieChartData || []}
         timelineData={timelineData}
         weeklyChartData={undefined}
-        title="Study Session Analysis"
       />
       
 

@@ -82,6 +82,7 @@ const WeeklyBarchart: React.FC<WeeklyBarchartProps> = ({
         Object.keys(dayData.categories).forEach(cat => allCategories.add(cat));
       }
     });
+    // Note: Break category is now filtered at the data processing level
     const categoryList = Array.from(allCategories);
 
     const transformedData = sortedDays.map(day => {

@@ -8,15 +8,14 @@ interface LegendProps {
 
 export default function Legend({ category_durations, category_metadata }: LegendProps) {
     // Only show categories that have actual duration data
+    // Note: Break category is now filtered at the data processing level
     const categoriesWithData = Object.entries(category_durations)
         .filter(([_, duration]) => duration > 0)
         .map(([categoryName, _]) => categoryName);
 
     return (
         <View>
-            <Text className="text-category-purple text-lg font-bold mb-2.5">
-                Your Colors
-            </Text>
+            
             <View className="flex-row flex-wrap items-center gap-4">
                 {categoriesWithData.map((categoryName) => {
                     // Find the metadata for this category by name
@@ -27,10 +26,10 @@ export default function Legend({ category_durations, category_metadata }: Legend
                     if (!categoryMeta) return null;
                     
                     return (
-                        <View key={categoryName} className="flex-row items-center">
+                        <View key={categoryName} className=" items-center">
                             <View 
                                 style={{ backgroundColor: categoryMeta.color }}
-                                className="w-3 h-3 rounded-sm mr-2"
+                                className="w-14 h-1 rounded-sm mr-2"
                             />
                             <Text className="text-layout-dark-grey text-sm">
                                 {categoryMeta.name}

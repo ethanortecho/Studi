@@ -7,6 +7,7 @@ import WeeklyBarChart from '@/components/analytics/WeeklyBarchart';
 import SessionBarchart from '../SessionBarchart';
 import { CategoryMetadata, TimelineSession } from '@/types/api';
 
+
 interface MultiChartContainerProps {
     // Required for all views
     timeframe: 'daily' | 'weekly';
@@ -57,16 +58,19 @@ export default function MultiChartContainer({
         
         return {
             pie: { 
+                title: 'Subject Breakdown',
                 available: hasPieData, 
                 label: 'Categories',
                 show: true // Always show pie chart option
             },
             sessions: { 
+                title: 'Session Breakdown',
                 available: hasSessionData, 
                 label: 'Sessions',
                 show: timeframe === 'daily'
             },
             bar: { 
+                title: 'Weekly Trends',
                 available: hasWeeklyData, 
                 label: 'Weekly Trends',
                 show: timeframe === 'weekly'
@@ -86,20 +90,20 @@ export default function MultiChartContainer({
     return (
         <DashboardCard>
             {showTitle && (
-                <View className="flex-row items-center justify-between">
-                    <Text className="text-md font-bold text-category-purple mb-3">{title}</Text>
+                <View className="flex-row items-center justify-center py-5">
+                    <Text className="text-xl font-bold text-gray-500 mb-3 ">{chartOptions[selectedChart].title}</Text>
                 </View>
             )}
             
             {/* Chart Display */}
-            <View className="mb-4">
+            <View className="mb-4" style={{ height: 225 }}>
                 {selectedChart === 'pie' && chartOptions.pie.available && (
-                    <View className="flex-row items-center justify-center">
+                    <View className="flex-row items-center justify-center h-full">
                         <CustomPieChart data={chartData.pie} />
                     </View>
                 )}
                 {selectedChart === 'sessions' && chartOptions.sessions.available && chartData.sessions.timelineData && chartData.sessions.categoryMetadata && (
-                    <View className="px-2">
+                    <View className="px-2 h-full justify-center">
                         <SessionBarchart 
                             timelineData={chartData.sessions.timelineData} 
                             categoryMetadata={chartData.sessions.categoryMetadata} 
@@ -108,7 +112,7 @@ export default function MultiChartContainer({
                     </View>
                 )}
                 {selectedChart === 'bar' && chartOptions.bar.available && chartData.bar && (
-                    <View className="flex-row items-center justify-center">
+                    <View className="flex-row items-center justify-center h-full">
                         <WeeklyBarChart data={chartData.bar}
                         categoryMetadata={chartData.sessions.categoryMetadata} />
                     </View>
@@ -116,20 +120,29 @@ export default function MultiChartContainer({
             </View>
             
             {/* Chart Toggle Buttons */}
+            
+            
+            {/* Legend */}
+            <View className="flex-row items-center justify-center py-10 px-4">
+                <Legend 
+                    category_durations={categoryDurations} 
+                    category_metadata={categoryMetadata} 
+                />
+            </View>
             <View className="flex-row items-center justify-center gap-2 mb-4">
                 {/* Pie Chart Button */}
                 <Pressable 
                     onPress={() => setSelectedChart('pie')}
                     className={`rounded-lg p-3 ${
                         selectedChart === 'pie' 
-                            ? 'bg-category-purple' 
-                            : 'bg-layout-grey-blue'
+                            ? 'bg-primary' 
+                            : 'bg-white border border-gray-300'
                     }`}
                 >
                     <Text className={`text-sm font-bold ${
                         selectedChart === 'pie' 
                             ? 'text-white' 
-                            : 'text-category-purple'
+                            : 'text-gray-500'
                     }`}>
                         {chartOptions.pie.label}
                     </Text>
@@ -142,18 +155,14 @@ export default function MultiChartContainer({
                         disabled={!chartOptions.sessions.available}
                         className={`rounded-lg p-3 ${
                             selectedChart === 'sessions' 
-                                ? 'bg-category-purple' 
-                                : chartOptions.sessions.available 
-                                    ? 'bg-layout-grey-blue' 
-                                    : 'bg-gray-300'
+                                ? 'bg-primary' 
+                                : 'bg-white border border-gray-300'
                         }`}
                     >
                         <Text className={`text-sm font-bold ${
                             selectedChart === 'sessions' 
                                 ? 'text-white' 
-                                : chartOptions.sessions.available 
-                                    ? 'text-category-purple' 
-                                    : 'text-gray-500'
+                                : 'text-gray-500'
                         }`}>
                             {chartOptions.sessions.label}
                         </Text>
@@ -167,31 +176,19 @@ export default function MultiChartContainer({
                         disabled={!chartOptions.bar.available}
                         className={`rounded-lg p-3 ${
                             selectedChart === 'bar' 
-                                ? 'bg-category-purple' 
-                                : chartOptions.bar.available 
-                                    ? 'bg-layout-grey-blue' 
-                                    : 'bg-gray-300'
+                                ? 'bg-primary' 
+                                : 'bg-white border border-gray-300'
                         }`}
                     >
                         <Text className={`text-sm font-bold ${
                             selectedChart === 'bar' 
                                 ? 'text-white' 
-                                : chartOptions.bar.available 
-                                    ? 'text-category-purple' 
-                                    : 'text-gray-500'
+                                : 'text-gray-500'
                         }`}>
                             {chartOptions.bar.label}
                         </Text>
                     </Pressable>
                 )}
-            </View>
-            
-            {/* Legend */}
-            <View className="flex-row items-center justify-center">
-                <Legend 
-                    category_durations={categoryDurations} 
-                    category_metadata={categoryMetadata} 
-                />
             </View>
         </DashboardCard>
     );

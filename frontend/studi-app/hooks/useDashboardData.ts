@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import useAggregateData from '@/utils/fetchApi';
-import { parseCategoryDurations, ParseStudyTrends, secondsToHours, secondsToHoursAndMinutes } from '@/utils/parseData';
+import { parseCategoryDurations, ParseStudyTrends, secondsToHours, secondsToHoursAndMinutes, filterBreakCategory, filterBreakFromDailyBreakdown } from '@/utils/parseData';
 import { DailyInsightsResponse, WeeklyInsightsResponse } from '@/types/api';
 import { formatDateForAPI, getWeekEnd, getWeekStart, navigateDate } from '@/utils/dateUtils';
 
@@ -71,7 +71,7 @@ export function useDashboardData({ dailyDate, weeklyDate }: UseDashboardDataPara
         return {
             totalHours: secondsToHours(dailyData),
             totalTime: secondsToHoursAndMinutes(dailyData),
-            categoryDurations: dailyData.aggregate.category_durations,
+            categoryDurations: filterBreakCategory(dailyData.aggregate.category_durations),
             categoryMetadata: dailyData.category_metadata,
             pieChartData: parseCategoryDurations(dailyData),
             timelineData: dailyData.timeline_data,
@@ -86,12 +86,12 @@ export function useDashboardData({ dailyDate, weeklyDate }: UseDashboardDataPara
         return {
             totalHours: secondsToHours(weeklyData),
             totalTime: secondsToHoursAndMinutes(weeklyData),
-            categoryDurations: weeklyData.aggregate.category_durations,
+            categoryDurations: filterBreakCategory(weeklyData.aggregate.category_durations),
             categoryMetadata: weeklyData.category_metadata,
             pieChartData: parseCategoryDurations(weeklyData),
             trendData: ParseStudyTrends(weeklyData.daily_breakdown, 'all'),
             sessionTimes: weeklyData.session_times,
-            dailyBreakdown: weeklyData.daily_breakdown,
+            dailyBreakdown: filterBreakFromDailyBreakdown(weeklyData.daily_breakdown),
             rawData: weeklyData,
             isEmpty: isWeeklyEmpty
         };

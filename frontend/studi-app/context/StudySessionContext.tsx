@@ -11,12 +11,12 @@ interface StudySessionContextType {
   breakCategory: Category | null;
   categories: Category[];
   isSessionPaused: boolean;
-  startSession: () => Promise<void>;
+  startSession: () => Promise<{ id: number }>;
   stopSession: () => Promise<void>;
   pauseSession: () => Promise<void>;
   resumeSession: () => Promise<void>;
   pauseCategoryBlock: (currentCategoryId: number, breakCategoryId: number) => Promise<void>;
-  switchCategory: (newCategoryId: number) => Promise<void>;
+  switchCategory: (newCategoryId: number, overrideSessionId?: number) => Promise<void>;
   cancelSession: () => Promise<void>;
 }
 
@@ -28,7 +28,7 @@ export const StudySessionContext = createContext<StudySessionContextType>({
   breakCategory: null,
   categories: [],
   isSessionPaused: false,
-  startSession: () => Promise.resolve(),
+  startSession: () => Promise.resolve({ id: 0 }),
   stopSession: () => Promise.resolve(),
   pauseSession: () => Promise.resolve(),
   resumeSession: () => Promise.resolve(),
@@ -150,7 +150,7 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const switchCategory = async (newCategoryId: number) => {
+  const switchCategory = async (newCategoryId: number, overrideSessionId?: number) => {
     console.log("Hook: switchCategory called", newCategoryId, "isSessionPaused:", isSessionPaused);
     
     // Prevent category switching when session is paused
@@ -159,9 +159,12 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
       throw new Error("Cannot switch categories while session is paused. Please resume the session first.");
     }
     
-    console.log("Hook: SessionID when switchCategory is called", sessionId);
-    if (!sessionId) {
-      console.error("Hook: switchCategory called but sessionId is null");
+    // Use override sessionId if provided, otherwise use context sessionId
+    const activeSessionId = overrideSessionId || sessionId;
+    console.log("Hook: SessionID when switchCategory is called", activeSessionId, "(override:", overrideSessionId, "context:", sessionId, ")");
+    
+    if (!activeSessionId) {
+      console.error("Hook: switchCategory called but no active session");
       throw new Error("Session not running");
     }
     try {
@@ -170,8 +173,8 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
         await endCategoryBlock(String(currentCategoryBlockId), new Date());
       }
       //if session is running, create a new category block
-      if (sessionId) {
-        const res = await createCategoryBlock(String(sessionId), String(newCategoryId), new Date());
+      if (activeSessionId) {
+        const res = await createCategoryBlock(String(activeSessionId), String(newCategoryId), new Date());
         setCurrentCategoryBlockId(res.id);
         setCurrentCategoryId(newCategoryId);
         // Clear paused category when switching to a new category

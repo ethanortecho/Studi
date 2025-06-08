@@ -1,17 +1,27 @@
 import { useBaseTimer } from './useBaseTimer';
 import { useStudySession } from '../useStudySession';
+import { useContext } from 'react';
+import { StudySessionContext } from '@/context/StudySessionContext';
 
 export function useStopwatch() {
     const { startSession, stopSession, pauseSession, resumeSession, cancelSession } = useStudySession();
+    const { sessionId } = useContext(StudySessionContext);
     
     const baseTimer = useBaseTimer({
         onStart: async () => {
-            console.log("Stopwatch: onStart callback, will call startSession");
-            try {
-                const res = await startSession();
-                console.log("Stopwatch: startSession result:", res);
-            } catch (error) {
-                console.error("Stopwatch: startSession error:", error);
+            console.log("Stopwatch: onStart callback, sessionId:", sessionId);
+            
+            // Only start a new session if one doesn't already exist
+            if (!sessionId) {
+                console.log("Stopwatch: No existing session, will call startSession");
+                try {
+                    const res = await startSession();
+                    console.log("Stopwatch: startSession result:", res);
+                } catch (error) {
+                    console.error("Stopwatch: startSession error:", error);
+                }
+            } else {
+                console.log("Stopwatch: Session already exists, timer starting without creating new session");
             }
         },
         onPause: async () => {
@@ -45,22 +55,27 @@ export function useStopwatch() {
 
     // Provide the same interface as the original useTimer for backward compatibility
     const startTimer = () => {
+        console.log("Stopwatch: startTimer called, current sessionId:", sessionId);
         baseTimer.start();
     };
 
     const pauseTimer = () => {
+        console.log("Stopwatch: pauseTimer called");
         baseTimer.pause();
     };
 
     const resumeTimer = () => {
+        console.log("Stopwatch: resumeTimer called");
         baseTimer.resume();
     };
 
     const stopTimer = () => {
+        console.log("Stopwatch: stopTimer called");
         baseTimer.stop();
     };
 
     const cancelTimer = async () => {
+        console.log("Stopwatch: cancelTimer called");
         try {
             await cancelSession();
             // Reset timer state without triggering onStop callback

@@ -12,8 +12,14 @@ import {
   Poppins_600SemiBold,
   Poppins_700Bold 
 } from '@expo-google-fonts/poppins';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { cssInterop } from 'nativewind';
+import { StudySessionProvider } from '@/context/StudySessionContext';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
+
+// Fix SafeAreaView compatibility with NativeWind
+cssInterop(SafeAreaView, { className: "style" });
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -39,14 +45,17 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="screens/manage-categories" options={{ headerShown: true, title: 'Manage Categories' }} />
-        <Stack.Screen name="screens/record" options={{ headerShown: true, title: 'Record Session' }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <StudySessionProvider>
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="screens/manage-categories" options={{ headerShown: true, title: 'Manage Categories' }} />
+          <Stack.Screen name="screens/record" options={{ headerShown: true, title: 'Record Session' }} />
+          <Stack.Screen name="screens/timer/stopwatch" options={{ headerShown: false, presentation: 'modal' }} />
+          <Stack.Screen name="+not-found" />
+        </Stack>
+        <StatusBar style="auto" />
+      </ThemeProvider>
+    </StudySessionProvider>
   );
 }

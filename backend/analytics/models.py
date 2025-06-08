@@ -26,6 +26,10 @@ class StudySessionManager(models.Manager):
         return self.filter(status__in=['active', 'completed'])
 
 class StudySession(models.Model):
+    TIMER_TYPE_CHOICES = [
+        ("pomodoro", "Pomodoro"),
+        ("custom", "Custom")
+    ]
     STATUS_CHOICES = [
         ("active", "Active"),
         ("completed", "Completed"),

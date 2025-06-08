@@ -20,19 +20,22 @@ export default function HomeScreen() {
         setModalVisible(false);
         
         // Navigate to appropriate timer screen based on config
+        // Pass selectedCategoryId as route parameter
+        const categoryParam = config.selectedCategoryId ? `&selectedCategoryId=${config.selectedCategoryId}` : '';
+        
         switch (config.mode) {
             case 'free':
-                router.push('/screens/timer/stopwatch');
+                router.replace(`/screens/timer/stopwatch?${categoryParam.substring(1)}`); // Remove leading &
                 break;
             case 'timer':
-                // Will navigate to countdown screen in Step 5
-                console.log('Countdown timer config:', config);
-                router.push('/screens/timer/stopwatch'); // Temporary fallback
+                // Navigate to countdown screen with duration and category parameters
+                const duration = config.duration || 25; // Default to 25 minutes if not specified
+                router.replace(`/screens/timer/countdown?duration=${duration}${categoryParam}`);
                 break;
             case 'pomo':
-                // Will navigate to pomodoro screen in Step 5
+                // Will navigate to pomodoro screen in future step
                 console.log('Pomodoro timer config:', config);
-                router.push('/screens/timer/stopwatch'); // Temporary fallback
+                router.replace(`/screens/timer/stopwatch?${categoryParam.substring(1)}`); // Temporary fallback
                 break;
         }
     };

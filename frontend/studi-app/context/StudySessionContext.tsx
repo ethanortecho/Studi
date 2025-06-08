@@ -1,6 +1,7 @@
 import { useState, useEffect, createContext, ReactNode } from "react";
 import { fetchCategories, Category, fetchBreakCategory } from '@/utils/studySession';
 import { createStudySession, endStudySession, createCategoryBlock, endCategoryBlock, cancelStudySession } from '../utils/studySession';
+import SessionStatsModal from '@/components/modals/SessionStatsModal';
 
 
 interface StudySessionContextType {
@@ -11,6 +12,11 @@ interface StudySessionContextType {
   breakCategory: Category | null;
   categories: Category[];
   isSessionPaused: boolean;
+  // Session stats modal state
+  sessionStatsModal: {
+    isVisible: boolean;
+    sessionDuration: number; // in minutes
+  };
   startSession: () => Promise<{ id: number }>;
   stopSession: () => Promise<void>;
   pauseSession: () => Promise<void>;
@@ -18,6 +24,9 @@ interface StudySessionContextType {
   pauseCategoryBlock: (currentCategoryId: number, breakCategoryId: number) => Promise<void>;
   switchCategory: (newCategoryId: number, overrideSessionId?: number) => Promise<void>;
   cancelSession: () => Promise<void>;
+  // Session stats modal functions
+  showSessionStats: (durationMinutes: number) => void;
+  hideSessionStats: () => void;
 }
 
 export const StudySessionContext = createContext<StudySessionContextType>({
@@ -28,6 +37,10 @@ export const StudySessionContext = createContext<StudySessionContextType>({
   breakCategory: null,
   categories: [],
   isSessionPaused: false,
+  sessionStatsModal: {
+    isVisible: false,
+    sessionDuration: 0,
+  },
   startSession: () => Promise.resolve({ id: 0 }),
   stopSession: () => Promise.resolve(),
   pauseSession: () => Promise.resolve(),
@@ -35,6 +48,8 @@ export const StudySessionContext = createContext<StudySessionContextType>({
   pauseCategoryBlock: () => Promise.resolve(),
   switchCategory: () => Promise.resolve(),
   cancelSession: () => Promise.resolve(),
+  showSessionStats: () => {},
+  hideSessionStats: () => {},
 });
 
 export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
@@ -44,6 +59,13 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
   const [pausedCategoryId, setPausedCategoryId] = useState<number | null>(null);
   const [breakCategory, setBreakCategory] = useState<Category | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
+
+  // Session stats modal state
+  const [sessionStatsModal, setSessionStatsModal] = useState({
+    isVisible: false,
+    sessionDuration: 0,
+  });
 
   // Computed property: session is paused if we have a paused category ID
   const isSessionPaused = pausedCategoryId !== null;
@@ -61,9 +83,11 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
   const startSession = async () => {
     console.log("Hook: startSession called");
     try {
-      const res = await createStudySession(new Date());
+      const sessionStartTime = new Date();
+      const res = await createStudySession(sessionStartTime);
       console.log("Hook: setSessionId to", res.id);
       setSessionId(res.id);
+      setSessionStartTime(sessionStartTime);
       return res;
     } catch (error) {
       console.error("Hook error in startSession:", error);
@@ -73,13 +97,28 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
 
   const stopSession = async () => {
     console.log("Hook: stopSession called, sessionId:", sessionId);
-    if (sessionId) {
+    if (sessionId && sessionStartTime) {
       try {
-        const res = await endStudySession(String(sessionId), new Date());
+        const sessionEndTime = new Date();
+        const res = await endStudySession(String(sessionId), sessionEndTime);
+        
+        // Calculate total session duration (including breaks)
+        const durationMs = sessionEndTime.getTime() - sessionStartTime.getTime();
+        const durationMinutes = Math.round(durationMs / (1000 * 60));
+        
+        // Reset session state
         setSessionId(null);
         setCurrentCategoryBlockId(null);
         setCurrentCategoryId(null);
         setPausedCategoryId(null);
+        setSessionStartTime(null);
+        
+        // Show session stats modal
+        setSessionStatsModal({
+          isVisible: true,
+          sessionDuration: durationMinutes,
+        });
+        
         return res;
       } catch (error) {
         console.error("Hook error in stopSession:", error);
@@ -197,6 +236,7 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
         setCurrentCategoryBlockId(null);
         setCurrentCategoryId(null);
         setPausedCategoryId(null);
+        setSessionStartTime(null);
         console.log("Hook: cancelSession completed");
         return res;
       } catch (error) {
@@ -204,6 +244,20 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
         throw error;
       }
     }
+  };
+
+  const showSessionStats = (durationMinutes: number) => {
+    setSessionStatsModal({
+      isVisible: true,
+      sessionDuration: durationMinutes,
+    });
+  };
+
+  const hideSessionStats = () => {
+    setSessionStatsModal({
+      isVisible: false,
+      sessionDuration: 0,
+    });
   };
 
   return (
@@ -215,6 +269,7 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
       breakCategory,
       categories,
       isSessionPaused,
+      sessionStatsModal,
       startSession,
       stopSession,
       pauseSession,
@@ -222,8 +277,15 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
       pauseCategoryBlock,
       switchCategory,
       cancelSession,
+      showSessionStats,
+      hideSessionStats,
     }}>
       {children}
+      <SessionStatsModal
+        visible={sessionStatsModal.isVisible}
+        sessionDuration={sessionStatsModal.sessionDuration}
+        onDismiss={hideSessionStats}
+      />
     </StudySessionContext.Provider>
   );
 };  

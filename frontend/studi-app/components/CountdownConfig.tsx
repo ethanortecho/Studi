@@ -18,7 +18,7 @@ export default function CountdownConfig({ onConfigChange }: CountdownConfigProps
   const handlePresetSelect = (minutes: number) => {
     setSelectedPreset(minutes);
     setCustomMinutes('');
-    onConfigChange({ duration: minutes * 60 * 1000 }); // Convert to milliseconds
+    onConfigChange({ duration: minutes }); // Pass minutes directly
   };
 
   const handleCustomChange = (text: string) => {
@@ -26,7 +26,7 @@ export default function CountdownConfig({ onConfigChange }: CountdownConfigProps
     setSelectedPreset(null);
     const minutes = parseInt(text);
     if (!isNaN(minutes) && minutes > 0) {
-      onConfigChange({ duration: minutes * 60 * 1000 });
+      onConfigChange({ duration: minutes }); // Pass minutes directly
     }
   };
 

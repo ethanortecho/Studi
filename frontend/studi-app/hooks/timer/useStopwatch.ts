@@ -3,25 +3,31 @@ import { useStudySession } from '../useStudySession';
 import { useContext } from 'react';
 import { StudySessionContext } from '@/context/StudySessionContext';
 
-export function useStopwatch() {
-    const { startSession, stopSession, pauseSession, resumeSession, cancelSession } = useStudySession();
+export interface StopwatchConfig {
+    selectedCategoryId?: string; // Category to start with
+}
+
+export function useStopwatch(config?: StopwatchConfig) {
+    const { startSession, stopSession, pauseSession, resumeSession, cancelSession, switchCategory } = useStudySession();
     const { sessionId } = useContext(StudySessionContext);
     
     const baseTimer = useBaseTimer({
         onStart: async () => {
-            console.log("Stopwatch: onStart callback, sessionId:", sessionId);
+            console.log("Stopwatch: onStart callback - creating session and starting timer atomically");
             
-            // Only start a new session if one doesn't already exist
-            if (!sessionId) {
-                console.log("Stopwatch: No existing session, will call startSession");
-                try {
-                    const res = await startSession();
-                    console.log("Stopwatch: startSession result:", res);
-                } catch (error) {
-                    console.error("Stopwatch: startSession error:", error);
+            try {
+                // Always create a new session when timer starts (atomic operation)
+                const sessionResult = await startSession();
+                console.log("Stopwatch: Session created with ID:", sessionResult.id);
+                
+                // If category is specified, switch to it immediately
+                if (config?.selectedCategoryId) {
+                    await switchCategory(Number(config.selectedCategoryId), sessionResult.id);
+                    console.log("Stopwatch: Switched to category:", config.selectedCategoryId);
                 }
-            } else {
-                console.log("Stopwatch: Session already exists, timer starting without creating new session");
+            } catch (error) {
+                console.error("Stopwatch: Error creating session:", error);
+                throw error; // This will prevent timer from starting
             }
         },
         onPause: async () => {

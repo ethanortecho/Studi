@@ -51,7 +51,8 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="screens/manage-categories" options={{ headerShown: true, title: 'Manage Categories' }} />
           <Stack.Screen name="screens/record" options={{ headerShown: true, title: 'Record Session' }} />
-          <Stack.Screen name="screens/timer/stopwatch" options={{ headerShown: false, presentation: 'modal' }} />
+          <Stack.Screen name="screens/timer/stopwatch" options={{ headerShown: false }} />
+          <Stack.Screen name="screens/timer/countdown" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />
         </Stack>
         <StatusBar style="auto" />

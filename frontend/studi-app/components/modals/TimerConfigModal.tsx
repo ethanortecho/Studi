@@ -58,14 +58,8 @@ export default function TimerConfigModal({ visible, onClose, onStartSession }: T
     }
 
     try {
-      // Start the session first and get the session result
-      const sessionResult = await startSession();
-      console.log('Modal: Session started with ID:', sessionResult.id);
-      
-      // Switch to the selected category using the fresh session ID
-      await switchCategory(Number(selectedCategoryId), sessionResult.id);
-      
-      // Pass configuration to parent
+      // Pass configuration and category to parent for navigation
+      // Session creation will happen atomically when timer starts
       onStartSession({ 
         mode: selectedMode,
         selectedCategoryId,

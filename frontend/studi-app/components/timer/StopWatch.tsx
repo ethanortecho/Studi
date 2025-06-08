@@ -1,44 +1,51 @@
 import React from 'react';
 import { Text, View, Pressable } from 'react-native';
-import { useStopwatch } from '@/hooks/timer';
-import { useEffect, useState, useContext } from 'react';
+import { useStopwatch, StopwatchConfig } from '@/hooks/timer';
+import { useState, useContext, useEffect } from 'react';
 import { StudySessionContext } from '@/context/StudySessionContext';
 import { CancelSessionModal } from '@/components/modals/CancelSessionModal';
 import { router } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 
 export function Timer() {
-    const { startTimer, pauseTimer, resumeTimer, stopTimer, cancelTimer, elapsed, status, formatTime } = useStopwatch();
+    // Get category from route params (passed from modal)
+    const { selectedCategoryId } = useLocalSearchParams();
+    
+    // Create config with category info
+    const stopwatchConfig: StopwatchConfig = {
+        selectedCategoryId: selectedCategoryId as string
+    };
+    
+    const { startTimer, pauseTimer, resumeTimer, stopTimer, cancelTimer, elapsed, status, formatTime } = useStopwatch(stopwatchConfig);
     const { sessionId, currentCategoryId, categories } = useContext(StudySessionContext);
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     
-    // Check if session is already running (from modal)
+    // Check if session is already running
     const isSessionActive = sessionId !== null;
     const currentCategory = categories.find(cat => cat.id === String(currentCategoryId));
     
-    // Auto-start timer if session was started from modal and timer is still idle
+    // Auto-start timer when component mounts (this creates session + starts timer atomically)
     useEffect(() => {
-        if (isSessionActive && status === 'idle') {
-            console.log("Timer component: Session already active, starting timer automatically");
+        if (selectedCategoryId && status === 'idle') {
+            console.log("Timer: Auto-starting timer with category:", selectedCategoryId);
             startTimer();
         }
-    }, [isSessionActive, status, startTimer]);
+    }, []); // Run once on mount
     
     const handlePlayPause = () => {
         if (status === 'running') {
             pauseTimer();
         } else if (status === 'paused') {
             resumeTimer();
-        } else {
-            startTimer();
         }
+        // No manual start needed - auto-starts on mount
     };
 
     const handleStopSession = async () => {
         try {
             await stopTimer();
-            // Navigate back to home after stopping
-            router.push('/(tabs)/home');
+            // Note: Navigation to home is handled by SessionStatsModal after showing completion stats
         } catch (error) {
             console.error("Timer component: stopTimer error:", error);
         }
@@ -49,7 +56,7 @@ export function Timer() {
         try {
             await cancelTimer();
             setShowCancelModal(false);
-            router.push('/(tabs)/home');
+            router.replace('/(tabs)/home'); // Cancel immediately navigates (no stats modal)
         } catch (error) {
             console.error("Timer component: cancelTimer error:", error);
         } finally {
@@ -96,7 +103,7 @@ export function Timer() {
                     className="bg-green-500 py-3 px-6 rounded-full items-center"
                 >
                     <Text className="text-white font-medium text-lg">
-                        {status === 'running' ? 'Pause' : (status === 'paused' ? 'Resume' : 'Start')}
+                        {status === 'running' ? 'Pause' : 'Resume'}
                     </Text>
                 </Pressable>
             </View>

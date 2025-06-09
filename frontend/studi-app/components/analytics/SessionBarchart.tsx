@@ -1,6 +1,5 @@
 import React from 'react';
-import { View, Text } from 'react-native';
-import { Colors } from '@/constants/Colors';
+import { View, Text, ScrollView } from 'react-native';
 
 /**
  * SessionBarchart - A customizable session timeline visualization
@@ -37,46 +36,13 @@ import { Colors } from '@/constants/Colors';
 interface TimelineData {
   start_time: string;
   end_time: string;
+  breaks: any[];
   breakdowns: {
     category: number;
     start_time: string;
     end_time: string;
     duration: number;
   }[];
-}
-
-interface SessionBarchartStyles {
-  // Container styles
-  containerPadding: string;
-  containerBackground: string;
-  containerCorners: string;
-  
-  // Title styles
-  titleSize: string;
-  titleWeight: string;
-  titleColor: string;
-  titleMarginBottom: string;
-  
-  // Timeline styles
-  timelineMarginBottom: string;
-  sessionRowMarginBottom: string;
-  sessionLabelWidth: string;
-  sessionLabelSize: string;
-  sessionLabelColor: string;
-  sessionLabelFormat: 'short' | 'full'; // 'short' = S1, 'full' = Session 1
-  timelineHeight: string;
-  timelineBackground: string;
-  timelineCorners: string;
-  
-  // Time marker styles
-  timeMarkerSize: string;
-  timeMarkerColor: string;
-  timeMarkerWidth: string;
-  timeMarkerHeight: string;
-  timeMarkerMarginLeft: string;
-  timeMarkerMarginRight: string;
-  timeMarkerMarginTop: string;
-  timeAxisOffset: string; // Additional offset to align with timeline
 }
 
 interface SessionBarchartProps {
@@ -88,168 +54,229 @@ interface SessionBarchartProps {
     };
   };
   width?: number;
-  styles?: Partial<SessionBarchartStyles>;
 }
 
-// Default styling configuration
-const defaultStyles: SessionBarchartStyles = {
-  // Container
-  containerPadding: 'p-3',
-  containerBackground: 'bg-white',
-  containerCorners: 'rounded-2xl',
-  
-  // Title
-  titleSize: 'text-md',
-  titleWeight: 'font-bold',
-  titleColor: 'text-category-purple',
-  titleMarginBottom: 'mb-4',
-  
-  // Timeline
-  timelineMarginBottom: 'mb-0',
-  sessionRowMarginBottom: 'mb-3.5',
-  sessionLabelWidth: 'w-16',
-  sessionLabelSize: 'text-xs',
-  sessionLabelColor: '#6B7280', // gray-500
-  sessionLabelFormat: 'full',
-  timelineHeight: 'h-5',
-  timelineBackground: 'bg-gray-200',
-  timelineCorners: 'rounded',
-  
-  // Time markers
-  timeMarkerSize: 'text-xs',
-  timeMarkerColor: '#6B7280', // gray-500
-  timeMarkerWidth: 'w-5',
-  timeMarkerHeight: 'h-5',
-  timeMarkerMarginLeft: 'ml-8',
-  timeMarkerMarginRight: 'mr-1',
-  timeMarkerMarginTop: 'mt-2',
-  timeAxisOffset: '-20',
-};
+interface ProcessedSession {
+  index: number;
+  durationMinutes: number;
+  segments: {
+    categoryId: string;
+    categoryName: string;
+    color: string;
+    durationMinutes: number;
+    widthPercent: number;
+  }[];
+  barWidthPercent: number;
+}
 
 export default function SessionBarchart({
   timelineData,
   categoryMetadata,
-  width = 300,
-  styles: customStyles = {},
+  width = 320,
 }: SessionBarchartProps) {
-  // Merge custom styles with defaults
-  const styles = { ...defaultStyles, ...customStyles };
-
-  // Find the duration of each session
-  const sessionDurations = timelineData.map(session => {
-    const sessionStart = new Date(session.start_time).getTime();
-    const sessionEnd = new Date(session.end_time).getTime();
-    return sessionEnd - sessionStart; // in milliseconds
-  });
-
-  // Find the longest session duration
-  const longestSessionDuration = Math.max(...sessionDurations);
-
-  // Convert to total minutes (real max session length)
-  const totalMinutes = Math.ceil(longestSessionDuration / (1000 * 60));
-
-  // 🔥 ROUND UP the AXIS length (not the segment width)
-  let roundedAxisMinutes;
-  if (totalMinutes <= 60) {
-    // Round up to nearest 10 mins
-    roundedAxisMinutes = Math.ceil(totalMinutes / 10) * 10;
-  } else {
-    // Round up to nearest full hour
-    roundedAxisMinutes = Math.ceil(totalMinutes / 60) * 60;
-  }
-
-  // Decide on ticks based on the axis length
-  const useMinutes = roundedAxisMinutes <= 60;
-  const tickInterval = useMinutes ? 10 : 30; // 10 min ticks or 30 min (0.5 hr)
-  const totalTicks = Math.ceil(roundedAxisMinutes / tickInterval) + 1;
-
-  const tickLabels = Array.from({ length: totalTicks }, (_, i) => {
-    if (useMinutes) {
-      return (i * tickInterval).toString();
-    } else {
-      return ((i * tickInterval) / 60).toFixed(1).replace(/\.0$/, '');
+  // Step 1: Data Processing Layer
+  const processSessionData = (): { sessions: ProcessedSession[], axisDurationMinutes: number, timeMarkers: number[] } => {
+    if (!timelineData || timelineData.length === 0) {
+      return { sessions: [], axisDurationMinutes: 10, timeMarkers: [0, 5, 10] };
     }
-  });
 
-  // ✅ Calculate true segment width based on real session duration (no rounding)
-  const getSegmentWidth = (start: string, end: string) => {
-    const startTime = new Date(start).getTime();
-    const endTime = new Date(end).getTime();
-    const duration = endTime - startTime;
-    return (duration / longestSessionDuration) * (width - 40); // Subtract padding
+    // Calculate session durations in minutes
+    const sessionDurations = timelineData.map(session => {
+      const start = new Date(session.start_time).getTime();
+      const end = new Date(session.end_time).getTime();
+      return (end - start) / (1000 * 60); // Convert to minutes
+    });
+
+    // Step 2: Scaling Engine - use actual max duration, round up to nice interval
+    const maxSessionDuration = Math.max(...sessionDurations);
+    
+    // Determine appropriate rounding based on session length
+    let axisDurationMinutes;
+    if (maxSessionDuration < 1) {
+      // For very short sessions (< 1min), round up to nearest 0.5min
+      axisDurationMinutes = Math.ceil(maxSessionDuration / 0.5) * 0.5;
+    } else if (maxSessionDuration <= 10) {
+      // For sessions <= 10min, round up to nearest 2min
+      axisDurationMinutes = Math.ceil(maxSessionDuration / 2) * 2;
+    } else if (maxSessionDuration <= 60) {
+      // For sessions <= 60min, round up to nearest 10min
+      axisDurationMinutes = Math.ceil(maxSessionDuration / 10) * 10;
+    } else {
+      // For longer sessions, round up to nearest 15min
+      axisDurationMinutes = Math.ceil(maxSessionDuration / 15) * 15;
+    }
+
+    // Generate time markers (2-5 markers max, but always include start and end)
+    const timeMarkers: number[] = [];
+    let markerInterval;
+    
+    if (axisDurationMinutes < 1) {
+      markerInterval = 0.25; // 15 second intervals for very short sessions
+    } else if (axisDurationMinutes <= 10) {
+      markerInterval = axisDurationMinutes <= 4 ? 1 : 2;
+    } else if (axisDurationMinutes <= 60) {
+      markerInterval = 10;
+    } else {
+      // For longer sessions, intelligently space markers to fit within 5 markers max
+      // Calculate interval that gives us around 4-5 markers
+      if (axisDurationMinutes <= 150) {
+        markerInterval = 30; // Every 30 minutes for sessions up to 2.5 hours
+      } else if (axisDurationMinutes <= 240) {
+        markerInterval = 60; // Every hour for sessions up to 4 hours  
+      } else {
+        markerInterval = 90; // Every 1.5 hours for longer sessions
+      }
+    }
+    
+    // Generate markers from 0 to axisDurationMinutes
+    for (let i = 0; i <= axisDurationMinutes; i += markerInterval) {
+      timeMarkers.push(i);
+    }
+    
+    // Ensure we always have the endpoint if it's not already included
+    if (timeMarkers[timeMarkers.length - 1] !== axisDurationMinutes) {
+      timeMarkers.push(axisDurationMinutes);
+    }
+    
+    // Limit to 6 markers max for readability (start, 4 intermediates, end)
+    let limitedMarkers = timeMarkers;
+    if (timeMarkers.length > 6) {
+      // Keep first, last, and evenly space 4 markers in between
+      const step = (timeMarkers.length - 1) / 5;
+      limitedMarkers = [
+        timeMarkers[0],
+        timeMarkers[Math.round(step)],
+        timeMarkers[Math.round(step * 2)],
+        timeMarkers[Math.round(step * 3)],
+        timeMarkers[Math.round(step * 4)],
+        timeMarkers[timeMarkers.length - 1]
+      ];
+    }
+
+    // Step 3: Process each session
+    const processedSessions: ProcessedSession[] = timelineData.map((session, index) => {
+      const sessionDuration = sessionDurations[index];
+      
+      // Process segments within this session
+      const segments = session.breakdowns.map(breakdown => {
+        const categoryId = breakdown.category.toString();
+        const categoryInfo = categoryMetadata[categoryId];
+        const segmentDurationMinutes = breakdown.duration / 60; // Convert seconds to minutes
+        
+        // Override color for Break category to be very light grey
+        let color = categoryInfo?.color || '#E8E8E8';
+        if (categoryInfo?.name === 'Break') {
+          color = '#E8E8E8'; // Light grey
+        }
+        
+        return {
+          categoryId,
+          categoryName: categoryInfo?.name || 'Unknown',
+          color,
+          durationMinutes: segmentDurationMinutes,
+          widthPercent: (segmentDurationMinutes / sessionDuration) * 100
+        };
+      });
+
+      return {
+        index: index + 1,
+        durationMinutes: sessionDuration,
+        segments,
+        barWidthPercent: (sessionDuration / axisDurationMinutes) * 100
+      };
+    });
+
+    return { sessions: processedSessions, axisDurationMinutes, timeMarkers: limitedMarkers };
   };
 
-  return (
-    <View className={`${styles.containerPadding} ${styles.containerBackground} ${styles.containerCorners}`}>
-      <Text className={`${styles.titleSize} ${styles.titleWeight} ${styles.titleMarginBottom} ${styles.titleColor}`}>
-        Sessions
-      </Text>
+  const { sessions, axisDurationMinutes, timeMarkers } = processSessionData();
 
-      {/* Timeline */}
-      <View className={styles.timelineMarginBottom}>
-        {timelineData.map((session, sessionIndex) => (
-          <View key={sessionIndex} className={`flex-row items-center ${styles.sessionRowMarginBottom}`}>
-            <Text 
-              className={`${styles.sessionLabelWidth} ${styles.sessionLabelSize}`} 
-              style={{ color: styles.sessionLabelColor }}
-            >
-              {styles.sessionLabelFormat === 'full' ? `Session ${sessionIndex + 1}` : `S${sessionIndex + 1}`}
-            </Text>
-            <View className={`flex-1 ${styles.timelineHeight} flex-row ${styles.timelineBackground} ${styles.timelineCorners} overflow-hidden`}>
-              {session.breakdowns.map((breakdown, index) => (
-                <View
-                  key={index}
-                  className="h-full"
-                  style={{
-                    width: getSegmentWidth(breakdown.start_time, breakdown.end_time),
-                    backgroundColor: categoryMetadata[breakdown.category]?.color || '#E8E8E8',
-                  }}
-                />
-              ))}
-            </View>
-          </View>
-        ))}
+  // Helper function to format duration
+  const formatDuration = (minutes: number): string => {
+    if (minutes < 1) {
+      return `${Math.round(minutes * 60)}s`;
+    }
+    if (minutes < 60) {
+      return `${Math.round(minutes)}m`;
+    }
+    const hours = Math.floor(minutes / 60);
+    const mins = Math.round(minutes % 60);
+    return `${hours}h ${mins}m`;
+  };
+
+  if (sessions.length === 0) {
+    return (
+      <View className="p-3 bg-white rounded-2xl">
+        <Text className="text-md font-bold text-category-purple mb-4">Sessions</Text>
+        <Text className="text-gray-500 text-center py-4">No sessions available</Text>
       </View>
+    );
+  }
 
-      {/* Time markers */}
-      <View className={`flex-row items-center ${styles.timeMarkerMarginTop}`}>
-        <Text
-          className={`${styles.timeMarkerSize} ${styles.timeMarkerMarginRight} ${styles.timeMarkerWidth} text-right`}
-          style={{ color: styles.timeMarkerColor }}
-        >
-          {useMinutes ? 'min' : 'hr'}
-        </Text>
-        <View 
-          className={`flex-1 relative ${styles.timeMarkerHeight}`}
-          style={{ marginLeft: parseInt(styles.sessionLabelWidth.replace('w-', '')) * 4 + parseInt(styles.timeAxisOffset || '0') }}
-        >
-          {tickLabels.map((label, i) => {
-            // Only show every Nth label depending on total ticks
-            let N = 1;
-            if (tickLabels.length > 12) N = 3;
-            else if (tickLabels.length > 8) N = 2;
-            if (i % N !== 0 && i !== tickLabels.length - 1) return null;
+  return (
+    <ScrollView className="max-h-56" showsVerticalScrollIndicator={false}>
+      <View className="p-3 bg-white rounded-2xl">
+        <Text className="text-md font-bold text-category-purple mb-4">Sessions</Text>
 
-            const percent = useMinutes
-              ? (parseFloat(label) / roundedAxisMinutes) * 100
-              : ((parseFloat(label) * 60) / roundedAxisMinutes) * 100;
+        {/* Timeline Container */}
+        <View className="mb-4">
+          {sessions.map((session) => (
+            <View key={session.index} className="mb-3">
+              {/* Session Row */}
+              <View className="flex-row items-center">
+                {/* Session Label */}
+                <View className="w-16">
+                  <Text className="text-xs text-gray-500">Session {session.index}</Text>
+                  <Text className="text-xs text-gray-400">{formatDuration(session.durationMinutes)}</Text>
+                </View>
 
-            return (
+                {/* Session Bar Container */}
+                <View className="flex-1 ml-2">
+                  <View 
+                    className="h-5 flex-row rounded overflow-hidden items-center"
+                    style={{ 
+                      width: `${session.barWidthPercent}%`,
+                      minWidth: 20 // Ensure very short sessions are still visible
+                    }}
+                  >
+                    {session.segments.map((segment, segmentIndex) => (
+                      <View
+                        key={segmentIndex}
+                        className={segment.categoryName === 'Break' ? 'h-3' : 'h-full'}
+                        style={{
+                          width: `${segment.widthPercent}%`,
+                          backgroundColor: segment.color,
+                        }}
+                      />
+                    ))}
+                  </View>
+                </View>
+              </View>
+            </View>
+          ))}
+        </View>
+
+        {/* Time Axis */}
+        <View className="flex-row items-center mt-2">
+          <View className="w-16">
+            <Text className="text-xs text-gray-500 text-center">min</Text>
+          </View>
+          <View className="flex-1 relative h-5 ml-2">
+            {timeMarkers.map((marker, index) => (
               <Text
-                key={i}
-                className={`absolute ${styles.timeMarkerSize}`}
+                key={index}
+                className="absolute text-xs text-gray-500"
                 style={{
-                  left: `${percent}%`,
+                  left: `${(marker / axisDurationMinutes) * 100}%`,
                   transform: [{ translateX: -10 }],
-                  color: styles.timeMarkerColor,
                 }}
               >
-                {label}
+                {marker}
               </Text>
-            );
-          })}
+            ))}
+          </View>
         </View>
       </View>
-    </View>
+    </ScrollView>
   );
 }

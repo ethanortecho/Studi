@@ -112,9 +112,9 @@ export default function MultiChartContainer({
                     </View>
                 )}
                 {selectedChart === 'bar' && chartOptions.bar.available && chartData.bar && (
-                    <View className="flex-row items-center justify-center h-full">
+                    <View className="flex-row items-end justify-center h-full px- pt-2">
                         <WeeklyBarChart data={chartData.bar}
-                        categoryMetadata={chartData.sessions.categoryMetadata} />
+                        categoryMetadata={categoryMetadata} />
                     </View>
                 )}
             </View>
@@ -169,7 +169,7 @@ export default function MultiChartContainer({
                     </Pressable>
                 )}
                 
-                {/* Weekly Bar Button (Weekly only) */}
+                {/* Weekly Bar Button (Weekly only) */} 
                 {chartOptions.bar.show && (
                     <Pressable 
                         onPress={() => setSelectedChart('bar')}

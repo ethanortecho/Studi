@@ -49,7 +49,6 @@ export default function WeeklyDashboard({
       contentContainerStyle={{ paddingBottom: 30 }}
       showsVerticalScrollIndicator={false}
     >
-      <View className="flex-1">
             <MultiChartContainer 
               timeframe="weekly"
               categoryMetadata={categoryMetadata || {}}
@@ -58,27 +57,16 @@ export default function WeeklyDashboard({
               timelineData={undefined}
               weeklyChartData={dailyBreakdown}
             />
-          </View>
       {/* Off-white container for all dashboard content - edge to edge */}
       <View className="bg-layout-off-white rounded-3xl mx-4 mb-4 px-3 py-4">
         
-        {/* Top Row: Legend in white card */}
-        
-        {/* Second Row: Subject Breakdown + Total Hours */}
        
-        {/* Third Row: Weekly Trends + Another Component */}
-        
-
-        {/* Study Time Heatmap */}
         <View className="px-4 pb-4">
-          <Text className="text-lg font-semibold text-layout-dark-grey mb-3">Study Schedule</Text>
-          <DashboardCard className="mb-0">
-            {sessionTimes && (
-              <StudyHeatmap
-                sessionTimes={sessionTimes}
-              />
-            )}
-          </DashboardCard>
+          {sessionTimes && (
+            <StudyHeatmap
+              sessionTimes={sessionTimes}
+            />
+          )}
         </View>
       </View>
       

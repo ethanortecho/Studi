@@ -3,11 +3,30 @@ import { Text, View, Pressable } from 'react-native';
 import DashboardContent from './DashboardContent';
 import DateNavigationHeader from './DateNavigationHeader';
 import { getDefaultDate, navigateDate } from '@/utils/dateUtils';
+import { useDashboardData } from '@/hooks/useDashboardData';
 
-export default function DashboardTabs() {
-    const [selectedTab, setSelectedTab] = useState('daily');
+interface DashboardTabsProps {
+    onDataChange?: (data: { totalTime?: { hours: number; minutes: number }, totalHours?: string }) => void;
+}
+
+export default function DashboardTabs({ onDataChange }: DashboardTabsProps) {
+    const [selectedTab, setSelectedTab] = useState('weekly'); // Default to weekly to match your usage
     const [dailyDate, setDailyDate] = useState(getDefaultDate('daily'));
     const [weeklyDate, setWeeklyDate] = useState(getDefaultDate('weekly'));
+
+    // Get dashboard data
+    const { daily, weekly, loading } = useDashboardData({ dailyDate, weeklyDate });
+    
+    // Expose current tab's data to parent
+    React.useEffect(() => {
+        const currentData = selectedTab === 'daily' ? daily : weekly;
+        if (currentData && onDataChange) {
+            onDataChange({
+                totalTime: currentData.totalTime,
+                totalHours: currentData.totalHours
+            });
+        }
+    }, [selectedTab, daily, weekly, onDataChange]);
 
     const handleDateNavigation = (direction: 'prev' | 'next') => {
         if (selectedTab === 'daily') {

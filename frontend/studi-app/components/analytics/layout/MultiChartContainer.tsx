@@ -96,7 +96,7 @@ export default function MultiChartContainer({
             )}
             
             {/* Chart Display */}
-            <View className="mb-4" style={{ height: 225 }}>
+            <View className="mb-4" style={{ height: 200 }}>
                 {selectedChart === 'pie' && chartOptions.pie.available && (
                     <View className="flex-row items-center justify-center h-full">
                         <CustomPieChart data={chartData.pie} />

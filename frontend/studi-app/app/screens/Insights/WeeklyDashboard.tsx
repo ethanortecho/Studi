@@ -4,7 +4,7 @@ import CustomPieChart from '@/components/analytics/charts/CustomPieChart';
 import TotalHours from '@/components/analytics/TotalHoursContainer';
 import Legend from '@/components/analytics/DashboardLegend';
 import WeeklyBarchartContainer from '@/components/analytics/WeeklyBarchartContainer';
-import StudyHeatmap from '@/components/analytics/StudyHeatmap';
+import StudyDayBars from '@/components/analytics/StudyDayBars';
 import DebugDataViewer from '@/components/analytics/DebugDataViewer';
 import DashboardCard from '@/components/insights/DashboardContainer';
 import MultiChartContainer from '@/components/analytics/layout/MultiChartContainer';
@@ -49,21 +49,23 @@ export default function WeeklyDashboard({
       contentContainerStyle={{ paddingBottom: 30 }}
       showsVerticalScrollIndicator={false}
     >
-            <MultiChartContainer 
-              timeframe="weekly"
-              categoryMetadata={categoryMetadata || {}}
-              categoryDurations={categoryDurations || {}}
-              pieChartData={pieChartData || []}
-              timelineData={undefined}
-              weeklyChartData={dailyBreakdown}
-            />
+      <View className="mx-4 mb-4">
+        <MultiChartContainer 
+          timeframe="weekly"
+          categoryMetadata={categoryMetadata || {}}
+          categoryDurations={categoryDurations || {}}
+          pieChartData={pieChartData || []}
+          timelineData={undefined}
+          weeklyChartData={dailyBreakdown}
+        />
+      </View>
       {/* Off-white container for all dashboard content - edge to edge */}
       <View className="bg-layout-off-white rounded-3xl mx-4 mb-4 px-3 py-4">
         
        
         <View className="px-4 pb-4">
           {sessionTimes && (
-            <StudyHeatmap
+            <StudyDayBars
               sessionTimes={sessionTimes}
             />
           )}

@@ -45,14 +45,16 @@ export default function DailyDashboard({
       showsVerticalScrollIndicator={false}
     >
       {/* Off-white container for all dashboard content - edge to edge */}
-      <MultiChartContainer 
-        timeframe="daily"
-        categoryMetadata={categoryMetadata || {}}
-        categoryDurations={categoryDurations || {}}
-        pieChartData={pieChartData || []}
-        timelineData={timelineData}
-        weeklyChartData={undefined}
-      />
+      <View className="mx-4 mb-4">
+        <MultiChartContainer 
+          timeframe="daily"
+          categoryMetadata={categoryMetadata || {}}
+          categoryDurations={categoryDurations || {}}
+          pieChartData={pieChartData || []}
+          timelineData={timelineData}
+          weeklyChartData={undefined}
+        />
+      </View>
       
 
         

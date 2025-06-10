@@ -74,20 +74,33 @@ export default function SessionBarchart({
   categoryMetadata,
   width = 320,
 }: SessionBarchartProps) {
+  console.log('🎯 SessionBarchart: Component rendered with data:', {
+    timelineDataLength: timelineData?.length || 0,
+    categoryMetadataKeys: Object.keys(categoryMetadata || {}).length,
+    width
+  });
+
   // Step 1: Data Processing Layer
   const processSessionData = (): { sessions: ProcessedSession[], axisDurationMinutes: number, timeMarkers: number[] } => {
+    console.log('🏭 SessionBarchart: Starting data processing...');
+    const start = performance.now();
+    
     if (!timelineData || timelineData.length === 0) {
+      console.log('⚠️ SessionBarchart: No timeline data, returning empty result');
       return { sessions: [], axisDurationMinutes: 10, timeMarkers: [0, 5, 10] };
     }
 
     // Calculate session durations in minutes
+    const durationStart = performance.now();
     const sessionDurations = timelineData.map(session => {
       const start = new Date(session.start_time).getTime();
       const end = new Date(session.end_time).getTime();
       return (end - start) / (1000 * 60); // Convert to minutes
     });
+    console.log(`⏱️ SessionBarchart: Duration calculations took ${(performance.now() - durationStart).toFixed(2)}ms`);
 
     // Step 2: Scaling Engine - use actual max duration, round up to nice interval
+    const scalingStart = performance.now();
     const maxSessionDuration = Math.max(...sessionDurations);
     
     // Determine appropriate rounding based on session length
@@ -105,8 +118,10 @@ export default function SessionBarchart({
       // For longer sessions, round up to nearest 15min
       axisDurationMinutes = Math.ceil(maxSessionDuration / 15) * 15;
     }
+    console.log(`⏱️ SessionBarchart: Scaling calculations took ${(performance.now() - scalingStart).toFixed(2)}ms`);
 
     // Generate time markers (2-5 markers max, but always include start and end)
+    const markerStart = performance.now();
     const timeMarkers: number[] = [];
     let markerInterval;
     
@@ -152,8 +167,10 @@ export default function SessionBarchart({
         timeMarkers[timeMarkers.length - 1]
       ];
     }
+    console.log(`⏱️ SessionBarchart: Time marker generation took ${(performance.now() - markerStart).toFixed(2)}ms`);
 
     // Step 3: Process each session
+    const sessionProcessingStart = performance.now();
     const processedSessions: ProcessedSession[] = timelineData.map((session, index) => {
       const sessionDuration = sessionDurations[index];
       
@@ -185,7 +202,11 @@ export default function SessionBarchart({
         barWidthPercent: (sessionDuration / axisDurationMinutes) * 100
       };
     });
+    console.log(`⏱️ SessionBarchart: Session processing took ${(performance.now() - sessionProcessingStart).toFixed(2)}ms`);
 
+    const end = performance.now();
+    console.log(`🏭 SessionBarchart: Total data processing took ${(end - start).toFixed(2)}ms for ${timelineData.length} sessions`);
+    
     return { sessions: processedSessions, axisDurationMinutes, timeMarkers: limitedMarkers };
   };
 
@@ -203,6 +224,12 @@ export default function SessionBarchart({
     const mins = Math.round(minutes % 60);
     return `${hours}h ${mins}m`;
   };
+
+  console.log('🎯 SessionBarchart: Rendering complete with', {
+    sessionsCount: sessions.length,
+    axisDuration: axisDurationMinutes,
+    timeMarkersCount: timeMarkers.length
+  });
 
   if (sessions.length === 0) {
     return (

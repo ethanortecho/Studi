@@ -1,5 +1,6 @@
 import React from 'react';
 import { useEffect, useMemo, useState, useRef } from 'react';
+import { API_BASE_URL } from '../config/api';
 
 // Cache for storing API responses
 const apiCache = new Map<string, any>();
@@ -49,16 +50,21 @@ export default function useAggregateData(time_frame: string,
     end_date?: string
   ) {
     const [data, setData] = useState(null);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     
     // Create cache key for this request
     const cacheKey = useMemo(() => {
-        return `${time_frame}-${start_date}${end_date ? `-${end_date}` : ''}`;
+        const key = `${time_frame}-${start_date}${end_date ? `-${end_date}` : ''}`;
+        console.log('🔑 fetchApi: Generated cache key:', key);
+        return key;
     }, [time_frame, start_date, end_date]);
 
     useEffect(() => {
         const fetchData = async() => {
+            console.log('🚀 fetchApi: Starting fetch process for:', cacheKey);
+            const overallStart = performance.now();
+            
             // Check cache first - but only for potentially final data
             // Use local date to match how sessions are stored
             const today = new Date();
@@ -67,25 +73,43 @@ export default function useAggregateData(time_frame: string,
             const isCurrentDay = (time_frame === 'daily' && start_date === localToday) || 
                                  (time_frame === 'weekly' && start_date <= localToday && (!end_date || end_date >= localToday));
             
+            console.log('📅 fetchApi: Date analysis:', {
+                cacheKey,
+                localToday,
+                isCurrentDay,
+                willUseCache: !isCurrentDay
+            });
+            
             // Only use cache for non-current periods (they should be final/immutable)
             if (!isCurrentDay && apiCache.has(cacheKey)) {
-                console.log('Using cached data for:', cacheKey);
+                console.log('💾 fetchApi: Cache HIT for:', cacheKey);
+                const cacheRetrievalStart = performance.now();
+                
                 cacheAccessTimes.set(cacheKey, Date.now()); // Update access time
                 setData(apiCache.get(cacheKey));
                 setLoading(false);
+                
+                const cacheRetrievalTime = performance.now() - cacheRetrievalStart;
+                console.log(`⚡ fetchApi: Cache retrieval took ${cacheRetrievalTime.toFixed(2)}ms for ${cacheKey}`);
                 return;
             }
 
+            console.log(`🔍 fetchApi: Cache MISS for ${cacheKey} (current day: ${isCurrentDay})`);
+
             // Check if this request is already ongoing
             if (ongoingRequests.has(cacheKey)) {
-                console.log('Request already in progress for:', cacheKey);
+                console.log('⏳ fetchApi: Request already in progress for:', cacheKey);
                 try {
+                    const waitStart = performance.now();
                     const cachedResult = await ongoingRequests.get(cacheKey);
+                    const waitTime = performance.now() - waitStart;
+                    console.log(`⏱️ fetchApi: Waited ${waitTime.toFixed(2)}ms for ongoing request: ${cacheKey}`);
+                    
                     setData(cachedResult);
                     setLoading(false);
                 } catch (error) {
-                    console.error('Error in ongoing request:', error);
-                    setError(error);
+                    console.error('❌ fetchApi: Error in ongoing request:', error);
+                    setError(error instanceof Error ? error.message : 'Unknown error occurred');
                     setLoading(false);
                 }
                 return;
@@ -98,52 +122,66 @@ export default function useAggregateData(time_frame: string,
             // Create the request promise
             const requestPromise = (async () => {
                 try {
-                    console.log('Making API request for:', cacheKey, isCurrentDay ? '(LIVE - no cache)' : '(cacheable)', 'localToday:', localToday);
+                    const apiCallStart = performance.now();
+                    console.log('🌐 fetchApi: Making API request for:', cacheKey, isCurrentDay ? '(LIVE - no cache)' : '(cacheable)', 'localToday:', localToday);
 
                     let response;
                     
                     if (time_frame === 'daily') {
-                        response = await fetch(`http://127.0.0.1:8000/api/insights/${time_frame}/?date=${start_date}&username=ethanortecho`, {
+                        response = await fetch(`${API_BASE_URL}/insights/${time_frame}/?date=${start_date}&username=ethanortecho`, {
                             headers: headers
                         });
                     } else { 
-                        response = await fetch(`http://127.0.0.1:8000/api/insights/${time_frame}/?start_date=${start_date}&end_date=${end_date}&username=ethanortecho`, {
+                        response = await fetch(`${API_BASE_URL}/insights/${time_frame}/?start_date=${start_date}&end_date=${end_date}&username=ethanortecho`, {
                             headers: headers
                         });
                     }
 
-                    console.log('Response received:', response.status);
+                    const apiCallTime = performance.now() - apiCallStart;
+                    console.log(`🌐 fetchApi: API response received in ${apiCallTime.toFixed(2)}ms, status: ${response.status} for ${cacheKey}`);
+                    
+                    const jsonParseStart = performance.now();
                     const json = await response.json();
+                    const jsonParseTime = performance.now() - jsonParseStart;
+                    console.log(`📄 fetchApi: JSON parsing took ${jsonParseTime.toFixed(2)}ms for ${cacheKey}`);
                     
                     // Only cache final/historical data (not current day data)
                     if (!isCurrentDay && json.aggregate?.is_final !== false) {
+                        const cacheStoreStart = performance.now();
                         apiCache.set(cacheKey, json);
                         cacheAccessTimes.set(cacheKey, Date.now());
                         manageCacheSize(); // Clean up old entries if needed
-                        console.log('Cached data for:', cacheKey);
+                        const cacheStoreTime = performance.now() - cacheStoreStart;
+                        console.log(`💾 fetchApi: Data cached in ${cacheStoreTime.toFixed(2)}ms for ${cacheKey}`);
                     } else {
-                        console.log('NOT caching (current/non-final data):', cacheKey);
+                        console.log('🚫 fetchApi: NOT caching (current/non-final data):', cacheKey);
                     }
+                    
+                    const totalTime = performance.now() - overallStart;
+                    console.log(`✅ fetchApi: Complete request cycle took ${totalTime.toFixed(2)}ms for ${cacheKey}`);
                     
                     return json;
                 } catch (error) {
-                    console.error('Error fetching data:', error);
+                    const errorTime = performance.now() - overallStart;
+                    console.error(`❌ fetchApi: Error after ${errorTime.toFixed(2)}ms for ${cacheKey}:`, error);
                     throw error;
                 } finally {
                     // Remove from ongoing requests
                     ongoingRequests.delete(cacheKey);
+                    console.log('🧹 fetchApi: Cleaned up ongoing request for:', cacheKey);
                 }
             })();
 
             // Store the ongoing request
             ongoingRequests.set(cacheKey, requestPromise);
+            console.log('📋 fetchApi: Added to ongoing requests:', cacheKey);
 
             try {
                 const result = await requestPromise;
                 setData(result);
                 setLoading(false);
             } catch (error) {
-                setError(error);
+                setError(error instanceof Error ? error.message : 'Unknown error occurred');
                 setLoading(false);
             }
         };

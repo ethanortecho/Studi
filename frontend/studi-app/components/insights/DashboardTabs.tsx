@@ -71,9 +71,12 @@ export default function DashboardTabs({ onDataChange }: DashboardTabsProps) {
             
             {/* Dashboard Content */}
             <DashboardContent 
-                selectedTab={selectedTab} 
+                selectedTab={selectedTab}
                 dailyDate={dailyDate}
                 weeklyDate={weeklyDate}
+                daily={daily}
+                weekly={weekly}
+                loading={loading}
             />
         </View>
     );

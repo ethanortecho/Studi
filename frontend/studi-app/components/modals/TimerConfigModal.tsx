@@ -16,7 +16,7 @@ export interface TimerConfig {
   pomodoroWorkDuration?: number;
   pomodoroBreakDuration?: number;
   selectedCategoryId?: string;
-  // New configuration fields
+  // Pomodoro config fields from PomodoroConfig component
   workDuration?: number;
   breakDuration?: number;
   cycles?: number;
@@ -43,6 +43,7 @@ export default function TimerConfigModal({ visible, onClose, onStartSession }: T
   };
 
   const handleConfigChange = (config: any) => {
+    console.log('Config change:', config);
     setCurrentConfig(config);
   };
 
@@ -58,13 +59,25 @@ export default function TimerConfigModal({ visible, onClose, onStartSession }: T
     }
 
     try {
-      // Pass configuration and category to parent for navigation
-      // Session creation will happen atomically when timer starts
-      onStartSession({ 
+      // Convert pomodoro config to the format expected by our components
+      let finalConfig = { 
         mode: selectedMode,
         selectedCategoryId,
         ...currentConfig
-      });
+      };
+
+      // For pomodoro mode, convert milliseconds to minutes for navigation
+      if (selectedMode === 'pomo' && currentConfig.workDuration) {
+        finalConfig = {
+          ...finalConfig,
+          pomodoroBlocks: currentConfig.cycles,
+          pomodoroWorkDuration: Math.round(currentConfig.workDuration / (1000 * 60)), // Convert ms to minutes
+          pomodoroBreakDuration: Math.round(currentConfig.breakDuration / (1000 * 60)), // Convert ms to minutes
+        };
+      }
+
+      console.log('Final config being passed:', finalConfig);
+      onStartSession(finalConfig);
     } catch (error) {
       console.error('Error starting session:', error);
       // Handle error - maybe show alert
@@ -74,7 +87,7 @@ export default function TimerConfigModal({ visible, onClose, onStartSession }: T
   const isStartButtonEnabled = selectedCategoryId !== '' && 
     (selectedMode === 'free' || 
      (selectedMode === 'timer' && currentConfig.duration) ||
-     (selectedMode === 'pomo' && currentConfig.workDuration && currentConfig.breakDuration));
+     (selectedMode === 'pomo')); // Pomodoro always has valid config now with default preset
 
   const renderConfiguration = () => {
     switch (selectedMode) {
@@ -114,15 +127,7 @@ export default function TimerConfigModal({ visible, onClose, onStartSession }: T
         </View>
 
         <ScrollView style={{ flex: 1, padding: 24 }}>
-          {/* Welcome Section */}
-          <View style={{ marginBottom: 32 }}>
-            <Text style={{ fontSize: 30, fontWeight: '300', color: '#4338ca', marginBottom: 8 }}>
-              Welcome Back,
-            </Text>
-            <Text style={{ fontSize: 30, fontWeight: '300', color: '#5b21b6' }}>
-              Ethan
-            </Text>
-          </View>
+          
 
           {/* Mode Selector */}
           <View style={{

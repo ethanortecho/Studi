@@ -1,27 +1,27 @@
 import React from 'react';
 import { Text, View, Pressable } from 'react-native';
-import { useCountdown, CountdownConfig } from '@/hooks/timer';
+import { usePomo, PomoConfig } from '@/hooks/timer';
 import { useState, useContext, useEffect } from 'react';
 import { StudySessionContext } from '@/context/StudySessionContext';
 import { CancelSessionModal } from '@/components/modals/CancelSessionModal';
 import { router } from 'expo-router';
 import { useLocalSearchParams } from 'expo-router';
 
-interface CountdownTimerProps {
-    config: CountdownConfig;
+interface PomoTimerProps {
+    config: PomoConfig;
 }
 
-export default function CountdownTimer({ config }: CountdownTimerProps) {
+export default function PomoTimer({ config }: PomoTimerProps) {
     // Get category from route params (passed from modal)
     const { selectedCategoryId } = useLocalSearchParams();
     
     // Create config with category info
-    const countdownConfig: CountdownConfig = {
+    const pomoConfig: PomoConfig = {
         ...config,
         selectedCategoryId: selectedCategoryId as string
     };
     
-    const { startTimer, pauseTimer, resumeTimer, stopTimer, cancelTimer, timeRemaining, status, formatTime, isFinished } = useCountdown(countdownConfig);
+    const { startTimer, pauseTimer, resumeTimer, stopTimer, cancelTimer, timeRemaining, status, formatTime, isFinished, pomoBlocksRemaining, pomoBlockStatus } = usePomo(pomoConfig);
     const { sessionId, currentCategoryId, categories } = useContext(StudySessionContext);
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -33,7 +33,7 @@ export default function CountdownTimer({ config }: CountdownTimerProps) {
     // Auto-start timer when component mounts (this creates session + starts timer atomically)
     useEffect(() => {
         if (selectedCategoryId && status === 'idle') {
-            console.log("CountdownTimer: Auto-starting timer with category:", selectedCategoryId);
+            console.log("PomoTimer: Auto-starting timer with category:", selectedCategoryId);
             startTimer();
         }
     }, []); // Run once on mount
@@ -44,7 +44,7 @@ export default function CountdownTimer({ config }: CountdownTimerProps) {
             {isSessionActive && currentCategory && (
                 <View className="w-full mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
                     <Text className="text-center text-sm text-blue-700 font-medium mb-1">
-                        Active Study Session - Countdown
+                        Active Study Session - Pomodoro
                     </Text>
                     <View className="flex-row items-center justify-center">
                         <View 
@@ -67,10 +67,20 @@ export default function CountdownTimer({ config }: CountdownTimerProps) {
                 </Pressable>
             )}
             
+            {/* Pomodoro Status */}
+            <View className="mb-2">
+                <Text className={`text-center text-lg font-medium ${pomoBlockStatus === 'work' ? 'text-red-600' : 'text-green-600'}`}>
+                    {pomoBlockStatus === 'work' ? '🍅 Focus Time' : '☕ Break Time'}
+                </Text>
+                <Text className="text-center text-sm text-gray-600">
+                    {pomoBlocksRemaining} blocks remaining
+                </Text>
+            </View>
+            
             <View className="mb-4">
                 <Text className="text-4xl font-bold text-gray-800">{formatTime()}</Text>
                 <Text className="text-center text-sm text-gray-600 mt-2">
-                    {config.duration} minute countdown
+                    {pomoBlockStatus === 'work' ? `${config.pomodoroWorkDuration} min work` : `${config.pomodoroBreakDuration} min break`}
                 </Text>
             </View>
             
@@ -99,7 +109,7 @@ export default function CountdownTimer({ config }: CountdownTimerProps) {
                                 await stopTimer();
                                 // Note: Navigation to home is handled by SessionStatsModal after showing completion stats
                             } catch (error) {
-                                console.error("CountdownTimer stop error:", error);
+                                console.error("PomoTimer stop error:", error);
                             }
                         }}
                         className="bg-red-500 py-3 px-6 rounded-full items-center mt-2"
@@ -121,7 +131,7 @@ export default function CountdownTimer({ config }: CountdownTimerProps) {
                         setShowCancelModal(false);
                         router.replace('/(tabs)/home'); // Cancel immediately navigates (no stats modal)
                     } catch (error) {
-                        console.error("CountdownTimer cancel error:", error);
+                        console.error("PomoTimer cancel error:", error);
                     } finally {
                         setIsLoading(false);
                     }

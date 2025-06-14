@@ -15,9 +15,10 @@ export function useBaseTimer(config?: BaseTimerConfig) {
     const [pausedTime, setPausedTime] = useState<number>(0);
     const [elapsed, setElapsed] = useState<number>(0); // in seconds
     const [status, setStatus] = useState<TimerStatus>('idle');
+   
 
     useEffect(() => {
-        let interval: NodeJS.Timeout;
+        let interval: ReturnType<typeof setInterval>;
         if (status === 'running' && startTime) {
             interval = setInterval(() => {
                 const now = new Date();
@@ -70,6 +71,15 @@ export function useBaseTimer(config?: BaseTimerConfig) {
         }
     };
 
+    const resetElapsed = () => {
+        console.log("BaseTimer: resetElapsed called");
+        setElapsed(0);
+        setPausedTime(0);
+        if (status === 'running') {
+            setStartTime(new Date()); // Reset the start time to now
+        }
+    };
+
     const resetWithoutCallbacks = () => {
         console.log("BaseTimer: resetWithoutCallbacks called");
         setStatus('idle');
@@ -98,6 +108,7 @@ export function useBaseTimer(config?: BaseTimerConfig) {
         resume,
         stop,
         reset,
+        resetElapsed,
         resetWithoutCallbacks,
         
         // Utilities

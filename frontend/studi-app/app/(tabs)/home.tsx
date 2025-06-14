@@ -33,9 +33,11 @@ export default function HomeScreen() {
                 router.replace(`/screens/timer/countdown?duration=${duration}${categoryParam}`);
                 break;
             case 'pomo':
-                // Will navigate to pomodoro screen in future step
-                console.log('Pomodoro timer config:', config);
-                router.replace(`/screens/timer/stopwatch?${categoryParam.substring(1)}`); // Temporary fallback
+                // Navigate to pomodoro screen with pomodoro parameters
+                const blocks = config.pomodoroBlocks || 4;
+                const workDuration = config.pomodoroWorkDuration || 25;
+                const breakDuration = config.pomodoroBreakDuration || 5;
+                router.replace(`/screens/timer/pomo?pomodoroBlocks=${blocks}&pomodoroWorkDuration=${workDuration}&pomodoroBreakDuration=${breakDuration}${categoryParam}`);
                 break;
         }
     };

@@ -32,37 +32,6 @@ export function Timer() {
             startTimer();
         }
     }, []); // Run once on mount
-    
-    const handlePlayPause = () => {
-        if (status === 'running') {
-            pauseTimer();
-        } else if (status === 'paused') {
-            resumeTimer();
-        }
-        // No manual start needed - auto-starts on mount
-    };
-
-    const handleStopSession = async () => {
-        try {
-            await stopTimer();
-            // Note: Navigation to home is handled by SessionStatsModal after showing completion stats
-        } catch (error) {
-            console.error("Timer component: stopTimer error:", error);
-        }
-    };
-    
-    const handleCancel = async () => {
-        setIsLoading(true);
-        try {
-            await cancelTimer();
-            setShowCancelModal(false);
-            router.replace('/(tabs)/home'); // Cancel immediately navigates (no stats modal)
-        } catch (error) {
-            console.error("Timer component: cancelTimer error:", error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
 
     return (
         <View className="items-center p-6 bg-white rounded-xl">
@@ -99,7 +68,13 @@ export function Timer() {
             
             <View className="w-full">
                 <Pressable 
-                    onPress={handlePlayPause}
+                    onPress={() => { 
+                        if (status === 'running') {
+                            pauseTimer();
+                        } else if (status === 'paused') {
+                            resumeTimer();
+                        }
+                    }}
                     className="bg-green-500 py-3 px-6 rounded-full items-center"
                 >
                     <Text className="text-white font-medium text-lg">
@@ -111,7 +86,14 @@ export function Timer() {
             {(status === 'running' || status === 'paused') && (
                 <View className="w-full mt-4">
                     <Pressable 
-                        onPress={handleStopSession}
+                        onPress={async () => {
+                            try {
+                                await stopTimer();
+                                // Note: Navigation to home is handled by SessionStatsModal after showing completion stats
+                            } catch (error) {
+                                console.error("Timer stop error:", error);
+                            }
+                        }}
                         className="bg-red-500 py-3 px-6 rounded-full items-center mt-2"
                     >
                         <Text className="text-white font-medium text-lg">
@@ -124,7 +106,18 @@ export function Timer() {
             <CancelSessionModal
                 visible={showCancelModal}
                 onClose={() => setShowCancelModal(false)}
-                onConfirm={handleCancel}
+                onConfirm={async () => {
+                    setIsLoading(true);
+                    try {
+                        await cancelTimer();
+                        setShowCancelModal(false);
+                        router.replace('/(tabs)/home'); // Cancel immediately navigates (no stats modal)
+                    } catch (error) {
+                        console.error("Timer cancel error:", error);
+                    } finally {
+                        setIsLoading(false);
+                    }
+                }}
                 isLoading={isLoading}
             />
         </View>

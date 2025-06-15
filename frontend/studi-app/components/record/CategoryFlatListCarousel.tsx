@@ -11,17 +11,16 @@ import Animated, {
 import { StudySessionContext } from '@/context/StudySessionContext';
 import { useStudySession } from '@/hooks/useStudySession';
 
-const CONTAINER_HEIGHT = 200;
-const ITEM_HEIGHT = 60;
-const ITEM_SPACING = 10;
-const DUPLICATE_COUNT = 100;
+const CONTAINER_HEIGHT = 180;
+const ITEM_HEIGHT = 50;
+const ITEM_SPACING = 15;
 
-// Category type
-// { id: string | number, name: string, color: string }
+// Category type (extended to support "No Category" option)
 type Category = {
   id: string | number;
   name: string;
   color: string;
+  isNone?: boolean; // For "No Category" option
 };
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList<Category>);
@@ -36,46 +35,45 @@ export default function CategoryFlatListCarousel() {
   const isSessionPaused = context?.isSessionPaused || false;
   const currentCategoryId = context?.currentCategoryId || null;
 
-  // Infinite scroll data
-  const infiniteCategories = useMemo(() => {
-    if (categories.length === 0) return [];
-    const duplicated: Category[] = [];
-    for (let i = 0; i < DUPLICATE_COUNT; i++) {
-      duplicated.push(...categories);
-    }
-    return duplicated;
+  // Simple carousel data with "No Category" option
+  const carouselData = useMemo(() => {
+    const noCategory: Category = { 
+      id: 'none', 
+      name: 'No Category', 
+      color: '#E5E7EB', 
+      isNone: true 
+    };
+    return [noCategory, ...categories];
   }, [categories]);
 
   const itemSize = ITEM_HEIGHT + ITEM_SPACING;
   const contentOffset = (CONTAINER_HEIGHT - ITEM_HEIGHT) / 2;
-  const startIndex = Math.floor(DUPLICATE_COUNT / 2) * categories.length;
 
   // Animated scroll value
   const scrollY = useSharedValue(0);
 
   // Sync with current category from context
   useEffect(() => {
-    if (categories.length > 0 && currentCategoryId) {
-      const foundIndex = categories.findIndex(cat => cat.id === String(currentCategoryId));
+    if (carouselData.length > 0 && currentCategoryId) {
+      const foundIndex = carouselData.findIndex(cat => Number(cat.id) === Number(currentCategoryId));
       if (foundIndex >= 0) {
-        const infiniteIndex = startIndex + foundIndex;
         flatListRef.current?.scrollToIndex({
-          index: infiniteIndex,
+          index: foundIndex,
           animated: false,
         });
       }
-    } else if (categories.length > 0) {
-      // Initial scroll to middle
+    } else if (carouselData.length > 0) {
+      // Initial scroll to "No Category" (index 0)
       flatListRef.current?.scrollToIndex({
-        index: startIndex,
+        index: 0,
         animated: false,
       });
     }
-  }, [currentCategoryId, categories.length, startIndex]);
+  }, [currentCategoryId, carouselData.length]);
 
   // Handle category selection
   async function handleCategoryChange(categoryIndex: number) {
-    if (isSessionPaused || categories.length === 0) return;
+    if (isSessionPaused || carouselData.length === 0) return;
     
     // Don't switch categories if no session is active yet
     if (!context?.sessionId) {
@@ -84,9 +82,16 @@ export default function CategoryFlatListCarousel() {
     }
     
     try {
-      const category = categories[categoryIndex];
-      if (category && switchCategory) {
-        await switchCategory(Number(category.id));
+      const selectedItem = carouselData[categoryIndex];
+      
+      // Skip if "No Category" is selected
+      if (selectedItem?.isNone) {
+        console.log("CategoryFlatListCarousel: No Category selected, skipping");
+        return;
+      }
+      
+      if (selectedItem && switchCategory) {
+        await switchCategory(Number(selectedItem.id));
       }
     } catch (error) {
       console.error("CategoryFlatListCarousel: Error switching category:", error);
@@ -100,9 +105,8 @@ export default function CategoryFlatListCarousel() {
     },
     onMomentumEnd: (event) => {
       const scrollYValue = event.contentOffset.y;
-      const infiniteIndex = Math.round(scrollYValue / itemSize);
-      const originalIndex = infiniteIndex % categories.length;
-      const clampedIndex = Math.max(0, Math.min(categories.length - 1, originalIndex));
+      const selectedIndex = Math.round(scrollYValue / itemSize);
+      const clampedIndex = Math.max(0, Math.min(carouselData.length - 1, selectedIndex));
       runOnJS(handleCategoryChange)(clampedIndex);
     },
   });
@@ -119,14 +123,14 @@ export default function CategoryFlatListCarousel() {
       const distance = Math.abs(itemCenter - currentContainerCenter);
       const scale = interpolate(
         distance,
-        [0, itemSize * 1.2],
-        [1, 0.7],
+        [0, itemSize * 1.5],
+        [1, 0.8],
         Extrapolation.CLAMP
       );
       const opacity = interpolate(
         distance,
-        [0, itemSize * 1.2],
-        [1, 0.3],
+        [0, itemSize * 1.5],
+        [1, 0.4],
         Extrapolation.CLAMP
       );
       return {
@@ -144,7 +148,7 @@ export default function CategoryFlatListCarousel() {
         fontSize: interpolate(
           distance,
           [0, itemSize * 0.8],
-          [32, 24],
+          [28, 20],
           Extrapolation.CLAMP
         ),
         fontWeight: isActive ? '700' : '500',
@@ -195,7 +199,7 @@ export default function CategoryFlatListCarousel() {
         </View>
       )}
       {/* Carousel */}
-      {categories.length > 0 && (
+      {carouselData.length > 0 && (
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
           {/* Left arrow visual cue */}
           <View style={{ marginRight: 16 }}>
@@ -203,7 +207,7 @@ export default function CategoryFlatListCarousel() {
           </View>
           <AnimatedFlatList
             ref={flatListRef}
-            data={infiniteCategories}
+            data={carouselData}
             renderItem={renderItem}
             keyExtractor={keyExtractor}
             getItemLayout={(data: ArrayLike<Category> | null | undefined, index: number) => ({ length: itemSize, offset: itemSize * index, index })}
@@ -213,7 +217,7 @@ export default function CategoryFlatListCarousel() {
             decelerationRate="fast"
             contentContainerStyle={{ paddingVertical: contentOffset }}
             style={{ height: CONTAINER_HEIGHT }}
-            initialScrollIndex={startIndex}
+            initialScrollIndex={0}
             initialNumToRender={10}
             maxToRenderPerBatch={10}
             windowSize={5}

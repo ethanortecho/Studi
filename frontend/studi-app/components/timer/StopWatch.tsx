@@ -36,35 +36,22 @@ export function Timer() {
 
     // Get color from current category or from selectedCategoryId as fallback
     const getBackgroundColor = () => {
-        console.log("StopWatch: getBackgroundColor called");
-        console.log("StopWatch: currentCategoryId:", currentCategoryId);
-        console.log("StopWatch: selectedCategoryId:", selectedCategoryId);
-        console.log("StopWatch: categories length:", categories.length);
-        
         // If session is active, use current category color
         const currentColor = getCurrentCategoryColor();
-        console.log("StopWatch: getCurrentCategoryColor returned:", currentColor);
-        
         if (currentColor !== '#E5E7EB') { // If not default gray
-            console.log("StopWatch: Using current category color:", currentColor);
             return currentColor;
         }
         
         // Fallback: use selected category color from route params
         if (selectedCategoryId) {
             const selectedCategory = categories.find(cat => Number(cat.id) === Number(selectedCategoryId));
-            console.log("StopWatch: Found selected category:", selectedCategory);
-            const fallbackColor = selectedCategory?.color || '#E5E7EB';
-            console.log("StopWatch: Using fallback color:", fallbackColor);
-            return fallbackColor;
+            return selectedCategory?.color || '#E5E7EB';
         }
         
-        console.log("StopWatch: Using default gray");
         return '#E5E7EB'; // Default gray
     };
 
     const categoryColor = getBackgroundColor();
-    console.log("StopWatch: Final background color:", categoryColor);
 
     return (
         <View className="flex-1" style={{ backgroundColor: categoryColor }}>
@@ -87,12 +74,12 @@ export function Timer() {
             <View className="bg-white rounded-t-3xl px-6 pt-8 pb-6" style={{ flex: 0.5 }}>
                 <View className="flex-1">
                     {/* Category Carousel */}
-                    <View className="flex-1 mb-6">
+                    <View style={{ height: 200, marginBottom: 20 }}>
                         <CategoryFlatListCarousel />
                     </View>
                     
                     {/* Control Buttons */}
-                    <View className="space-y-4">
+                    <View className="flex-row" style={{ gap: 16 }}>
                         <Pressable 
                             onPress={() => { 
                                 if (status === 'running') {
@@ -101,10 +88,11 @@ export function Timer() {
                                     resumeTimer();
                                 }
                             }}
-                            className="bg-green-500 py-3 px-6 rounded-full items-center"
+                            className="flex-1 bg-blue-500 py-4 rounded-2xl items-center justify-center"
+                            style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 }}
                         >
-                            <Text className="text-white font-medium text-lg">
-                                {status === 'running' ? 'Pause' : 'Resume'}
+                            <Text className="text-white font-bold text-3xl" style={{ letterSpacing: 2 }}>
+                                {status === 'running' ? '||' : '▶'}
                             </Text>
                         </Pressable>
                         
@@ -118,9 +106,10 @@ export function Timer() {
                                         console.error("Timer stop error:", error);
                                     }
                                 }}
-                                className="bg-red-500 py-3 px-6 rounded-full items-center"
+                                className="flex-1 bg-red-500 py-4 rounded-2xl items-center justify-center"
+                                style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 }}
                             >
-                                <Text className="text-white font-medium text-lg">
+                                <Text className="text-white font-semibold text-lg">
                                     End Session
                                 </Text>
                             </Pressable>

@@ -214,7 +214,12 @@ export default function TimerConfigModal({ visible, onClose, onStartSession }: T
               Select Study Category
             </Text>
             
-            <View style={{ gap: 12 }}>
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingRight: 16 }}
+              style={{ marginHorizontal: -8 }}
+            >
               {categories.map((category) => (
                 <TouchableOpacity
                   key={category.id}
@@ -222,11 +227,13 @@ export default function TimerConfigModal({ visible, onClose, onStartSession }: T
                   style={{
                     flexDirection: 'row',
                     alignItems: 'center',
-                    padding: 16,
+                    padding: 12,
                     borderRadius: 12,
                     borderWidth: 2,
                     borderColor: selectedCategoryId === category.id ? '#4f46e5' : '#e5e7eb',
-                    backgroundColor: selectedCategoryId === category.id ? '#eef2ff' : 'white'
+                    backgroundColor: selectedCategoryId === category.id ? '#eef2ff' : 'white',
+                    marginRight: 12,
+                    marginLeft: 8
                   }}
                 >
                   <View style={{
@@ -239,8 +246,7 @@ export default function TimerConfigModal({ visible, onClose, onStartSession }: T
                   <Text style={{
                     fontSize: 16,
                     fontWeight: '500',
-                    color: selectedCategoryId === category.id ? '#4f46e5' : '#374151',
-                    flex: 1
+                    color: selectedCategoryId === category.id ? '#4f46e5' : '#374151'
                   }}>
                     {category.name}
                   </Text>
@@ -251,14 +257,15 @@ export default function TimerConfigModal({ visible, onClose, onStartSession }: T
                       borderRadius: 10,
                       backgroundColor: '#4f46e5',
                       alignItems: 'center',
-                      justifyContent: 'center'
+                      justifyContent: 'center',
+                      marginLeft: 8
                     }}>
                       <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>✓</Text>
                     </View>
                   )}
                 </TouchableOpacity>
               ))}
-            </View>
+            </ScrollView>
 
             {categories.length === 0 && (
               <View style={{

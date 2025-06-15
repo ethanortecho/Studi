@@ -77,6 +77,12 @@ export default function CategoryFlatListCarousel() {
   async function handleCategoryChange(categoryIndex: number) {
     if (isSessionPaused || categories.length === 0) return;
     
+    // Don't switch categories if no session is active yet
+    if (!context?.sessionId) {
+      console.log("CategoryFlatListCarousel: Ignoring category change - no active session");
+      return;
+    }
+    
     try {
       const category = categories[categoryIndex];
       if (category && switchCategory) {

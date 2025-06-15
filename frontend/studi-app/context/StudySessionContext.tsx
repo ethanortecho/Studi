@@ -27,6 +27,8 @@ interface StudySessionContextType {
   // Session stats modal functions
   showSessionStats: (durationMinutes: number) => void;
   hideSessionStats: () => void;
+  // Utility functions
+  getCurrentCategoryColor: () => string;
 }
 
 export const StudySessionContext = createContext<StudySessionContextType>({
@@ -50,6 +52,7 @@ export const StudySessionContext = createContext<StudySessionContextType>({
   cancelSession: () => Promise.resolve(),
   showSessionStats: () => {},
   hideSessionStats: () => {},
+  getCurrentCategoryColor: () => '#E5E7EB', // Default gray color
 });
 
 export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
@@ -260,6 +263,22 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const getCurrentCategoryColor = () => {
+    console.log("Context: getCurrentCategoryColor called");
+    console.log("Context: currentCategoryId:", currentCategoryId);
+    console.log("Context: categories:", categories.map(cat => ({ id: cat.id, name: cat.name, color: cat.color })));
+    
+    if (currentCategoryId) {
+      const category = categories.find(cat => Number(cat.id) === Number(currentCategoryId));
+      console.log("Context: Found category for currentCategoryId:", category);
+      const color = category?.color || '#E5E7EB';
+      console.log("Context: Returning color:", color);
+      return color;
+    }
+    console.log("Context: No currentCategoryId, returning default gray");
+    return '#E5E7EB'; // Default gray if no category selected
+  };
+
   return (
     <StudySessionContext.Provider value={{
       sessionId,
@@ -279,6 +298,7 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
       cancelSession,
       showSessionStats,
       hideSessionStats,
+      getCurrentCategoryColor,
     }}>
       {children}
       <SessionStatsModal

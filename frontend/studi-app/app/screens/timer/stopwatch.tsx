@@ -8,19 +8,7 @@ import CategoryFlatListCarousel from '@/components/record/CategoryFlatListCarous
 export default function RecordSessionScreen() {
     return (
         <SafeAreaView className="flex-1">
-            <View className="p-4">
-                <Text className="text-2xl font-bold text-gray-800">Free Timer</Text>
-                <Text className="text-sm text-gray-600 mt-1">
-                    Open-ended study session
-                </Text>
-            </View>
-            
-            <ThemedView style={{ flex: 1 }}>
-                <View className="flex-1 p-4 gap-6">
-                    <Timer />
-                    <CategoryFlatListCarousel />
-                </View>
-            </ThemedView>
+            <Timer />
         </SafeAreaView>
     );
 }

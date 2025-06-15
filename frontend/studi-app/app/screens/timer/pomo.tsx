@@ -3,7 +3,7 @@ import { Text, View } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import PomoTimer from '@/components/timer/PomoTimer';
-import { CategoryCarousel } from '@/components/record/CategoryCarousel';
+import CategoryFlatListCarousel from '@/components/record/CategoryFlatListCarousel';
 import { useLocalSearchParams } from 'expo-router';
 
 export default function PomoSessionScreen() {
@@ -32,7 +32,7 @@ export default function PomoSessionScreen() {
             <ThemedView style={{ flex: 1 }}>
                 <View className="flex-1 p-4 gap-6">
                     <PomoTimer config={pomoConfig} />
-                    <CategoryCarousel />
+                    <CategoryFlatListCarousel />
                 </View>
             </ThemedView>
         </SafeAreaView>

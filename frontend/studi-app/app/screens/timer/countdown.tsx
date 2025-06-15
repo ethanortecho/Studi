@@ -3,7 +3,7 @@ import { Text, View } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CountdownTimer from '@/components/timer/CountdownTimer';
-import { CategoryCarousel } from '@/components/record/CategoryCarousel';
+import CategoryFlatListCarousel from '@/components/record/CategoryFlatListCarousel';
 import { useLocalSearchParams } from 'expo-router';
 
 export default function CountdownSessionScreen() {
@@ -23,7 +23,7 @@ export default function CountdownSessionScreen() {
             <ThemedView style={{ flex: 1 }}>
                 <View className="flex-1 p-4 gap-6">
                     <CountdownTimer config={{ duration: countdownDuration }} />
-                    <CategoryCarousel />
+                    <CategoryFlatListCarousel />
                 </View>
             </ThemedView>
         </SafeAreaView>

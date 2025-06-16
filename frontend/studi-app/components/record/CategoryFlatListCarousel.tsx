@@ -25,9 +25,8 @@ type Category = {
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList<Category>);
 
-export default function CategoryFlatListCarousel() {
+export default function CategoryFlatListCarousel({ sessionStarted = false, onFirstCategorySelect }: { sessionStarted?: boolean; onFirstCategorySelect?: (categoryId: string | number) => void }) {
   const context = useContext(StudySessionContext);
-  const { switchCategory } = useStudySession();
   const flatListRef = useRef<FlatList<Category>>(null);
 
   // Get categories and state from context
@@ -37,20 +36,26 @@ export default function CategoryFlatListCarousel() {
 
   // Simple carousel data with "No Category" option
   const carouselData = useMemo(() => {
-    const noCategory: Category = { 
-      id: 'none', 
-      name: 'No Category', 
-      color: '#E5E7EB', 
-      isNone: true 
-    };
-    return [noCategory, ...categories];
-  }, [categories]);
+    if (!sessionStarted) {
+      const noCategory = {
+        id: 'none',
+        name: 'No Category',
+        color: '#E5E7EB',
+        isNone: true
+      };
+      return [noCategory, ...categories];
+    }
+    return categories;
+  }, [categories, sessionStarted]);
 
   const itemSize = ITEM_HEIGHT + ITEM_SPACING;
   const contentOffset = (CONTAINER_HEIGHT - ITEM_HEIGHT) / 2;
 
   // Animated scroll value
   const scrollY = useSharedValue(0);
+
+  // Track last selected index to detect transition from 'No Category' to real category
+  const lastSelectedIndexRef = useRef(0);
 
   // Sync with current category from context
   useEffect(() => {
@@ -71,30 +76,47 @@ export default function CategoryFlatListCarousel() {
     }
   }, [currentCategoryId, carouselData.length]);
 
-  // Handle category selection
+  // and ha category selection
   async function handleCategoryChange(categoryIndex: number) {
-    if (isSessionPaused || carouselData.length === 0) return;
+    console.log("CategoryFlatListCarousel: handleCategoryChange called with index:", categoryIndex);
     
-    // Don't switch categories if no session is active yet
-    if (!context?.sessionId) {
-      console.log("CategoryFlatListCarousel: Ignoring category change - no active session");
+    if (isSessionPaused || carouselData.length === 0) {
+      console.log("CategoryFlatListCarousel: handleCategoryChange early return - session paused or no data");
       return;
     }
-    
-    try {
-      const selectedItem = carouselData[categoryIndex];
-      
-      // Skip if "No Category" is selected
-      if (selectedItem?.isNone) {
-        console.log("CategoryFlatListCarousel: No Category selected, skipping");
-        return;
+
+    const selectedItem = carouselData[categoryIndex];
+    console.log("CategoryFlatListCarousel: Selected item:", selectedItem);
+
+    // If session hasn't started and user selects a real category, trigger onFirstCategorySelect
+    if (!sessionStarted && !selectedItem?.isNone && typeof onFirstCategorySelect === 'function') {
+      // Only trigger if last selected was 'No Category'
+      if (lastSelectedIndexRef.current === 0) {
+        console.log("CategoryFlatListCarousel: Triggering onFirstCategorySelect with categoryId:", selectedItem.id);
+        onFirstCategorySelect(selectedItem.id);
+        lastSelectedIndexRef.current = categoryIndex;
+        return; // Let StopWatch useEffect handle starting session and setting category
       }
-      
-      if (selectedItem && switchCategory) {
-        await switchCategory(Number(selectedItem.id));
+    }
+
+    // Update last selected index
+    lastSelectedIndexRef.current = categoryIndex;
+
+    // Skip if "No Category" is selected
+    if (selectedItem?.isNone) {
+      console.log("CategoryFlatListCarousel: No Category selected, skipping");
+      return;
+    }
+
+    // For subsequent category changes when session is running, call switchCategory
+    if (sessionStarted && selectedItem && context?.switchCategory && context?.sessionId) {
+      console.log("CategoryFlatListCarousel: Switching to category:", selectedItem.id);
+      try {
+        await context.switchCategory(Number(selectedItem.id));
+        console.log("CategoryFlatListCarousel: Category switch completed");
+      } catch (error) {
+        console.error("CategoryFlatListCarousel: Error switching category:", error);
       }
-    } catch (error) {
-      console.error("CategoryFlatListCarousel: Error switching category:", error);
     }
   }
 

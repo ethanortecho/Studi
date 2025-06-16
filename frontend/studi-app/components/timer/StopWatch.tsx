@@ -9,30 +9,48 @@ import { useLocalSearchParams } from 'expo-router';
 import CategoryFlatListCarousel from '@/components/record/CategoryFlatListCarousel';
 
 export function Timer() {
-    // Get category from route params (passed from modal)
+ 
+    // Only use local state and context for category selection
     const { selectedCategoryId } = useLocalSearchParams();
     
     // Create config with category info
-    const stopwatchConfig: StopwatchConfig = {
-        selectedCategoryId: selectedCategoryId as string
-    };
+    const stopwatchConfig: StopwatchConfig = {};
     
     const { startTimer, pauseTimer, resumeTimer, stopTimer, cancelTimer, elapsed, status, formatTime } = useStopwatch(stopwatchConfig);
-    const { sessionId, currentCategoryId, categories, getCurrentCategoryColor } = useContext(StudySessionContext);
+    const { sessionId, currentCategoryId, categories, getCurrentCategoryColor, switchCategory } = useContext(StudySessionContext);
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [sessionStarted, setSessionStarted] = useState(false);
+    const [pendingCategoryId, setPendingCategoryId] = useState<string | number | null>(null)
     
     // Check if session is already running
     const isSessionActive = sessionId !== null;
     const currentCategory = categories.find(cat => cat.id === String(currentCategoryId));
     
-    // Auto-start timer when component mounts (this creates session + starts timer atomically)
+    // Auto-start timer when first category is selected
     useEffect(() => {
-        if (selectedCategoryId && status === 'idle') {
-            console.log("Timer: Auto-starting timer with category:", selectedCategoryId);
-            startTimer();
+        if (pendingCategoryId && sessionStarted && !sessionId) {
+            console.log("StopWatch: Starting timer for first category selection");
+            startTimer(); // This starts session creation but doesn't wait
         }
-    }, []); // Run once on mount
+    }, [pendingCategoryId, sessionStarted, sessionId]);
+
+    // Handle category switching after session is created
+    useEffect(() => {
+        if (sessionId && pendingCategoryId) {
+            console.log("StopWatch: Session created, now switching to category:", pendingCategoryId);
+            const doSwitchCategory = async () => {
+                try {
+                    await switchCategory(Number(pendingCategoryId));
+                    console.log("StopWatch: Category switch completed after session creation");
+                    setPendingCategoryId(null);
+                } catch (error) {
+                    console.error("StopWatch: Error switching category after session creation:", error);
+                }
+            };
+            doSwitchCategory();
+        }
+    }, [sessionId]); // Only depend on sessionId - we only want this to run when session is created 
 
     // Get color from current category or from selectedCategoryId as fallback
     const getBackgroundColor = () => {
@@ -52,6 +70,14 @@ export function Timer() {
     };
 
     const categoryColor = getBackgroundColor();
+
+    // Handler for first real category selection
+    const handleFirstCategorySelect = async (categoryId: string | number) => {
+        console.log("StopWatch: handleFirstCategorySelect called with categoryId:", categoryId);
+        setSessionStarted(true);
+        setPendingCategoryId(categoryId);
+        console.log("StopWatch: Set sessionStarted=true and pendingCategoryId=", categoryId);
+    };
 
     return (
         <View className="flex-1" style={{ backgroundColor: categoryColor }}>
@@ -75,7 +101,7 @@ export function Timer() {
                 <View className="flex-1">
                     {/* Category Carousel */}
                     <View style={{ height: 200, marginBottom: 20 }}>
-                        <CategoryFlatListCarousel />
+                        <CategoryFlatListCarousel sessionStarted={sessionStarted} onFirstCategorySelect={handleFirstCategorySelect} />
                     </View>
                     
                     {/* Control Buttons */}

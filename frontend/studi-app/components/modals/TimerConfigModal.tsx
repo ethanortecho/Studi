@@ -31,11 +31,7 @@ interface TimerConfigModalProps {
 export default function TimerConfigModal({ visible, onClose, onStartSession }: TimerConfigModalProps) {
   const [selectedMode, setSelectedMode] = useState<TimerMode>('free');
   const [currentConfig, setCurrentConfig] = useState<any>({});
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
   
-  // Get categories from context
-  const { categories, startSession, switchCategory } = useContext(StudySessionContext);
-
   const handleModeChange = (mode: TimerMode) => {
     console.log('Mode changing to:', mode);
     setSelectedMode(mode);
@@ -47,22 +43,11 @@ export default function TimerConfigModal({ visible, onClose, onStartSession }: T
     setCurrentConfig(config);
   };
 
-  const handleCategorySelect = (categoryId: string) => {
-    setSelectedCategoryId(categoryId);
-  };
-
   const handleStartSession = async () => {
-    if (!selectedCategoryId) {
-      // Show error - category is required
-      console.error('Please select a category before starting');
-      return;
-    }
-
     try {
       // Convert pomodoro config to the format expected by our components
       let finalConfig = { 
         mode: selectedMode,
-        selectedCategoryId,
         ...currentConfig
       };
 
@@ -84,10 +69,9 @@ export default function TimerConfigModal({ visible, onClose, onStartSession }: T
     }
   };
 
-  const isStartButtonEnabled = selectedCategoryId !== '' && 
-    (selectedMode === 'free' || 
-     (selectedMode === 'timer' && currentConfig.duration) ||
-     (selectedMode === 'pomo')); // Pomodoro always has valid config now with default preset
+  const isStartButtonEnabled = selectedMode === 'free' || 
+    (selectedMode === 'timer' && currentConfig.duration) ||
+    (selectedMode === 'pomo'); // Pomodoro always has valid config now with default preset
 
   const renderConfiguration = () => {
     switch (selectedMode) {
@@ -198,94 +182,6 @@ export default function TimerConfigModal({ visible, onClose, onStartSession }: T
             </Pressable>
           </View>
 
-          {/* Category Selection */}
-          <View style={{
-            backgroundColor: 'white',
-            borderRadius: 16,
-            padding: 24,
-            marginBottom: 24,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.05,
-            shadowRadius: 2,
-            elevation: 1
-          }}>
-            <Text style={{ fontSize: 16, fontWeight: '500', color: '#1f2937', marginBottom: 16 }}>
-              Select Study Category
-            </Text>
-            
-            <ScrollView 
-              horizontal 
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingRight: 16 }}
-              style={{ marginHorizontal: -8 }}
-            >
-              {categories.map((category) => (
-                <TouchableOpacity
-                  key={category.id}
-                  onPress={() => handleCategorySelect(category.id)}
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    padding: 12,
-                    borderRadius: 12,
-                    borderWidth: 2,
-                    borderColor: selectedCategoryId === category.id ? '#4f46e5' : '#e5e7eb',
-                    backgroundColor: selectedCategoryId === category.id ? '#eef2ff' : 'white',
-                    marginRight: 12,
-                    marginLeft: 8
-                  }}
-                >
-                  <View style={{
-                    width: 16,
-                    height: 16,
-                    borderRadius: 8,
-                    backgroundColor: category.color,
-                    marginRight: 12
-                  }} />
-                  <Text style={{
-                    fontSize: 16,
-                    fontWeight: '500',
-                    color: selectedCategoryId === category.id ? '#4f46e5' : '#374151'
-                  }}>
-                    {category.name}
-                  </Text>
-                  {selectedCategoryId === category.id && (
-                    <View style={{
-                      width: 20,
-                      height: 20,
-                      borderRadius: 10,
-                      backgroundColor: '#4f46e5',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginLeft: 8
-                    }}>
-                      <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>✓</Text>
-                    </View>
-                  )}
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-
-            {categories.length === 0 && (
-              <View style={{
-                padding: 20,
-                alignItems: 'center',
-                backgroundColor: '#fef3c7',
-                borderRadius: 12,
-                borderWidth: 1,
-                borderColor: '#fbbf24'
-              }}>
-                <Text style={{ color: '#92400e', fontWeight: '500', marginBottom: 4 }}>
-                  No Categories Available
-                </Text>
-                <Text style={{ color: '#92400e', textAlign: 'center', fontSize: 14 }}>
-                  Please create categories in the Settings tab before starting a study session.
-                </Text>
-              </View>
-            )}
-          </View>
-
           {/* Configuration Content */}
           <View style={{
             backgroundColor: 'white',
@@ -328,17 +224,6 @@ export default function TimerConfigModal({ visible, onClose, onStartSession }: T
               Start Studying
             </Text>
           </Pressable>
-          
-          {!selectedCategoryId && (
-            <Text style={{
-              textAlign: 'center',
-              fontSize: 14,
-              color: '#ef4444',
-              marginTop: 8
-            }}>
-              Please select a category to continue
-            </Text>
-          )}
         </View>
       </SafeAreaView>
     </Modal>

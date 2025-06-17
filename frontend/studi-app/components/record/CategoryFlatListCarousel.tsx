@@ -25,7 +25,15 @@ type Category = {
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList<Category>);
 
-export default function CategoryFlatListCarousel({ sessionStarted = false, onFirstCategorySelect }: { sessionStarted?: boolean; onFirstCategorySelect?: (categoryId: string | number) => void }) {
+export default function CategoryFlatListCarousel({ 
+    sessionStarted = false, 
+    onFirstCategorySelect,
+    onImmediateColorChange 
+}: { 
+    sessionStarted?: boolean; 
+    onFirstCategorySelect?: (categoryId: string | number) => void;
+    onImmediateColorChange?: (categoryId: string | number) => void;
+}) {
   const context = useContext(StudySessionContext);
   const flatListRef = useRef<FlatList<Category>>(null);
 
@@ -76,7 +84,7 @@ export default function CategoryFlatListCarousel({ sessionStarted = false, onFir
     }
   }, [currentCategoryId, carouselData.length]);
 
-  // and ha category selection
+  // Enhanced category selection handler with instant callback
   async function handleCategoryChange(categoryIndex: number) {
     console.log("CategoryFlatListCarousel: handleCategoryChange called with index:", categoryIndex);
     
@@ -88,14 +96,18 @@ export default function CategoryFlatListCarousel({ sessionStarted = false, onFir
     const selectedItem = carouselData[categoryIndex];
     console.log("CategoryFlatListCarousel: Selected item:", selectedItem);
 
+    // INSTANT COLOR CHANGE - Call immediately before any async operations
+    if (onImmediateColorChange && selectedItem && !selectedItem.isNone) {
+      onImmediateColorChange(selectedItem.id);
+    }
+
     // If session hasn't started and user selects a real category, trigger onFirstCategorySelect
     if (!sessionStarted && !selectedItem?.isNone && typeof onFirstCategorySelect === 'function') {
-      // Only trigger if last selected was 'No Category'
       if (lastSelectedIndexRef.current === 0) {
         console.log("CategoryFlatListCarousel: Triggering onFirstCategorySelect with categoryId:", selectedItem.id);
         onFirstCategorySelect(selectedItem.id);
         lastSelectedIndexRef.current = categoryIndex;
-        return; // Let StopWatch useEffect handle starting session and setting category
+        return;
       }
     }
 

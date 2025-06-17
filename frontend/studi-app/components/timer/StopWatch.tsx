@@ -23,6 +23,9 @@ export function Timer() {
     const [sessionStarted, setSessionStarted] = useState(false);
     const [pendingCategoryId, setPendingCategoryId] = useState<string | number | null>(null)
     
+    // Add immediate color state for zero-delay updates
+    const [selectedPreviewColor, setSelectedPreviewColor] = useState<string | null>(null);
+    
     // Check if session is already running
     const isSessionActive = sessionId !== null;
     const currentCategory = categories.find(cat => cat.id === String(currentCategoryId));
@@ -50,17 +53,28 @@ export function Timer() {
             };
             doSwitchCategory();
         }
-    }, [sessionId]); // Only depend on sessionId - we only want this to run when session is created 
+    }, [sessionId]); // Only depend on sessionId - we only want this to run when session is created
 
-    // Get color from current category or from selectedCategoryId as fallback
+    // Synchronous color lookup function
+    const getCategoryColorById = (categoryId: string | number) => {
+        const category = categories.find(cat => Number(cat.id) === Number(categoryId));
+        return category?.color || '#E5E7EB';
+    };
+
+    // Updated background color logic with instant preview priority
     const getBackgroundColor = () => {
-        // If session is active, use current category color
+        // 1. Use instant preview color if available
+        if (selectedPreviewColor) {
+            return selectedPreviewColor;
+        }
+        
+        // 2. Use current session category color
         const currentColor = getCurrentCategoryColor();
-        if (currentColor !== '#E5E7EB') { // If not default gray
+        if (currentColor !== '#E5E7EB') {
             return currentColor;
         }
         
-        // Fallback: use selected category color from route params
+        // 3. Fallback: use selected category color from route params
         if (selectedCategoryId) {
             const selectedCategory = categories.find(cat => Number(cat.id) === Number(selectedCategoryId));
             return selectedCategory?.color || '#E5E7EB';
@@ -70,6 +84,12 @@ export function Timer() {
     };
 
     const categoryColor = getBackgroundColor();
+
+    // Instant color change handler (will be passed to carousel)
+    const handleInstantColorChange = (categoryId: string | number) => {
+        const newColor = getCategoryColorById(categoryId);
+        setSelectedPreviewColor(newColor);
+    };
 
     // Handler for first real category selection
     const handleFirstCategorySelect = async (categoryId: string | number) => {
@@ -101,7 +121,11 @@ export function Timer() {
                 <View className="flex-1">
                     {/* Category Carousel */}
                     <View style={{ height: 200, marginBottom: 20 }}>
-                        <CategoryFlatListCarousel sessionStarted={sessionStarted} onFirstCategorySelect={handleFirstCategorySelect} />
+                        <CategoryFlatListCarousel 
+                            sessionStarted={sessionStarted} 
+                            onFirstCategorySelect={handleFirstCategorySelect}
+                            onImmediateColorChange={handleInstantColorChange}
+                        />
                     </View>
                     
                     {/* Control Buttons */}

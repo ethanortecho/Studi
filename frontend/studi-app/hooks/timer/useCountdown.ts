@@ -62,9 +62,8 @@ export function useCountdown(config: CountdownConfig) {
             }
         },
         onTick: (elapsed: number) => {
-            // Auto-stop when countdown reaches zero
+            // Auto-stop when countdown reaches zero (silent)
             if (elapsed >= totalSeconds) {
-                console.log("Countdown: Timer reached zero, auto-stopping session");
                 baseTimer.stop();
             }
         }

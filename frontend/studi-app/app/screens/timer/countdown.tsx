@@ -1,31 +1,27 @@
 import React from 'react';
-import { Text, View } from 'react-native';
-import { ThemedView } from '@/components/ThemedView';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import CountdownTimer from '@/components/timer/CountdownTimer';
-import CategoryFlatListCarousel from '@/components/record/CategoryFlatListCarousel';
+import { useCountdown, CountdownConfig } from '@/hooks/timer';
 import { useLocalSearchParams } from 'expo-router';
+import TimerScreen from '@/components/timer/shared/TimerScreen';
+import CountdownDisplay from '@/components/timer/displays/CountdownDisplay';
 
 export default function CountdownSessionScreen() {
     // Get countdown duration from route params (passed from modal)
-    const { duration } = useLocalSearchParams();
+    const { duration, selectedCategoryId } = useLocalSearchParams();
     const countdownDuration = duration ? parseInt(duration as string) : 25; // Default to 25 minutes
 
+    // Create config with category info
+    const countdownConfig: CountdownConfig = {
+        duration: countdownDuration,
+        selectedCategoryId: selectedCategoryId as string
+    };
+    
+    const timerHook = useCountdown(countdownConfig);
+
     return (
-        <SafeAreaView className="flex-1">
-            <View className="p-4">
-                <Text className="text-2xl font-bold text-gray-800">Countdown Timer</Text>
-                <Text className="text-sm text-gray-600 mt-1">
-                    Focused study session with time limit
-                </Text>
-            </View>
-            
-            <ThemedView style={{ flex: 1 }}>
-                <View className="flex-1 p-4 gap-6">
-                    <CountdownTimer config={{ duration: countdownDuration }} />
-                    <CategoryFlatListCarousel />
-                </View>
-            </ThemedView>
-        </SafeAreaView>
+        <TimerScreen
+            timerType="countdown"
+            timerDisplayComponent={<CountdownDisplay formatTime={timerHook.formatTime} />}
+            timerHook={timerHook}
+        />
     );
 } 

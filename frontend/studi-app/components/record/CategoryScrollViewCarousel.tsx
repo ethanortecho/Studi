@@ -1,5 +1,5 @@
 import React, { useRef, useContext, useMemo, useEffect } from 'react';
-import { FlatList, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedScrollHandler,
@@ -9,7 +9,6 @@ import Animated, {
   runOnJS,
 } from 'react-native-reanimated';
 import { StudySessionContext } from '@/context/StudySessionContext';
-import { useStudySession } from '@/hooks/useStudySession';
 
 const CONTAINER_HEIGHT = 180;
 const ITEM_HEIGHT = 50;
@@ -23,9 +22,9 @@ type Category = {
   isNone?: boolean; // For "No Category" option
 };
 
-const AnimatedFlatList = Animated.createAnimatedComponent(FlatList<Category>);
+const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
-export default function CategoryFlatListCarousel({ 
+export default function CategoryScrollViewCarousel({ 
     sessionStarted = false, 
     onFirstCategorySelect,
     onImmediateColorChange 
@@ -35,12 +34,11 @@ export default function CategoryFlatListCarousel({
     onImmediateColorChange?: (categoryId: string | number) => void;
 }) {
   const context = useContext(StudySessionContext);
-  const flatListRef = useRef<FlatList<Category>>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
 
   // Get categories and state from context
   const categories: Category[] = context?.categories || [];
   const isSessionPaused = context?.isSessionPaused || false;
-  const currentCategoryId = context?.currentCategoryId || null;
 
   // Simple carousel data with "No Category" option
   const carouselData = useMemo(() => {
@@ -65,36 +63,28 @@ export default function CategoryFlatListCarousel({
   // Track last selected index to detect transition from 'No Category' to real category
   const lastSelectedIndexRef = useRef(0);
 
-  // Sync with current category from context
+  // Only handle initial positioning when component mounts or data changes
   useEffect(() => {
-    if (carouselData.length > 0 && currentCategoryId) {
-      const foundIndex = carouselData.findIndex(cat => Number(cat.id) === Number(currentCategoryId));
-      if (foundIndex >= 0) {
-        flatListRef.current?.scrollToIndex({
-          index: foundIndex,
+    if (carouselData.length > 0) {
+      // Always start at index 0 (either "No Category" or first real category)
+      setTimeout(() => {
+        scrollViewRef.current?.scrollTo({
+          y: 0,
           animated: false,
         });
-      }
-    } else if (carouselData.length > 0) {
-      // Initial scroll to "No Category" (index 0)
-      flatListRef.current?.scrollToIndex({
-        index: 0,
-        animated: false,
-      });
+      }, 0);
     }
-  }, [currentCategoryId, carouselData.length]);
+  }, [carouselData.length]); // Removed currentCategoryId dependency to break feedback loop
 
-  // Enhanced category selection handler with instant callback
-  async function handleCategoryChange(categoryIndex: number) {
-    console.log("CategoryFlatListCarousel: handleCategoryChange called with index:", categoryIndex);
+  // Simplified category selection handler
+  async function handleCategoryChange(scrollOffset: number) {
+    const categoryIndex = Math.round(scrollOffset / itemSize);
     
-    if (isSessionPaused || carouselData.length === 0) {
-      console.log("CategoryFlatListCarousel: handleCategoryChange early return - session paused or no data");
+    if (isSessionPaused || carouselData.length === 0 || categoryIndex < 0 || categoryIndex >= carouselData.length) {
       return;
     }
 
     const selectedItem = carouselData[categoryIndex];
-    console.log("CategoryFlatListCarousel: Selected item:", selectedItem);
 
     // INSTANT COLOR CHANGE - Call immediately before any async operations
     if (onImmediateColorChange && selectedItem && !selectedItem.isNone) {
@@ -104,7 +94,6 @@ export default function CategoryFlatListCarousel({
     // If session hasn't started and user selects a real category, trigger onFirstCategorySelect
     if (!sessionStarted && !selectedItem?.isNone && typeof onFirstCategorySelect === 'function') {
       if (lastSelectedIndexRef.current === 0) {
-        console.log("CategoryFlatListCarousel: Triggering onFirstCategorySelect with categoryId:", selectedItem.id);
         onFirstCategorySelect(selectedItem.id);
         lastSelectedIndexRef.current = categoryIndex;
         return;
@@ -116,57 +105,53 @@ export default function CategoryFlatListCarousel({
 
     // Skip if "No Category" is selected
     if (selectedItem?.isNone) {
-      console.log("CategoryFlatListCarousel: No Category selected, skipping");
       return;
     }
 
     // For subsequent category changes when session is running, call switchCategory
     if (sessionStarted && selectedItem && context?.switchCategory && context?.sessionId) {
-      console.log("CategoryFlatListCarousel: Switching to category:", selectedItem.id);
       try {
         await context.switchCategory(Number(selectedItem.id));
-        console.log("CategoryFlatListCarousel: Category switch completed");
       } catch (error) {
-        console.error("CategoryFlatListCarousel: Error switching category:", error);
+        console.error("CategoryScrollViewCarousel: Error switching category:", error);
       }
     }
   }
 
-  // Animated scroll handler
+  // Simple scroll handler - let React Native handle the snapping
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
       scrollY.value = event.contentOffset.y;
     },
     onMomentumEnd: (event) => {
-      const scrollYValue = event.contentOffset.y;
-      const selectedIndex = Math.round(scrollYValue / itemSize);
-      const clampedIndex = Math.max(0, Math.min(carouselData.length - 1, selectedIndex));
-      runOnJS(handleCategoryChange)(clampedIndex);
+      runOnJS(handleCategoryChange)(event.contentOffset.y);
     },
   });
 
-  // Animated item component (no hooks inside renderItem)
+  // Simplified animated item component
   function AnimatedCategoryItem({ item, index }: { item: Category; index: number }) {
-    // Calculate the center position for this item
-    const itemCenter = contentOffset + index * itemSize + ITEM_HEIGHT / 2;
-    const containerCenter = CONTAINER_HEIGHT / 2;
-
-    // Animated style
     const animatedStyle = useAnimatedStyle(() => {
-      const currentContainerCenter = scrollY.value + containerCenter;
-      const distance = Math.abs(itemCenter - currentContainerCenter);
+      const itemOffset = index * itemSize;
+      const inputRange = [
+        itemOffset - itemSize,
+        itemOffset,
+        itemOffset + itemSize,
+      ];
+      
       const scale = interpolate(
-        distance,
-        [0, itemSize * 1.5],
-        [1, 0.8],
+        scrollY.value,
+        inputRange,
+        [0.8, 1, 0.8],
         Extrapolation.CLAMP
       );
+      
       const opacity = interpolate(
-        distance,
-        [0, itemSize * 1.5],
-        [1, 0.4],
+        scrollY.value,
+        inputRange,
+        [0.4, 1, 0.4],
         Extrapolation.CLAMP
       );
+
       return {
         opacity: isSessionPaused ? opacity * 0.5 : opacity,
         transform: [{ scale: isSessionPaused ? scale * 0.9 : scale }],
@@ -174,23 +159,32 @@ export default function CategoryFlatListCarousel({
     });
 
     const textStyle = useAnimatedStyle(() => {
-      const currentContainerCenter = scrollY.value + containerCenter;
-      const distance = Math.abs(itemCenter - currentContainerCenter);
-      const isActive = distance < itemSize * 0.5;
+      const itemOffset = index * itemSize;
+      const inputRange = [
+        itemOffset - itemSize * 0.5,
+        itemOffset,
+        itemOffset + itemSize * 0.5,
+      ];
+      
+      const fontSize = interpolate(
+        scrollY.value,
+        inputRange,
+        [20, 28, 20],
+        Extrapolation.CLAMP
+      );
+
+      const isActive = Math.abs(scrollY.value - itemOffset) < itemSize * 0.5;
+      
       return {
         color: isActive ? item.color : '#9CA3AF',
-        fontSize: interpolate(
-          distance,
-          [0, itemSize * 0.8],
-          [28, 20],
-          Extrapolation.CLAMP
-        ),
+        fontSize,
         fontWeight: isActive ? '700' : '500',
       };
     });
 
     return (
       <Animated.View
+        key={`${item.id}-${index}`}
         style={[
           {
             height: ITEM_HEIGHT,
@@ -216,14 +210,6 @@ export default function CategoryFlatListCarousel({
     );
   }
 
-  function renderItem({ item, index }: { item: Category; index: number }) {
-    return <AnimatedCategoryItem item={item} index={index} />;
-  }
-
-  function keyExtractor(item: Category, index: number) {
-    return `${item.id}-${index}`;
-  }
-
   return (
     <View style={{ width: '100%', height: CONTAINER_HEIGHT + 20, paddingVertical: 10 }}>
       {/* Empty categories */}
@@ -239,26 +225,26 @@ export default function CategoryFlatListCarousel({
           <View style={{ marginRight: 16 }}>
             <Text style={{ color: '#9CA3AF', fontSize: 16 }}>◀</Text>
           </View>
-          <AnimatedFlatList
-            ref={flatListRef}
-            data={carouselData}
-            renderItem={renderItem}
-            keyExtractor={keyExtractor}
-            getItemLayout={(data: ArrayLike<Category> | null | undefined, index: number) => ({ length: itemSize, offset: itemSize * index, index })}
-            showsVerticalScrollIndicator={false}
-            snapToInterval={itemSize}
-            snapToAlignment="center"
-            decelerationRate="fast"
-            contentContainerStyle={{ paddingVertical: contentOffset }}
+          
+          <AnimatedScrollView
+            ref={scrollViewRef}
             style={{ height: CONTAINER_HEIGHT }}
-            initialScrollIndex={0}
-            initialNumToRender={10}
-            maxToRenderPerBatch={10}
-            windowSize={5}
+            contentContainerStyle={{ 
+              paddingVertical: contentOffset,
+            }}
+            showsVerticalScrollIndicator={false}
+            decelerationRate="fast"
             onScroll={scrollHandler}
             scrollEventThrottle={16}
             scrollEnabled={!isSessionPaused}
-          />
+            snapToInterval={itemSize}
+            snapToAlignment="center"
+          >
+            {carouselData.map((item, index) => (
+              <AnimatedCategoryItem key={`${item.id}-${index}`} item={item} index={index} />
+            ))}
+          </AnimatedScrollView>
+          
           {/* Right arrow visual cue */}
           <View style={{ marginLeft: 16 }}>
             <Text style={{ color: '#9CA3AF', fontSize: 16 }}>▶</Text>

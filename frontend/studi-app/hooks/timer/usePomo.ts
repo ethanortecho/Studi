@@ -11,7 +11,7 @@ export interface PomoConfig {
 }
 
 export function usePomo(config: PomoConfig) {
-    console.log('usePomo received config:', config);
+    // Debug logs removed for production cleanliness
     
     const { startSession, stopSession, pauseSession, resumeSession, cancelSession, switchCategory } = useStudySession();
     const { sessionId } = useContext(StudySessionContext);
@@ -20,79 +20,40 @@ export function usePomo(config: PomoConfig) {
     const pomoWorkDuration = config.pomodoroWorkDuration * 60;
     const pomoBreakDuration = config.pomodoroBreakDuration * 60;
 
-    console.log('usePomo calculated durations:', { 
-        pomoWorkDuration: `${pomoWorkDuration}s (${config.pomodoroWorkDuration}min)`, 
-        pomoBreakDuration: `${pomoBreakDuration}s (${config.pomodoroBreakDuration}min)`,
-        pomoBlocksRemaining
-    });
-
     const baseTimer = useBaseTimer({
         onStart: async () => {
-            console.log("Pomo: onStart callback - creating session and starting timer atomically");
+            // Always create a new session when timer starts (atomic operation)
+            const sessionResult = await startSession();
             
-            try {
-                // Always create a new session when timer starts (atomic operation)
-                const sessionResult = await startSession();
-                console.log("Pomo: Session created with ID:", sessionResult.id);
-                
-                // If category is specified, switch to it immediately
-                if (config.selectedCategoryId) {
-                    await switchCategory(Number(config.selectedCategoryId), sessionResult.id);
-                    console.log("Pomo: Switched to category:", config.selectedCategoryId);
-                }
-            } catch (error) {
-                console.error("Pomo: Error creating session:", error);
-                throw error; // This will prevent timer from starting
+            // If category is specified, switch to it immediately
+            if (config.selectedCategoryId) {
+                await switchCategory(Number(config.selectedCategoryId), sessionResult.id);
             }
         },
         onPause: async () => {
-            console.log("Pomo: onPause callback, will call pauseSession");
-            try {
-                await pauseSession();
-                console.log("Pomo: pauseSession completed");
-            } catch (error) {
-                console.error("Pomo: pauseSession error:", error);
-            }
+            await pauseSession();
         },
         onResume: async () => {
-            console.log("Pomo: onResume callback, will call resumeSession");
-            try {
-                await resumeSession();
-                console.log("Pomo: resumeSession completed");
-            } catch (error) {
-                console.error("Pomo: resumeSession error:", error);
-            }
+            await resumeSession();
         },
         onStop: async () => {
-            console.log("Pomo: onStop callback, will call stopSession");
-            try {
-                await stopSession();
-                console.log("Pomo: stopSession completed");
-            } catch (error) {
-                console.error("Pomo: stopSession error:", error);
-            }
+            await stopSession();
         },
         onTick: (elapsed: number) => {
             const currentPhaseDuration = pomoBlockStatus === 'work' ? pomoWorkDuration : pomoBreakDuration;
-            
             if (elapsed >= currentPhaseDuration) {
                 if (pomoBlockStatus === 'work') {
-                    // Work phase done → switch to break
                     pauseSession();
                     setPomoBlockStatus('break');
-                    baseTimer.resetElapsed(); // Reset display to 0:00
-                    
+                    baseTimer.resetElapsed();
                 } else {
-                    // Break phase done → check if more blocks needed
                     if (pomoBlocksRemaining <= 1) {
-                        // All blocks done
                         baseTimer.stop();
                     } else {
-                        // More blocks → switch to work
                         resumeSession();
                         setPomoBlocksRemaining(prev => prev - 1);
                         setPomoBlockStatus('work');
-                        baseTimer.resetElapsed(); // Reset display to 0:00
+                        baseTimer.resetElapsed();
                     }
                 }
             }
@@ -106,40 +67,31 @@ export function usePomo(config: PomoConfig) {
 
     // Provide pomodoro-specific interface
     const startTimer = () => {
-        console.log("Pomo: startTimer called, current sessionId:", sessionId);
-        console.log("Pomo: startTimer setting blocks to config.pomodoroBlocks:", config.pomodoroBlocks);
-        console.log("Pomo: startTimer current pomoBlocksRemaining before reset:", pomoBlocksRemaining);
         setPomoBlockStatus('work');
         setPomoBlocksRemaining(config.pomodoroBlocks);
         baseTimer.start();
     };
 
     const pauseTimer = () => {
-        console.log("Pomo: pauseTimer called");
         baseTimer.pause();
     };
 
     const resumeTimer = () => {
-        console.log("Pomo: resumeTimer called");
         baseTimer.resume();
     };
 
     const stopTimer = () => {
-        console.log("Pomo: stopTimer called");
         baseTimer.stop();
     };
 
     const cancelTimer = async () => {
-        console.log("Pomo: cancelTimer called");
         try {
             await cancelSession();
             // Reset timer state without triggering onStop callback
             baseTimer.resetWithoutCallbacks();
             setPomoBlockStatus('work');
             setPomoBlocksRemaining(config.pomodoroBlocks);
-            console.log("Pomo: cancelSession completed");
         } catch (error) {
-            console.error("Pomo: cancelSession error:", error);
             throw error;
         }
     };

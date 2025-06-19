@@ -73,6 +73,13 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
   // Computed property: session is paused if we have a paused category ID
   const isSessionPaused = pausedCategoryId !== null;
 
+  // Helper function to get category name by id
+  const getCategoryNameById = (id: number | string | null) => {
+    if (id === null || id === undefined) return 'Unknown';
+    const cat = categories.find(c => Number(c.id) === Number(id));
+    return cat ? cat.name : 'Unknown';
+  };
+
   useEffect(() => {
       fetchCategories()
           .then(setCategories)
@@ -131,7 +138,7 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const pauseSession = async () => {
-    console.log("Hook: pauseSession called, currentCategoryId:", currentCategoryId);
+    console.log(`Hook: pauseSession called, currentCategory: ${getCategoryNameById(currentCategoryId)} (ID: ${currentCategoryId})`);
     if (!breakCategory) {
       console.error("Hook: breakCategory not available");
       throw new Error("Break category not available");
@@ -158,7 +165,7 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const resumeSession = async () => {
-    console.log("Hook: resumeSession called, pausedCategoryId:", pausedCategoryId);
+    console.log(`Hook: resumeSession called, pausedCategory: ${getCategoryNameById(pausedCategoryId)} (ID: ${pausedCategoryId})`);
     if (pausedCategoryId && currentCategoryBlockId) {
       try {
         // End break category block and switch back to paused category
@@ -177,7 +184,7 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const pauseCategoryBlock = async (currentCategoryId: number, breakCategoryId: number) => {
-    console.log("Hook: pauseCategoryBlock called", currentCategoryId, breakCategoryId);
+    console.log(`Hook: pauseCategoryBlock called from ${getCategoryNameById(currentCategoryId)} (ID: ${currentCategoryId}) to break category (ID: ${breakCategoryId})`);
     if (currentCategoryBlockId) {
       try {
         await endCategoryBlock(String(currentCategoryBlockId), new Date());
@@ -193,7 +200,7 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const switchCategory = async (newCategoryId: number, overrideSessionId?: number) => {
-    console.log("Hook: switchCategory called", newCategoryId, "isSessionPaused:", isSessionPaused);
+    console.log(`Hook: switchCategory called to ${getCategoryNameById(newCategoryId)} (ID: ${newCategoryId}), isSessionPaused: ${isSessionPaused}`);
     
     // Prevent category switching when session is paused
     if (isSessionPaused) {

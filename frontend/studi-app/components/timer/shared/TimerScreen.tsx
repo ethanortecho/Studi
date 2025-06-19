@@ -91,17 +91,19 @@ export default function TimerScreen({
   return (
     <View className="flex-1" style={{ backgroundColor: categoryColor }}>
       <StatusBar backgroundColor={categoryColor} barStyle="light-content" />
-      <SafeAreaView className="flex-1">
+      <View className="flex-1">
         {/* Cancel Button */}
         {(status === 'running' || status === 'paused') && (
-          <Pressable 
+          <View className="px-10">
+            <Pressable 
             onPress={() => setShowCancelModal(true)}
-            className="absolute top-4 right-4 p-3 z-10 bg-black bg-opacity-20 rounded-full"
+            className=" absolute top-4 right-4 p-3 z-10 bg-black bg-opacity-20 rounded-full"
             style={{ 
               shadowColor: '#000', 
               shadowOffset: { width: 0, height: 2 }, 
               shadowOpacity: 0.3, 
               shadowRadius: 4,
+              
               width: 44,
               height: 44,
               alignItems: 'center',
@@ -110,6 +112,9 @@ export default function TimerScreen({
           >
             <Text className="text-white text-xl font-bold">✕</Text>
           </Pressable>
+
+          </View>
+          
         )}
 
         {/* Timer Display - Top 50% */}
@@ -118,10 +123,10 @@ export default function TimerScreen({
         </View>
 
         {/* Bottom Controls - Bottom 50% */}
-        <View className="bg-white rounded-t-3xl px-6 pt-8 pb-6" style={{ flex: 0.5 }}>
+        <View className="bg-white rounded-[50px] px-6" style={{ flex: 0.7 }}>
           <View className="flex-1">
             {/* Category Carousel */}
-            <View style={{ height: 200, marginBottom: 20 }}>
+            <View style={{ height: 250}}>
               <CategoryScrollViewCarousel 
                 sessionStarted={sessionStarted} 
                 onFirstCategorySelect={handleFirstCategorySelect}
@@ -130,27 +135,32 @@ export default function TimerScreen({
             </View>
             
             {/* Control Buttons */}
-            <TimerControls
-              status={status}
-              onPauseResume={() => {
-                if (status === 'running') {
-                  pauseTimer();
-                } else if (status === 'paused') {
-                  resumeTimer();
-                }
-              }}
-              onStop={async () => {
-                try {
-                  await stopTimer();
-                  // Note: Navigation to home is handled by SessionStatsModal after showing completion stats
-                } catch (error) {
-                  console.error("Timer stop error:", error);
-                }
-              }}
-            />
+            {status !== 'idle' ? (
+              <TimerControls
+                status={status}
+                onPauseResume={() => {
+                  if (status === 'running') {
+                    pauseTimer();
+                  } else if (status === 'paused') {
+                    resumeTimer();
+                  }
+                }}
+                onStop={async () => {
+                  try {
+                    await stopTimer();
+                  } catch (error) {
+                    console.error("Timer stop error:", error);
+                  }
+                }}
+              />
+            ) : (
+              <View className="items-center mt-4">
+                <Text className="text-gray-400 text-sm font-medium">Select a category to start session</Text>
+              </View>
+            )}
           </View>
         </View>
-      </SafeAreaView>
+      </View>
       
       <CancelSessionModal
         visible={showCancelModal}

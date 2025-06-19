@@ -9,13 +9,13 @@ interface TimerControlsProps {
 
 export default function TimerControls({ status, onPauseResume, onStop }: TimerControlsProps) {
   return (
-    <View className="flex-row" style={{ gap: 16 }}>
+    <View className="flex-row justify-around items-center" style={{ gap: 16 }}>
       <Pressable 
         onPress={onPauseResume}
-        className="flex-1 bg-blue-500 py-4 rounded-2xl items-center justify-center"
+        className="h-12 w-12 bg-transparent border-2 border-primary rounded-full items-center justify-center"
         style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 }}
       >
-        <Text className="text-white font-bold text-3xl" style={{ letterSpacing: 2 }}>
+        <Text className="text-primary font-bold text-xl">
           {status === 'running' ? '||' : '▶'}
         </Text>
       </Pressable>
@@ -23,14 +23,24 @@ export default function TimerControls({ status, onPauseResume, onStop }: TimerCo
       {(status === 'running' || status === 'paused') && (
         <Pressable 
           onPress={onStop}
-          className="flex-1 bg-red-500 py-4 rounded-2xl items-center justify-center"
+          className="h-12 w-24 bg-primary rounded-full items-center justify-center"
           style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 }}
         >
-          <Text className="text-white font-semibold text-lg">
-            End Session
+          <Text className="text-white font-semibold text-base">
+            Stop
           </Text>
         </Pressable>
       )}
+
+      <Pressable 
+        onPress={onPauseResume}
+        className="h-12 w-12 bg-transparent border-2 border-primary rounded-full items-center justify-center"
+        style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 }}
+      >
+        <Text className="text-primary font-bold text-xl">
+          ↻
+        </Text>
+      </Pressable>
     </View>
   );
 } 

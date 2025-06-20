@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import useAggregateData from '@/utils/fetchApi';
 import { parseCategoryDurations, ParseStudyTrends, secondsToHours, secondsToHoursAndMinutes, filterBreakCategory, filterBreakFromDailyBreakdown } from '@/utils/parseData';
 import { DailyInsightsResponse, WeeklyInsightsResponse } from '@/types/api';
-import { formatDateForAPI, getWeekEnd, getWeekStart, navigateDate } from '@/utils/dateUtils';
+import { formatDateForAPI, getWeekEnd, getWeekStart, navigateDate, getWeekDays } from '@/utils/dateUtils';
 
 interface UseDashboardDataParams {
     dailyDate?: Date;
@@ -21,6 +21,11 @@ export function useDashboardData({ dailyDate, weeklyDate }: UseDashboardDataPara
     // Format dates for API
     const dailyDateStr = dailyDate ? formatDateForAPI(dailyDate) : formatDateForAPI(new Date());
     const currentWeekStart = weeklyDate || getWeekStart(new Date());
+    // ISO strings for the 7 days in the currently visible week (Sun→Sat)
+    const weekDates = useMemo(() => {
+        return getWeekDays(currentWeekStart).map(d => formatDateForAPI(d));
+    }, [currentWeekStart]);
+
     const weeklyStartStr = formatDateForAPI(currentWeekStart);
     const weeklyEndStr = formatDateForAPI(getWeekEnd(currentWeekStart));
 
@@ -45,6 +50,30 @@ export function useDashboardData({ dailyDate, weeklyDate }: UseDashboardDataPara
     useAggregateData('daily', formatDateForAPI(nextDay), undefined);
     useAggregateData('weekly', formatDateForAPI(getWeekStart(prevWeek)), formatDateForAPI(getWeekEnd(prevWeek)));
     useAggregateData('weekly', formatDateForAPI(getWeekStart(nextWeek)), formatDateForAPI(getWeekEnd(nextWeek)));
+
+    // 🔄 Fetch all 7 daily responses for the current week (prefetch)
+    const weekDailyResults = weekDates.map(dateStr => {
+        const { data, loading } = useAggregateData('daily', dateStr, undefined);
+        return { dateStr, data, loading };
+    });
+
+    // Derive maps for UI (no state updates — avoids render loop)
+    const weekDaily = useMemo(() => {
+        const dataMap: { [iso: string]: DailyInsightsResponse | null } = {};
+        const loadingMap: { [iso: string]: boolean } = {};
+        const hasDataMap: { [iso: string]: boolean } = {};
+
+        weekDailyResults.forEach(({ dateStr, data, loading }) => {
+            dataMap[dateStr] = data || null;
+            loadingMap[dateStr] = loading;
+            if (data && data.aggregate) {
+                const total = parseInt(data.aggregate.total_duration) || 0;
+                hasDataMap[dateStr] = total > 0;
+            }
+        });
+
+        return { data: dataMap, loading: loadingMap, hasData: hasDataMap };
+    }, [weekDailyResults]);
 
     // Update state when data comes in
     useEffect(() => {
@@ -184,12 +213,15 @@ export function useDashboardData({ dailyDate, weeklyDate }: UseDashboardDataPara
         hasWeekly: !!processedWeeklyData
     });
 
+    const anyWeekDailyLoading = Object.values(weekDaily.loading).some(Boolean);
+
     return {
         daily: processedDailyData,
         weekly: processedWeeklyData,
         loading: {
-            daily: dailyLoading,
+            daily: dailyLoading || anyWeekDailyLoading,
             weekly: weeklyLoading
-        }
+        },
+        weekDaily
     };
 } 

@@ -45,6 +45,11 @@ export function getCacheStats() {
     };
 }
 
+// Return cached response (if any) for a given key
+export function getCachedResponse(cacheKey: string) {
+    return apiCache.get(cacheKey);
+}
+
 export default function useAggregateData(time_frame: string, 
     start_date: string, 
     end_date?: string

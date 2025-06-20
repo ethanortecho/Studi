@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Text, View, Pressable } from 'react-native';
 import DashboardContent from './DashboardContent';
 import DateNavigationHeader from './DateNavigationHeader';
-import { getDefaultDate, navigateDate } from '@/utils/dateUtils';
+import WeekNavigator from './WeekNavigator';
+import { getDefaultDate, navigateDate, getWeekStart, navigateWeek } from '@/utils/dateUtils';
 import { useDashboardData } from '@/hooks/useDashboardData';
 
 interface DashboardTabsProps {
@@ -11,12 +12,18 @@ interface DashboardTabsProps {
 
 export default function DashboardTabs({ onDataChange }: DashboardTabsProps) {
     const [selectedTab, setSelectedTab] = useState('weekly'); // Default to weekly to match your usage
-    const [dailyDate, setDailyDate] = useState(getDefaultDate('daily'));
+    const today = new Date();
+
+    // Daily view state
+    const [dailyWeekStart, setDailyWeekStart] = useState(getWeekStart(today));
+    const [selectedDailyDate, setSelectedDailyDate] = useState<Date>(today);
+
+    // Weekly view state (unchanged)
     const [weeklyDate, setWeeklyDate] = useState(getDefaultDate('weekly'));
 
     // Get dashboard data
-    const { daily, weekly, loading } = useDashboardData({ dailyDate, weeklyDate });
-    
+    const { daily, weekly, loading, weekDaily } = useDashboardData({ dailyDate: selectedDailyDate, weeklyDate });
+
     // Expose current tab's data to parent
     React.useEffect(() => {
         const currentData = selectedTab === 'daily' ? daily : weekly;
@@ -28,15 +35,24 @@ export default function DashboardTabs({ onDataChange }: DashboardTabsProps) {
         }
     }, [selectedTab, daily, weekly, onDataChange]);
 
-    const handleDateNavigation = (direction: 'prev' | 'next') => {
-        if (selectedTab === 'daily') {
-            setDailyDate(current => navigateDate(current, direction, 'daily'));
-        } else {
-            setWeeklyDate(current => navigateDate(current, direction, 'weekly'));
-        }
+    const handleDailyWeekNavigation = (direction: 'prev' | 'next') => {
+        setDailyWeekStart(current => {
+            const newStart = navigateWeek(current, direction);
+            setSelectedDailyDate(newStart); // Behaviour B: reset selection to week start (Sunday)
+            return newStart;
+        });
     };
 
-    const currentDate = selectedTab === 'daily' ? dailyDate : weeklyDate;
+    const handleWeeklyNavigation = (direction: 'prev' | 'next') => {
+        setWeeklyDate(current => navigateDate(current, direction, 'weekly'));
+    };
+
+    // Keep weeklyDate in sync with current daily week when on daily tab so we have weekly data for dots
+    React.useEffect(() => {
+        if (selectedTab === 'daily') {
+            setWeeklyDate(dailyWeekStart);
+        }
+    }, [selectedTab, dailyWeekStart]);
 
     return (
         <View className="flex-1">
@@ -62,17 +78,27 @@ export default function DashboardTabs({ onDataChange }: DashboardTabsProps) {
                 </View>
             </View>
 
-            {/* Date Navigation Header */}
-            <DateNavigationHeader
-                currentDate={currentDate}
-                type={selectedTab as 'daily' | 'weekly'}
-                onNavigate={handleDateNavigation}
-            />
+            {/* Date / Week Navigation */}
+            {selectedTab === 'daily' ? (
+                <WeekNavigator
+                    weekStart={dailyWeekStart}
+                    selectedDay={selectedDailyDate}
+                    onSelect={(date) => setSelectedDailyDate(date)}
+                    onNavigate={handleDailyWeekNavigation}
+                    hasData={weekDaily?.hasData}
+                />
+            ) : (
+                <DateNavigationHeader
+                    currentDate={weeklyDate}
+                    type="weekly"
+                    onNavigate={handleWeeklyNavigation}
+                />
+            )}
             
             {/* Dashboard Content */}
             <DashboardContent 
                 selectedTab={selectedTab}
-                dailyDate={dailyDate}
+                dailyDate={selectedDailyDate}
                 weeklyDate={weeklyDate}
                 daily={daily}
                 weekly={weekly}

@@ -72,17 +72,14 @@ export function isSameDay(date1: Date, date2: Date): boolean {
 
 export function getWeekStart(date: Date): Date {
   const d = new Date(date);
-  const day = d.getDay(); // 0 = Sunday, 1 = Monday, 2 = Tuesday, etc.
-  
+  const day = d.getDay(); // 0 = Sunday
+
   const weekStart = new Date(d);
-  if (day === 0) {
-    // Sunday: go back 6 days to get Monday
-    weekStart.setDate(d.getDate() - 6);
-  } else {
-    // Monday to Saturday: go back (day - 1) days to get Monday
-    weekStart.setDate(d.getDate() - (day - 1));
-  }
-  
+  // Move backwards 'day' days so that weekStart is Sunday
+  weekStart.setDate(d.getDate() - day);
+
+  // Zero-out time portion for consistency
+  weekStart.setHours(0, 0, 0, 0);
   return weekStart;
 }
 
@@ -146,4 +143,22 @@ export function getDefaultDate(type: 'daily' | 'weekly'): Date {
     return getWeekStart(today);
   }
   return today;
+}
+
+// Returns an array of 7 Date objects representing the Sun→Sat week window
+export function getWeekDays(weekStart: Date): Date[] {
+  const days: Date[] = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(weekStart);
+    d.setDate(weekStart.getDate() + i);
+    days.push(d);
+  }
+  return days;
+}
+
+// Convenience for moving an entire week window backward / forward
+export function navigateWeek(currentWeekStart: Date, direction: 'prev' | 'next'): Date {
+  const newWeek = new Date(currentWeekStart);
+  newWeek.setDate(currentWeekStart.getDate() + (direction === 'next' ? 7 : -7));
+  return newWeek;
 } 

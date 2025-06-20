@@ -9,8 +9,11 @@ interface UseDashboardDataParams {
     weeklyDate?: Date;
 }
 
+// Toggle for verbose dashboard logging
+const DEBUG_DASHBOARD = false;
+
 export function useDashboardData({ dailyDate, weeklyDate }: UseDashboardDataParams = {}) {
-    console.log('🔄 useDashboardData: Hook called with dates:', { 
+    DEBUG_DASHBOARD && console.log('🔄 useDashboardData: Hook called with dates:', { 
         dailyDate: dailyDate?.toISOString().split('T')[0], 
         weeklyDate: weeklyDate?.toISOString().split('T')[0] 
     });
@@ -29,7 +32,7 @@ export function useDashboardData({ dailyDate, weeklyDate }: UseDashboardDataPara
     const weeklyStartStr = formatDateForAPI(currentWeekStart);
     const weeklyEndStr = formatDateForAPI(getWeekEnd(currentWeekStart));
 
-    console.log('📅 useDashboardData: Formatted dates:', { dailyDateStr, weeklyStartStr, weeklyEndStr });
+    DEBUG_DASHBOARD && console.log('📅 useDashboardData: Formatted dates:', { dailyDateStr, weeklyStartStr, weeklyEndStr });
 
     // Fetch data for daily and weekly dashboards
     const { data: dailyResponse, loading: dailyLoading } = useAggregateData('daily', dailyDateStr, undefined);
@@ -45,7 +48,7 @@ export function useDashboardData({ dailyDate, weeklyDate }: UseDashboardDataPara
     const prevWeek = navigateDate(currentWeekly, 'prev', 'weekly');
     const nextWeek = navigateDate(currentWeekly, 'next', 'weekly');
 
-    console.log('🚀 useDashboardData: Prefetching adjacent dates...');
+    DEBUG_DASHBOARD && console.log('🚀 useDashboardData: Prefetching adjacent dates...');
     useAggregateData('daily', formatDateForAPI(prevDay), undefined);
     useAggregateData('daily', formatDateForAPI(nextDay), undefined);
     useAggregateData('weekly', formatDateForAPI(getWeekStart(prevWeek)), formatDateForAPI(getWeekEnd(prevWeek)));
@@ -78,21 +81,21 @@ export function useDashboardData({ dailyDate, weeklyDate }: UseDashboardDataPara
     // Update state when data comes in
     useEffect(() => {
         if (dailyResponse) {
-            console.log('📈 useDashboardData: Daily response received, updating state');
+            DEBUG_DASHBOARD && console.log('📈 useDashboardData: Daily response received, updating state');
             setDailyData(dailyResponse);
         }
     }, [dailyResponse]);
 
     useEffect(() => {
         if (weeklyResponse) {
-            console.log('📈 useDashboardData: Weekly response received, updating state');
+            DEBUG_DASHBOARD && console.log('📈 useDashboardData: Weekly response received, updating state');
             setWeeklyData(weeklyResponse);
         }
     }, [weeklyResponse]);
 
     // Check if data is empty
     const isDailyEmpty = useMemo(() => {
-        console.log('🔍 useDashboardData: Calculating isDailyEmpty...');
+        DEBUG_DASHBOARD && console.log('🔍 useDashboardData: Calculating isDailyEmpty...');
         const start = performance.now();
         
         if (!dailyData || dailyLoading) return false;
@@ -101,12 +104,12 @@ export function useDashboardData({ dailyDate, weeklyDate }: UseDashboardDataPara
         const isEmpty = totalDuration === 0 && sessionCount === 0;
         
         const end = performance.now();
-        console.log(`⏱️ useDashboardData: isDailyEmpty calculated in ${(end - start).toFixed(2)}ms, result: ${isEmpty}`);
+        DEBUG_DASHBOARD && console.log(`⏱️ useDashboardData: isDailyEmpty calculated in ${(end - start).toFixed(2)}ms, result: ${isEmpty}`);
         return isEmpty;
     }, [dailyData, dailyLoading]);
 
     const isWeeklyEmpty = useMemo(() => {
-        console.log('🔍 useDashboardData: Calculating isWeeklyEmpty...');
+        DEBUG_DASHBOARD && console.log('🔍 useDashboardData: Calculating isWeeklyEmpty...');
         const start = performance.now();
         
         if (!weeklyData || weeklyLoading) return false;
@@ -115,32 +118,32 @@ export function useDashboardData({ dailyDate, weeklyDate }: UseDashboardDataPara
         const isEmpty = totalDuration === 0 && sessionCount === 0;
         
         const end = performance.now();
-        console.log(`⏱️ useDashboardData: isWeeklyEmpty calculated in ${(end - start).toFixed(2)}ms, result: ${isEmpty}`);
+        DEBUG_DASHBOARD && console.log(`⏱️ useDashboardData: isWeeklyEmpty calculated in ${(end - start).toFixed(2)}ms, result: ${isEmpty}`);
         return isEmpty;
     }, [weeklyData, weeklyLoading]);
 
     // Process data for each dashboard
     const processedDailyData = useMemo(() => {
-        console.log('🏭 useDashboardData: Processing daily data...');
+        DEBUG_DASHBOARD && console.log('🏭 useDashboardData: Processing daily data...');
         const start = performance.now();
         
         if (!dailyData) return null;
         
         const totalHoursStart = performance.now();
         const totalHours = secondsToHours(dailyData);
-        console.log(`⏱️ secondsToHours took ${(performance.now() - totalHoursStart).toFixed(2)}ms`);
+        DEBUG_DASHBOARD && console.log(`⏱️ secondsToHours took ${(performance.now() - totalHoursStart).toFixed(2)}ms`);
         
         const totalTimeStart = performance.now();
         const totalTime = secondsToHoursAndMinutes(dailyData);
-        console.log(`⏱️ secondsToHoursAndMinutes took ${(performance.now() - totalTimeStart).toFixed(2)}ms`);
+        DEBUG_DASHBOARD && console.log(`⏱️ secondsToHoursAndMinutes took ${(performance.now() - totalTimeStart).toFixed(2)}ms`);
         
         const categoryDurationsStart = performance.now();
         const categoryDurations = filterBreakCategory(dailyData.aggregate.category_durations);
-        console.log(`⏱️ filterBreakCategory took ${(performance.now() - categoryDurationsStart).toFixed(2)}ms`);
+        DEBUG_DASHBOARD && console.log(`⏱️ filterBreakCategory took ${(performance.now() - categoryDurationsStart).toFixed(2)}ms`);
         
         const pieChartStart = performance.now();
         const pieChartData = parseCategoryDurations(dailyData);
-        console.log(`⏱️ parseCategoryDurations took ${(performance.now() - pieChartStart).toFixed(2)}ms`);
+        DEBUG_DASHBOARD && console.log(`⏱️ parseCategoryDurations took ${(performance.now() - pieChartStart).toFixed(2)}ms`);
         
         const result = {
             totalHours,
@@ -154,39 +157,39 @@ export function useDashboardData({ dailyDate, weeklyDate }: UseDashboardDataPara
         };
         
         const end = performance.now();
-        console.log(`🏭 useDashboardData: Daily data processed in ${(end - start).toFixed(2)}ms`);
+        DEBUG_DASHBOARD && console.log(`🏭 useDashboardData: Daily data processed in ${(end - start).toFixed(2)}ms`);
         return result;
     }, [dailyData, isDailyEmpty]);
 
     const processedWeeklyData = useMemo(() => {
-        console.log('🏭 useDashboardData: Processing weekly data...');
+        DEBUG_DASHBOARD && console.log('🏭 useDashboardData: Processing weekly data...');
         const start = performance.now();
         
         if (!weeklyData) return null;
         
         const totalHoursStart = performance.now();
         const totalHours = secondsToHours(weeklyData);
-        console.log(`⏱️ secondsToHours took ${(performance.now() - totalHoursStart).toFixed(2)}ms`);
+        DEBUG_DASHBOARD && console.log(`⏱️ secondsToHours took ${(performance.now() - totalHoursStart).toFixed(2)}ms`);
         
         const totalTimeStart = performance.now();
         const totalTime = secondsToHoursAndMinutes(weeklyData);
-        console.log(`⏱️ secondsToHoursAndMinutes took ${(performance.now() - totalTimeStart).toFixed(2)}ms`);
+        DEBUG_DASHBOARD && console.log(`⏱️ secondsToHoursAndMinutes took ${(performance.now() - totalTimeStart).toFixed(2)}ms`);
         
         const categoryDurationsStart = performance.now();
         const categoryDurations = filterBreakCategory(weeklyData.aggregate.category_durations);
-        console.log(`⏱️ filterBreakCategory took ${(performance.now() - categoryDurationsStart).toFixed(2)}ms`);
+        DEBUG_DASHBOARD && console.log(`⏱️ filterBreakCategory took ${(performance.now() - categoryDurationsStart).toFixed(2)}ms`);
         
         const pieChartStart = performance.now();
         const pieChartData = parseCategoryDurations(weeklyData);
-        console.log(`⏱️ parseCategoryDurations took ${(performance.now() - pieChartStart).toFixed(2)}ms`);
+        DEBUG_DASHBOARD && console.log(`⏱️ parseCategoryDurations took ${(performance.now() - pieChartStart).toFixed(2)}ms`);
         
         const trendDataStart = performance.now();
         const trendData = ParseStudyTrends(weeklyData.daily_breakdown, 'all');
-        console.log(`⏱️ ParseStudyTrends took ${(performance.now() - trendDataStart).toFixed(2)}ms`);
+        DEBUG_DASHBOARD && console.log(`⏱️ ParseStudyTrends took ${(performance.now() - trendDataStart).toFixed(2)}ms`);
         
         const dailyBreakdownStart = performance.now();
         const dailyBreakdown = filterBreakFromDailyBreakdown(weeklyData.daily_breakdown);
-        console.log(`⏱️ filterBreakFromDailyBreakdown took ${(performance.now() - dailyBreakdownStart).toFixed(2)}ms`);
+        DEBUG_DASHBOARD && console.log(`⏱️ filterBreakFromDailyBreakdown took ${(performance.now() - dailyBreakdownStart).toFixed(2)}ms`);
         
         const result = {
             totalHours,
@@ -202,11 +205,11 @@ export function useDashboardData({ dailyDate, weeklyDate }: UseDashboardDataPara
         };
         
         const end = performance.now();
-        console.log(`🏭 useDashboardData: Weekly data processed in ${(end - start).toFixed(2)}ms`);
+        DEBUG_DASHBOARD && console.log(`🏭 useDashboardData: Weekly data processed in ${(end - start).toFixed(2)}ms`);
         return result;
     }, [weeklyData, isWeeklyEmpty]);
 
-    console.log('📊 useDashboardData: Returning processed data, loading states:', { 
+    DEBUG_DASHBOARD && console.log('📊 useDashboardData: Returning processed data, loading states:', { 
         dailyLoading, 
         weeklyLoading,
         hasDaily: !!processedDailyData,

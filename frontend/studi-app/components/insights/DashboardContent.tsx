@@ -20,6 +20,7 @@ interface DashboardContentProps {
 }
 
 const { width: screenWidth } = Dimensions.get('window');
+const DEBUG_DASHBOARD = false;
 
 export default function DashboardContent({ 
     selectedTab, 
@@ -32,7 +33,7 @@ export default function DashboardContent({
     const renderCount = useRef(0);
     renderCount.current += 1;
     
-    console.log(`🔄 DashboardContent: Render #${renderCount.current}`, {
+    DEBUG_DASHBOARD && console.log(`🔄 DashboardContent: Render #${renderCount.current}`, {
         selectedTab,
         dailyDate: dailyDate?.toISOString().split('T')[0],
         weeklyDate: weeklyDate?.toISOString().split('T')[0]
@@ -43,7 +44,7 @@ export default function DashboardContent({
     
     // Update animation when tab changes
     useEffect(() => {
-        console.log('🎬 DashboardContent: Tab animation triggered for:', selectedTab);
+        DEBUG_DASHBOARD && console.log('🎬 DashboardContent: Tab animation triggered for:', selectedTab);
         const animationStart = performance.now();
         
         const targetPosition = selectedTab === 'daily' ? 0 : -screenWidth;
@@ -52,7 +53,7 @@ export default function DashboardContent({
             easing: Easing.out(Easing.cubic),
         });
         
-        console.log(`⏱️ DashboardContent: Animation setup took ${(performance.now() - animationStart).toFixed(2)}ms`);
+        DEBUG_DASHBOARD && console.log(`⏱️ DashboardContent: Animation setup took ${(performance.now() - animationStart).toFixed(2)}ms`);
     }, [selectedTab]);
     
     // Animated style for the container
@@ -63,14 +64,14 @@ export default function DashboardContent({
     });
 
     const renderDashboardContent = (type: 'daily' | 'weekly') => {
-        console.log(`🎯 DashboardContent: Rendering ${type} dashboard...`);
+        DEBUG_DASHBOARD && console.log(`🎯 DashboardContent: Rendering ${type} dashboard...`);
         const renderStart = performance.now();
         
         const isDaily = type === 'daily';
         const data = isDaily ? daily : weekly;
         const isLoading = isDaily ? loading.daily : loading.weekly;
 
-        console.log(`📊 DashboardContent: ${type} dashboard state:`, {
+        DEBUG_DASHBOARD && console.log(`📊 DashboardContent: ${type} dashboard state:`, {
             isLoading,
             hasData: !!data,
             isEmpty: data?.isEmpty
@@ -78,13 +79,13 @@ export default function DashboardContent({
 
         // Show loading skeleton
         if (isLoading) {
-            console.log(`⏱️ DashboardContent: ${type} skeleton render took ${(performance.now() - renderStart).toFixed(2)}ms`);
+            DEBUG_DASHBOARD && console.log(`⏱️ DashboardContent: ${type} skeleton render took ${(performance.now() - renderStart).toFixed(2)}ms`);
             return <DashboardSkeleton type={type} />;
         }
 
         // Show empty state
         if (data?.isEmpty) {
-            console.log(`⏱️ DashboardContent: ${type} empty state render took ${(performance.now() - renderStart).toFixed(2)}ms`);
+            DEBUG_DASHBOARD && console.log(`⏱️ DashboardContent: ${type} empty state render took ${(performance.now() - renderStart).toFixed(2)}ms`);
             return <EmptyState message="No study sessions recorded" />;
         }
 
@@ -102,7 +103,7 @@ export default function DashboardContent({
                     loading={false}
                 />
             );
-            console.log(`⏱️ DashboardContent: Daily dashboard render took ${(performance.now() - renderStart).toFixed(2)}ms`);
+            DEBUG_DASHBOARD && console.log(`⏱️ DashboardContent: Daily dashboard render took ${(performance.now() - renderStart).toFixed(2)}ms`);
             return dashboardRender;
         } else if (!isDaily && weekly) {
             const dashboardRender = (
@@ -119,15 +120,15 @@ export default function DashboardContent({
                     loading={false}
                 />
             );
-            console.log(`⏱️ DashboardContent: Weekly dashboard render took ${(performance.now() - renderStart).toFixed(2)}ms`);
+            DEBUG_DASHBOARD && console.log(`⏱️ DashboardContent: Weekly dashboard render took ${(performance.now() - renderStart).toFixed(2)}ms`);
             return dashboardRender;
         }
 
-        console.log(`⚠️ DashboardContent: ${type} dashboard returned null`);
+        DEBUG_DASHBOARD && console.log(`⚠️ DashboardContent: ${type} dashboard returned null`);
         return null;
     };
 
-    console.log(`🎯 DashboardContent: Component render complete (render #${renderCount.current})`);
+    DEBUG_DASHBOARD && console.log(`🎯 DashboardContent: Component render complete (render #${renderCount.current})`);
 
     return (
         <View className="flex-1 overflow-hidden">

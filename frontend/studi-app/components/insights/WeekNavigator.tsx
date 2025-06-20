@@ -23,11 +23,13 @@ export default function WeekNavigator({
   const canGoPrev = canNavigate(weekStart, 'prev', 'weekly');
   const canGoNext = canNavigate(weekStart, 'next', 'weekly');
 
-  // Swipe gesture handling
-  const panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_, gestureState: PanResponderGestureState) => {
-        return Math.abs(gestureState.dx) > 15; // start when horizontal movement noticeable
+  // Re-create the pan responder whenever the "canGoPrev/Next" flags change so that
+  // the closure sees the latest values. If we keep a single instance forever it will
+  // capture the initial flags and stop recognising forward swipes after the first move.
+  const panResponder = React.useMemo(() => {
+    return PanResponder.create({
+      onMoveShouldSetPanResponder: (_: GestureResponderEvent, gestureState: PanResponderGestureState) => {
+        return Math.abs(gestureState.dx) > 15;
       },
       onPanResponderRelease: (_: GestureResponderEvent, gestureState: PanResponderGestureState) => {
         if (gestureState.dx > 40 && canGoPrev) {
@@ -36,8 +38,8 @@ export default function WeekNavigator({
           onNavigate('next');
         }
       }
-    })
-  ).current;
+    });
+  }, [canGoPrev, canGoNext, onNavigate]);
 
   const renderDay = ({ item }: { item: Date }) => {
     const isSelected = isSameDay(item, selectedDay);

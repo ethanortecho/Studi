@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import StudySession, CategoryBlock, Categories, Aggregate
+from .models import StudySession, CategoryBlock, Categories, Aggregate, WeeklyGoal, DailyGoal
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -149,5 +149,37 @@ class AggregateSerializer(serializers.ModelSerializer):
 
     def get_category_durations(self, obj):
         return obj.category_durations
+
+
+
+class DailyGoalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DailyGoal
+        fields = [
+            'id',
+            'date',
+            'target_minutes',
+            'accumulated_minutes',
+            'status',
+        ]
+        read_only_fields = ['id', 'accumulated_minutes', 'status']
+
+
+class WeeklyGoalSerializer(serializers.ModelSerializer):
+    daily_goals = DailyGoalSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = WeeklyGoal
+        fields = [
+            'id',
+            'week_start',
+            'total_minutes',
+            'active_weekdays',
+            'carry_over_enabled',
+            'accumulated_minutes',
+            'overtime_bank',
+            'daily_goals',
+        ]
+        read_only_fields = ['id', 'accumulated_minutes', 'overtime_bank', 'daily_goals']
 
 

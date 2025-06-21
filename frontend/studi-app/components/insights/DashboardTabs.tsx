@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Text, View, Pressable } from 'react-native';
 import DashboardContent from './DashboardContent';
-import DateNavigationHeader from './DateNavigationHeader';
-import WeekNavigator from './WeekNavigator';
-import { getDefaultDate, navigateDate, getWeekStart, navigateWeek } from '@/utils/dateUtils';
+import DailyNavigator from './DailyNavigator';
+import WeeklyNavigator from './WeeklyNavigator';
+import { getDefaultDate, getWeekStart, navigateWeek } from '@/utils/dateUtils';
 import { useDashboardData } from '@/hooks/useDashboardData';
 
 interface DashboardTabsProps {
@@ -18,7 +18,7 @@ export default function DashboardTabs({ onDataChange }: DashboardTabsProps) {
     const [dailyWeekStart, setDailyWeekStart] = useState(getWeekStart(today));
     const [selectedDailyDate, setSelectedDailyDate] = useState<Date>(today);
 
-    // Weekly view state (unchanged)
+    // Weekly view state
     const [weeklyDate, setWeeklyDate] = useState(getDefaultDate('weekly'));
 
     // Get dashboard data
@@ -41,10 +41,6 @@ export default function DashboardTabs({ onDataChange }: DashboardTabsProps) {
             setSelectedDailyDate(newStart); // Behaviour B: reset selection to week start (Sunday)
             return newStart;
         });
-    };
-
-    const handleWeeklyNavigation = (direction: 'prev' | 'next') => {
-        setWeeklyDate(current => navigateDate(current, direction, 'weekly'));
     };
 
     // Keep weeklyDate in sync with current daily week when on daily tab so we have weekly data for dots
@@ -80,7 +76,7 @@ export default function DashboardTabs({ onDataChange }: DashboardTabsProps) {
 
             {/* Date / Week Navigation */}
             {selectedTab === 'daily' ? (
-                <WeekNavigator
+                <DailyNavigator
                     weekStart={dailyWeekStart}
                     selectedDay={selectedDailyDate}
                     onSelect={(date) => setSelectedDailyDate(date)}
@@ -88,10 +84,9 @@ export default function DashboardTabs({ onDataChange }: DashboardTabsProps) {
                     hasData={weekDaily?.hasData}
                 />
             ) : (
-                <DateNavigationHeader
-                    currentDate={weeklyDate}
-                    type="weekly"
-                    onNavigate={handleWeeklyNavigation}
+                <WeeklyNavigator
+                    selectedWeekStart={weeklyDate}
+                    onSelect={(date) => setWeeklyDate(date)}
                 />
             )}
             

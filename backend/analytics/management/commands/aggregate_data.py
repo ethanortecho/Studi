@@ -3,6 +3,7 @@ from django.utils import timezone
 from analytics.models import StudySession, Aggregate, CategoryBlock
 from datetime import timedelta
 from collections import defaultdict
+from analytics.services.date_utils import get_week_boundaries
 
 class Command(BaseCommand):
     help = 'Aggregates study session data into daily, weekly, and monthly aggregates'
@@ -56,9 +57,8 @@ class Command(BaseCommand):
             
             self.stdout.write(f"Created/Updated daily aggregate for {date}")
             
-            # Create weekly aggregate
-            week_start = date - timedelta(days=date.weekday())
-            week_end = week_start + timedelta(days=6)
+            # Create weekly aggregate using canonical Sun→Sat boundaries
+            week_start, week_end = get_week_boundaries(date)
             
             weekly_sessions = StudySession.objects.filter(
                 start_time__date__gte=week_start,

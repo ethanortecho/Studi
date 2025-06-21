@@ -4,15 +4,10 @@ from django.db.models import Sum, Count
 from datetime import timedelta, datetime, date
 from analytics.models import StudySession, Aggregate, CategoryBlock, Break
 from collections import defaultdict
+from analytics.services.date_utils import get_week_boundaries
 
 class Command(BaseCommand):
     help = 'Aggregates existing study session data into daily, weekly, and monthly records'
-
-    def get_week_boundaries(self, date):
-        """Returns the Monday and Sunday dates for the week containing the given date"""
-        monday = date - timedelta(days=date.weekday())  # weekday() returns 0 for Monday, 1 for Tuesday, etc.
-        sunday = monday + timedelta(days=6)
-        return monday, sunday
 
     def handle(self, *args, **kwargs):
         # Clear existing aggregates
@@ -48,7 +43,7 @@ class Command(BaseCommand):
             # Create weekly aggregates aligned to calendar weeks
             current_date = first_session.start_time.date()
             while current_date <= end_date:
-                week_start, week_end = self.get_week_boundaries(current_date)
+                week_start, week_end = get_week_boundaries(current_date)
                 self.create_aggregate(user_id, week_start, week_end, 'weekly')
                 current_date = week_end + timedelta(days=1)  # Start next week
             

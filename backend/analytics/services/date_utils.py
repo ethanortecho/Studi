@@ -4,19 +4,26 @@ from django.utils import timezone
 
 def get_week_boundaries(target_date):
     """
-    Returns the Monday and Sunday dates for the week containing the given date
+    Returns the Sunday and Saturday dates for the week containing the given date (Sun→Sat)
     Args:
         target_date: date object
     Returns:
-        tuple: (monday_date, sunday_date)
+        tuple: (sunday_date, saturday_date)
     """
     if isinstance(target_date, str):
         target_date = date.fromisoformat(target_date)
     
-    # weekday() returns 0 for Monday, 1 for Tuesday, etc.
-    monday = target_date - timedelta(days=target_date.weekday())
-    sunday = monday + timedelta(days=6)
-    return monday, sunday
+    # In Python's weekday(): Monday=0 … Sunday=6.
+    # We want the week to start on Sunday.  For any target_date, move backwards to the
+    # most recent Sunday, then forward 6 days to get Saturday.
+
+    # Offset (0-6) from the given date back to the previous Sunday.  If the date is already
+    # Sunday (weekday()==6) the offset is 0.
+    sunday_offset = (target_date.weekday() + 1) % 7  # Monday→1, … Sunday→0
+    sunday = target_date - timedelta(days=sunday_offset)
+    saturday = sunday + timedelta(days=6)
+
+    return sunday, saturday
 
 
 def get_month_boundaries(target_date):

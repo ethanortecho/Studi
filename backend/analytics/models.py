@@ -73,11 +73,6 @@ class UserGoals(models.Model):
     carry_over = models.BooleanField(default=False)
 
 
-
-
-
-
-
 class CategoryBlock(models.Model):
     #granular breakdown of the study session, including the start and end time of each task
     study_session = models.ForeignKey(StudySession, on_delete=models.CASCADE)
@@ -122,4 +117,52 @@ class Break(models.Model):
             duration = self.end_time - self.start_time
             self.duration = int(duration.total_seconds())
         super().save(*args, **kwargs)
+
+
+class WeeklyGoal(models.Model):
+    """A user-defined weekly study target."""
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    # Monday date that identifies the ISO week
+    week_start = models.DateField()
+    total_minutes = models.IntegerField()
+    # List of active weekdays (0=Mon … 6=Sun) the goal is split across
+    active_weekdays = models.JSONField(default=list)
+    carry_over_enabled = models.BooleanField(default=False)
+
+    # Tracking fields – updated automatically as sessions complete
+    accumulated_minutes = models.IntegerField(default=0)
+    overtime_bank = models.IntegerField(default=0)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("user", "week_start")
+        ordering = ["-week_start"]
+
+    def __str__(self):
+        return f"{self.user.username} – week of {self.week_start}"
+
+
+class DailyGoal(models.Model):
+    """Derived per-day targets tied to a WeeklyGoal."""
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("met", "Met"),
+        ("exceeded", "Exceeded"),
+    ]
+
+    weekly_goal = models.ForeignKey(WeeklyGoal, on_delete=models.CASCADE, related_name="daily_goals")
+    date = models.DateField()
+    target_minutes = models.IntegerField()
+
+    accumulated_minutes = models.IntegerField(default=0)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pending")
+
+    class Meta:
+        unique_together = ("weekly_goal", "date")
+        ordering = ["date"]
+
+    def __str__(self):
+        return f"{self.weekly_goal.user.username} – {self.date} ({self.accumulated_minutes}/{self.target_minutes})"
 

@@ -5,6 +5,7 @@ from collections import defaultdict
 
 from ..models import StudySession, CategoryBlock, Aggregate, Break
 from .date_utils import get_week_boundaries, get_month_boundaries, is_current_period
+from .goal_progress_service import GoalProgressService
 
 
 class AggregateUpdateService:
@@ -33,6 +34,13 @@ class AggregateUpdateService:
             AggregateUpdateService._update_weekly_aggregate(user, week_start, week_end)
             
             print(f"Successfully updated all aggregates for session {session.id}")
+            
+            # Update goals progress
+            try:
+                GoalProgressService.update_for_session(session)
+                print(f"Updated goal progress for session {session.id}")
+            except Exception as e:
+                print(f"Failed to update goal progress: {str(e)}")
             
         except Exception as e:
             print(f"Error updating aggregates for session {session.id}: {str(e)}")

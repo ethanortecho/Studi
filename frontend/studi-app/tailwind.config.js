@@ -11,9 +11,11 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Primary brand colors
-        primary: '#282257',        // Dark purple
-        accent: '#E05F61',         // Coral accent
+        text: 'rgb(var(--color-text) / <alpha-value>)',
+        background: 'rgb(var(--color-background) / <alpha-value>)',
+        surface: 'rgb(var(--color-surface) / <alpha-value>)',
+        primary: 'rgb(var(--color-primary) / <alpha-value>)',
+        accent: 'rgb(var(--color-accent) / <alpha-value>)',
         
         // Layout colors
         layout: {

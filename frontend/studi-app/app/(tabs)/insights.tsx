@@ -11,7 +11,7 @@ export default function InsightsScreen() {
     }>({});
 
     return (
-        <SafeAreaView className="flex-1 bg-primary">
+        <SafeAreaView className="flex-1 bg-background">
             <InsightsHeader 
                 totalTime={dashboardData.totalTime}
                 totalHours={dashboardData.totalHours || '0.00'}

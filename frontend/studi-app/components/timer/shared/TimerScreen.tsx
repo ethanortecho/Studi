@@ -58,8 +58,10 @@ export default function TimerScreen({
   // trigger the category selection flow automatically
   useEffect(() => {
     if ((timerType === 'countdown' || timerType === 'pomo') && selectedCategoryId && !sessionStarted && !pendingCategoryId) {
-      console.log(`TimerScreen: Setting up ${timerType} with preselected category:`, selectedCategoryId);
-      handleFirstCategorySelect(selectedCategoryId);
+      // Ensure we pass a single string or number, not an array, to the handler
+      const categoryId = Array.isArray(selectedCategoryId) ? selectedCategoryId[0] : selectedCategoryId;
+      console.log(`TimerScreen: Setting up ${timerType} with preselected category:`, categoryId);
+      handleFirstCategorySelect(categoryId);
     }
   }, [timerType, selectedCategoryId, sessionStarted, pendingCategoryId]);
   

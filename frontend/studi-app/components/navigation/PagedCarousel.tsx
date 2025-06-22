@@ -30,6 +30,8 @@ export interface PagedCarouselProps<T> {
   contentContainerStyle?: StyleProp<ViewStyle>;
   /** Any extra FlatList props you'd like forwarded */
   flatListProps?: Partial<FlatListProps<T>>;
+  /** Horizontal spacing between items (in px) */
+  itemSpacing?: number;
 }
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -48,9 +50,11 @@ export default function PagedCarousel<T>({
   pageWidth,
   contentContainerStyle,
   flatListProps = {},
+  itemSpacing = 0,
 }: PagedCarouselProps<T>) {
   const effectivePageWidth = pageWidth ?? SCREEN_WIDTH;
-  const itemWidth = effectivePageWidth / Math.max(1, itemsPerPage);
+  const totalSpacing = Math.max(0, itemsPerPage - 1) * itemSpacing;
+  const itemWidth = (effectivePageWidth - totalSpacing) / Math.max(1, itemsPerPage);
   const flatListRef = useRef<FlatList<T>>(null);
 
   const handleMomentumEnd = useCallback(
@@ -65,9 +69,9 @@ export default function PagedCarousel<T>({
 
   const wrappedRenderItem = useCallback(
     ({ item, index }: { item: T; index: number }) => (
-      <View style={{ width: itemWidth }}>{renderItem({ item, index })}</View>
+      <View style={{ width: itemWidth, marginHorizontal: itemSpacing / 2 }}>{renderItem({ item, index })}</View>
     ),
-    [itemWidth, renderItem]
+    [itemWidth, itemSpacing, renderItem]
   );
 
   // Jump to the initial index when the component mounts

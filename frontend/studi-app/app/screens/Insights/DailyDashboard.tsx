@@ -32,7 +32,7 @@ export default function DailyDashboard({
 }: DailyDashboardProps) {
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center">
+      <View className="flex-1  justify-center items-center">
         <Text>Loading...</Text>
       </View>
     );
@@ -40,7 +40,7 @@ export default function DailyDashboard({
 
   return (
     <ScrollView 
-      className="flex-1" 
+      className="flex-1 " 
       contentContainerStyle={{ paddingBottom: 30 }}
       showsVerticalScrollIndicator={false}
     >

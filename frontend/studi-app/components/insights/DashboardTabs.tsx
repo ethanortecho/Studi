@@ -54,10 +54,10 @@ export default function DashboardTabs({ onDataChange }: DashboardTabsProps) {
         <View className="flex-1">
             {/* Tab Selector */}
             <View className="px-5 mb-6">
-                <View className="flex-row rounded-xl bg-layout-off-white px-1 py-1">
+                <View className="flex-row rounded-xl bg-surface px-1 py-1">
                     <Pressable 
                         onPress={() => setSelectedTab('daily')} 
-                        className={`flex-1 items-center py-2 px-4 rounded-2xl ${selectedTab === 'daily' ? 'bg-primary' : ''}`}
+                        className={`flex-1 items-center py-2 px-4 rounded-2xl ${selectedTab === 'daily' ? 'bg-accent' : ''}`}
                     >
                         <Text className={`font-bold text-xl ${selectedTab === 'daily' ? 'text-white' : 'text-layout-faded-grey'}`}>
                             Daily
@@ -65,7 +65,7 @@ export default function DashboardTabs({ onDataChange }: DashboardTabsProps) {
                     </Pressable>
                     <Pressable 
                         onPress={() => setSelectedTab('weekly')} 
-                        className={`flex-1 items-center py-2 px-4 rounded-2xl ${selectedTab === 'weekly' ? 'bg-primary' : ''}`}
+                        className={`flex-1 items-center py-2 px-4 rounded-2xl ${selectedTab === 'weekly' ? 'bg-accent' : ''}`}
                     >
                         <Text className={`font-bold text-xl ${selectedTab === 'weekly' ? 'text-white' : 'text-layout-faded-grey'}`}>
                             Weekly

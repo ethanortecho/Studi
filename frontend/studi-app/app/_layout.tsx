@@ -15,6 +15,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { cssInterop } from 'nativewind';
 import { StudySessionProvider } from '@/context/StudySessionContext';
+import { applyDarkTheme } from '@/theme/applyTheme';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
@@ -34,6 +35,8 @@ export default function RootLayout() {
     'Poppins-Bold': Poppins_700Bold,
   });
 
+  const darkStyles = applyDarkTheme() as any;
+
   useEffect(() => {
     if (loaded) {
       SplashScreen.hideAsync();
@@ -47,14 +50,16 @@ export default function RootLayout() {
   return (
     <StudySessionProvider>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="screens/manage-categories" options={{ headerShown: true, title: 'Manage Categories' }} />
-          <Stack.Screen name="screens/record" options={{ headerShown: true, title: 'Record Session' }} />
-          <Stack.Screen name="screens/timer/stopwatch" options={{ headerShown: false }} />
-          <Stack.Screen name="screens/timer/countdown" options={{ headerShown: false }} />
-          <Stack.Screen name="+not-found" />
-        </Stack>
+        <SafeAreaView style={[{ flex: 1 }, darkStyles]}>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="screens/manage-categories" options={{ headerShown: true, title: 'Manage Categories' }} />
+            <Stack.Screen name="screens/record" options={{ headerShown: true, title: 'Record Session' }} />
+            <Stack.Screen name="screens/timer/stopwatch" options={{ headerShown: false }} />
+            <Stack.Screen name="screens/timer/countdown" options={{ headerShown: false }} />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+        </SafeAreaView>
         <StatusBar style="auto" />
       </ThemeProvider>
     </StudySessionProvider>

@@ -17,9 +17,9 @@ export default function DayCard({ date, isSelected, showDot = false, onPress }: 
   const dayNum = date.getDate();
 
   return (
-    <Pressable
+      <Pressable
       onPress={onPress}
-      className={`flex-1 h-20 rounded-3xl items-center justify-center bg-primary/60 ${isSelected ? 'border-2 border-white' : 'border border-transparent'}`}
+      className={`flex-2 h-20  rounded-3xl items-center justify-center ${isSelected ? 'bg-primary' : 'bg-surface border border-transparent'}`}
     >
       {/* Dot */}
       <View className={`w-2 h-2 rounded-full mb-1 ${showDot ? 'bg-white' : 'bg-transparent'}`} />
@@ -28,5 +28,7 @@ export default function DayCard({ date, isSelected, showDot = false, onPress }: 
       {/* Day number */}
       <Text className="text-base text-white font-bold">{dayNum}</Text>
     </Pressable>
+
+    
   );
 } 

@@ -85,10 +85,11 @@ export default function DailyNavigator({
         <PagedCarousel
           items={days}
           itemsPerPage={7}
-          pageWidth={Dimensions.get('window').width - 32}
+          pageWidth={Dimensions.get('window').width - 30}
           renderItem={renderItem}
           keyExtractor={(d) => d.toISOString()}
-          contentContainerStyle={{ height: 80, justifyContent: 'space-between' }}
+          itemSpacing={7}
+          contentContainerStyle={{ height: 80 }}
           flatListProps={{ style: { height: 80 } }}
         />
       </React.Fragment>

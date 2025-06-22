@@ -9,7 +9,7 @@ interface InsightsHeaderProps {
 
 export default function InsightsHeader({ totalTime, totalHours }: InsightsHeaderProps) {
     return (
-        <View className="pt-20 pb-8 px-5 items-center">
+        <View className=" pb-8 px-5 items-center">
             <TotalHours 
                 totalTime={totalTime}
                 totalHours={totalHours || '0.00'}

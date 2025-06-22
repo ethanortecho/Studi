@@ -8,9 +8,7 @@ interface TotalHoursProps {
 export default function TotalHours({ totalTime, totalHours }: TotalHoursProps) {
   return (
     <View>
-      <Text className="text-white text-sm pb-3 font-semibold mb-2">
-        You've Studied
-      </Text>
+      
       
       {totalTime ? (
         // New format: Xh Ymin

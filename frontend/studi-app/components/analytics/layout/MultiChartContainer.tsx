@@ -133,11 +133,7 @@ export default function MultiChartContainer({
                 {/* Pie Chart Button */}
                 <Pressable 
                     onPress={() => setSelectedChart('pie')}
-                    className={`rounded-lg p-3 ${
-                        selectedChart === 'pie' 
-                            ? 'bg-primary' 
-                            : 'bg-white border border-gray-300'
-                    }`}
+                    className="flex-1 items-center p-3"
                 >
                     <Text className={`text-sm font-bold ${
                         selectedChart === 'pie' 
@@ -153,11 +149,7 @@ export default function MultiChartContainer({
                     <Pressable 
                         onPress={() => setSelectedChart('sessions')}
                         disabled={!chartOptions.sessions.available}
-                        className={`rounded-lg p-3 ${
-                            selectedChart === 'sessions' 
-                                ? 'bg-primary' 
-                                : 'bg-white border border-gray-300'
-                        }`}
+                        className={`flex-1 items-center p-3 ${!chartOptions.sessions.available ? 'opacity-40' : ''}`}
                     >
                         <Text className={`text-sm font-bold ${
                             selectedChart === 'sessions' 
@@ -174,11 +166,7 @@ export default function MultiChartContainer({
                     <Pressable 
                         onPress={() => setSelectedChart('bar')}
                         disabled={!chartOptions.bar.available}
-                        className={`rounded-lg p-3 ${
-                            selectedChart === 'bar' 
-                                ? 'bg-primary' 
-                                : 'bg-white border border-gray-300'
-                        }`}
+                        className={`flex-1 items-center p-3 ${!chartOptions.bar.available ? 'opacity-40' : ''}`}
                     >
                         <Text className={`text-sm font-bold ${
                             selectedChart === 'bar' 

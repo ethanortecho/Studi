@@ -123,7 +123,7 @@ export default function MultiChartContainer({
             
             
             {/* Legend */}
-            <View className="flex-row items-center justify-center py-10 px-4">
+            <View className="flex-row items-center justify-center py- px-4">
                 <Legend 
                     category_durations={categoryDurations} 
                     category_metadata={categoryMetadata} 
@@ -133,7 +133,7 @@ export default function MultiChartContainer({
                 {/* Pie Chart Button */}
                 <Pressable 
                     onPress={() => setSelectedChart('pie')}
-                    className="flex-1 items-center p-3"
+                    className="flex-1 items-center"
                 >
                     <Text className={`text-sm font-bold ${
                         selectedChart === 'pie' 

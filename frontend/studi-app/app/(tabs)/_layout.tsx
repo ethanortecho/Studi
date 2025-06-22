@@ -19,7 +19,7 @@ export default function TabLayout() {
         tabBarActiveTintColor: '#FFFFFF',
         tabBarInactiveTintColor: 'rgba(255,255,255,0.6)',
         tabBarItemStyle: {
-          paddingVertical: 20,
+          paddingVertical: 10,
         },
         tabBarStyle: {
           position: 'absolute',
@@ -30,7 +30,7 @@ export default function TabLayout() {
           marginHorizontal: 15, // space on both sides
 
 
-          height: 80,
+          height: 60,
           backgroundColor: Colors[colorScheme].accent,
           borderColor: 'rgba(140, 69, 69, 0.1)',
         },

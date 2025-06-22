@@ -246,7 +246,7 @@ export default function SessionBarchart({
         <Text className="text-md font-bold text-category-purple mb-4">Sessions</Text>
 
         {/* Timeline Container */}
-        <View className="mb-4">
+        <View className="mb-4 mx-5">
           {sessions.map((session) => (
             <View key={session.index} className="mb-3">
               {/* Session Row */}

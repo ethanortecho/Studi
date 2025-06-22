@@ -8,7 +8,7 @@ interface DashboardCardProps {
 
 export default function DashboardCard({ children, className = '' }: DashboardCardProps) {
     return (
-        <View className={` rounded-2xl p-5 mb-4 ${className}`}>
+        <View className={`  ${className}`}>
             {children}
         </View>
     );

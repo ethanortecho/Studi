@@ -8,6 +8,7 @@ export const light = {
   tabIconDefault: '#687076',
   tabIconSelected: '#0a7ea4',
   border: '#E5E7EB',
+  accent: '#5D3EDA',  // Brand purple accent
 } as const;
 
 export type LightTheme = typeof light; 

@@ -88,17 +88,17 @@ export default function MultiChartContainer({
    
 
     return (
-        <DashboardCard className="bg-surface">
+        <DashboardCard className="bg-surface rounded-[35px]">
             {showTitle && (
                 <View className="flex-row  items-center justify-center py-5">
-                    <Text className="text-xl font-bold text-gray-500 mb-3 ">{chartOptions[selectedChart].title}</Text>
+                    <Text className="text-2xl font-bold text-white mb-3 ">{chartOptions[selectedChart].title}</Text>
                 </View>
             )}
             
             {/* Chart Display */}
-            <View className="mb-4" style={{ height: 200 }}>
+            <View className="mb-2" style={{ height: 170 }}>
                 {selectedChart === 'pie' && chartOptions.pie.available && (
-                    <View className="flex-row items-center justify-center h-full">
+                    <View className="items-center justify-center ">
                         <CustomPieChart data={chartData.pie} />
                     </View>
                 )}

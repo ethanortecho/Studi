@@ -53,8 +53,8 @@ export default function DashboardTabs({ onDataChange }: DashboardTabsProps) {
     return (
         <View className="flex-1">
             {/* Tab Selector */}
-            <View className="px-5 mb-6">
-                <View className="flex-row rounded-xl bg-surface px-1 py-1">
+            <View className="px-5  ">
+                <View className="flex-row rounded-2xl bg-surface px-2 py-2">
                     <Pressable 
                         onPress={() => setSelectedTab('daily')} 
                         className={`flex-1 items-center py-2 px-4 rounded-2xl ${selectedTab === 'daily' ? 'bg-accent' : ''}`}

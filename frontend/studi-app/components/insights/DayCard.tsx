@@ -19,7 +19,7 @@ export default function DayCard({ date, isSelected, showDot = false, onPress }: 
   return (
       <Pressable
       onPress={onPress}
-      className={`flex-2 h-20  rounded-3xl items-center justify-center ${isSelected ? 'bg-primary' : 'bg-surface border border-transparent'}`}
+      className={`flex-2 h-20  rounded-[15px] items-center justify-center ${isSelected ? 'bg-primary' : 'bg-surface border border-transparent'}`}
     >
       {/* Dot */}
       <View className={`w-2 h-2 rounded-full mb-1 ${showDot ? 'bg-white' : 'bg-transparent'}`} />

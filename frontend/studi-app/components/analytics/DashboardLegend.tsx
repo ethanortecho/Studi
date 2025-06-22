@@ -31,7 +31,7 @@ export default function Legend({ category_durations, category_metadata }: Legend
                                 style={{ backgroundColor: categoryMeta.color }}
                                 className="w-14 h-1 rounded-sm mr-2"
                             />
-                            <Text className="text-layout-dark-grey text-sm">
+                            <Text className="text-white text-sm">
                                 {categoryMeta.name}
                             </Text>
                         </View>

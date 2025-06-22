@@ -21,14 +21,14 @@ interface CustomPieChartProps {
 
 export default function CustomPieChart({ 
   data, 
-  size = 200, 
+  size = 175, 
   title = "Study Split",
   innerRadius = "55%",
   startAngle = 0,
   circleSweepDegrees = 360,
   showLabels = true,
   showAngularInsets = true,
-  angularInsetWidth = 5,
+  angularInsetWidth = 0,
   angularInsetColor = "white"
 }: CustomPieChartProps) {
   return (

@@ -75,7 +75,7 @@ export default function WeeklyNavigator({
   );
 
   return (
-    <View className="mb-4 px-4" {...panResponder.panHandlers}>
+    <View className="mb-4 px-4 mt-5" {...panResponder.panHandlers}>
       <PagedCarousel
         items={items}
         itemsPerPage={1}

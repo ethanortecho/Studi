@@ -1,9 +1,9 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
@@ -15,16 +15,24 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarButton: HapticTab,
+        tabBarShowLabel: false,
+        tabBarActiveTintColor: '#FFFFFF',
+        tabBarInactiveTintColor: 'rgba(255,255,255,0.6)',
+        tabBarItemStyle: {
+          paddingVertical: 20,
+        },
         tabBarStyle: {
           position: 'absolute',
           left: 20,
           right: 20,
-          bottom: 20,
+          bottom: 30,
           borderRadius: 50,
-          height: 70,
-          backgroundColor: Colors[colorScheme].primary,
-          borderWidth: 1,
-          borderColor: 'rgba(255,255,255,0.1)',
+          marginHorizontal: 15, // space on both sides
+
+
+          height: 80,
+          backgroundColor: Colors[colorScheme].accent,
+          borderColor: 'rgba(140, 69, 69, 0.1)',
         },
       }}>
 
@@ -33,7 +41,13 @@ export default function TabLayout() {
             name="home"
             options={{
                 title: 'Home',
-                tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+                tabBarIcon: ({ color, focused }) => (
+                  <Ionicons
+                    name={focused ? 'home' : 'home-outline'}
+                    size={28}
+                    color={color}
+                  />
+                ),
             }}
           />
       
@@ -41,7 +55,13 @@ export default function TabLayout() {
         name="insights"
         options={{
           title: 'Insights',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? 'options' : 'options-outline'}
+              size={28}
+              color={color}
+            />
+          ),
         }}
       />
 
@@ -49,7 +69,13 @@ export default function TabLayout() {
         name="settings"
         options={{
           title: 'Settings',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="gear" color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? 'settings' : 'settings-outline'}
+              size={28}
+              color={color}
+            />
+          ),
         }}
       />
       

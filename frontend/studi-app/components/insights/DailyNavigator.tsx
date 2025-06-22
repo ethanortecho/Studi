@@ -77,11 +77,9 @@ export default function DailyNavigator({
   }, [weekStart]);
 
   return (
-    <View className="mb-4 px-4" {...panResponder.panHandlers}>
+    <View className="mt-5 mb-3 px-3" {...panResponder.panHandlers}>
       <React.Fragment>
-        <Text className="text-center text-layout-faded-grey text-xs mb-2 font-medium mt-0 mb-2">
-          {weekRangeLabel}
-        </Text>
+       
         <PagedCarousel
           items={days}
           itemsPerPage={7}

@@ -9,7 +9,7 @@ interface StudySessionContextType {
   currentCategoryBlockId: number | null;
   currentCategoryId: number | null;
   pausedCategoryId: number | null;
-  breakCategory: Category | null;
+  breakCategory: Category | null; 
   categories: Category[];
   isSessionPaused: boolean;
   // Session stats modal state

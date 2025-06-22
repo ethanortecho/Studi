@@ -3,6 +3,8 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
+import * as SystemUI from 'expo-system-ui';
+import { Appearance } from 'react-native';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 import '../global.css';
@@ -16,6 +18,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { cssInterop } from 'nativewind';
 import { StudySessionProvider } from '@/context/StudySessionContext';
 import { applyDarkTheme } from '@/theme/applyTheme';
+import { dark } from '@/theme/dark';
+import { light } from '@/theme/light';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
@@ -24,6 +28,11 @@ cssInterop(SafeAreaView, { className: "style" });
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
+
+// Set initial background color before the first render so the OS areas
+// (status-bar notch and home-indicator strip) start with the correct theme.
+const initialScheme = Appearance.getColorScheme();
+SystemUI.setBackgroundColorAsync(initialScheme === 'dark' ? dark.background : light.background);
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -36,6 +45,12 @@ export default function RootLayout() {
   });
 
   const darkStyles = applyDarkTheme() as any;
+
+  // Ensure the OS background outside the safe area matches our theme
+  useEffect(() => {
+    const bgColor = colorScheme === 'dark' ? dark.background : light.background;
+    SystemUI.setBackgroundColorAsync(bgColor);
+  }, [colorScheme]);
 
   useEffect(() => {
     if (loaded) {
@@ -50,7 +65,7 @@ export default function RootLayout() {
   return (
     <StudySessionProvider>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <SafeAreaView style={[{ flex: 1 }, darkStyles]}>
+        <SafeAreaView edges={['left', 'right']} style={[{ flex: 1 }, darkStyles]}>
           <Stack>
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="screens/manage-categories" options={{ headerShown: true, title: 'Manage Categories' }} />
@@ -60,7 +75,7 @@ export default function RootLayout() {
             <Stack.Screen name="+not-found" />
           </Stack>
         </SafeAreaView>
-        <StatusBar style="auto" />
+        <StatusBar translucent backgroundColor="transparent" style="light" />
       </ThemeProvider>
     </StudySessionProvider>
   );

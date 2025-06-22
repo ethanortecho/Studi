@@ -242,7 +242,7 @@ export default function SessionBarchart({
 
   return (
     <ScrollView className="max-h-56" showsVerticalScrollIndicator={false}>
-      <View className="p-3 bg-white rounded-2xl">
+      <View >
         <Text className="text-md font-bold text-category-purple mb-4">Sessions</Text>
 
         {/* Timeline Container */}

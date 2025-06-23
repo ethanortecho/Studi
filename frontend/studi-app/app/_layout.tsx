@@ -1,6 +1,6 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Stack, router, usePathname } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import * as SystemUI from 'expo-system-ui';
@@ -20,6 +20,7 @@ import { StudySessionProvider } from '@/context/StudySessionContext';
 import { applyDarkTheme } from '@/theme/applyTheme';
 import { dark } from '@/theme/dark';
 import { light } from '@/theme/light';
+import { useWeeklyGoal } from '@/hooks/useWeeklyGoal';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
@@ -35,6 +36,18 @@ const initialScheme = Appearance.getColorScheme();
 SystemUI.setBackgroundColorAsync(initialScheme === 'dark' ? dark.background : light.background);
 
 export default function RootLayout() {
+  // Guard: redirect to goal-setting screen if none exists
+  const { missing: goalMissing, loading: goalLoading } = useWeeklyGoal();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    // Avoid redirect loop: if we are already on the goal screen, do not replace again
+    const onGoalScreen = pathname.startsWith('/screens/set-weekly-goal');
+    if (!goalLoading && goalMissing && !onGoalScreen) {
+      router.replace('/screens/set-weekly-goal' as any);
+    }
+  }, [goalMissing, goalLoading, pathname]);
+
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
@@ -69,6 +82,7 @@ export default function RootLayout() {
           <Stack>
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="screens/manage-categories" options={{ headerShown: true, title: 'Manage Categories' }} />
+            <Stack.Screen name="screens/set-weekly-goal" options={{ headerShown: false }} />
             <Stack.Screen name="screens/record" options={{ headerShown: true, title: 'Record Session' }} />
             <Stack.Screen name="screens/timer/stopwatch" options={{ headerShown: false }} />
             <Stack.Screen name="screens/timer/countdown" options={{ headerShown: false }} />

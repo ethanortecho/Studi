@@ -43,26 +43,26 @@ export default function HomeScreen() {
     };
 
     return (
-        <SafeAreaView className="flex-1 bg-purple-50">
+        <SafeAreaView className="flex-1 bg-background">
             <View className="p-6">
-                <Text className="text-3xl font-light text-indigo-800 mb-2">
+                <Text className="text-3xl font-medium text-indigo-800 mb-2">
                     Welcome Back,
                 </Text>
-                <Text className="text-3xl font-light text-indigo-600">
+                <Text className="text-3xl font-bold text-indigo-600">
                     Ethan
                 </Text>
             </View>
             
-            <ThemedView style={{ flex: 1 }} className="px-6 justify-center">
+            <View style={{ flex: 1 }} className="px-6 justify-center">
                 <Pressable 
                     onPress={handleStartStudying}
-                    className="bg-green-500 py-6 px-8 rounded-2xl shadow-lg"
+                    className="bg-accent py-6 px-8 rounded-2xl shadow-lg"
                 >
                     <Text className="text-white font-semibold text-xl text-center">
                         Start Studying
                     </Text>
                 </Pressable>
-            </ThemedView>
+            </View>
 
             <TimerConfigModal
                 visible={modalVisible}

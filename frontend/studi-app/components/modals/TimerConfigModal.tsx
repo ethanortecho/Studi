@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import { Modal, View, Text, Pressable, ScrollView, TouchableOpacity } from 'react-native';
+import { Modal, View, Text, Pressable, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useContext } from 'react';
-import { StudySessionContext } from '@/context/StudySessionContext';
 import CountdownConfig from '../CountdownConfig';
 import PomodoroConfig from '../PomodoroConfig';
 import StopwatchConfig from '../StopwatchConfig';
@@ -92,135 +90,63 @@ export default function TimerConfigModal({ visible, onClose, onStartSession }: T
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#f9fafb' }}>
+      <SafeAreaView className="flex-1 bg-background">
         {/* Header */}
-        <View style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: 16,
-          borderBottomWidth: 1,
-          borderBottomColor: '#e5e7eb',
-          backgroundColor: 'white'
-        }}>
+        <View className="flex-row justify-between items-center p-4 border-b border-border bg-surface">
           <Pressable onPress={onClose}>
-            <Text style={{ color: '#6b7280', fontSize: 18 }}>Cancel</Text>
+            <Text className="text-gray-500 text-lg">Cancel</Text>
           </Pressable>
-          <Text style={{ fontSize: 20, fontWeight: '600', color: '#1f2937' }}>Configure Timer</Text>
-          <View style={{ width: 64 }} />
+          <Text className="text-lg font-semibold text-text">Configure Timer</Text>
+          <View className="w-16" />
         </View>
 
-        <ScrollView style={{ flex: 1, padding: 24 }}>
+        <ScrollView className="flex-1 p-6">
           
 
           {/* Mode Selector */}
-          <View style={{
-            flexDirection: 'row',
-            backgroundColor: '#f3f4f6',
-            borderRadius: 9999,
-            padding: 4,
-            marginBottom: 24
-          }}>
+          <View className="flex-row rounded-full p-1 mb-6 bg-surface">
             <Pressable
               onPress={() => handleModeChange('free')}
-              style={{
-                flex: 1,
-                paddingVertical: 12,
-                paddingHorizontal: 16,
-                borderRadius: 9999,
-                backgroundColor: selectedMode === 'free' ? '#4f46e5' : 'transparent'
-              }}
+              className={`flex-1 py-3 px-4 rounded-full ${selectedMode === 'free' ? 'bg-accent' : ''}`}
             >
-              <Text style={{
-                fontSize: 14,
-                fontWeight: '500',
-                textAlign: 'center',
-                color: selectedMode === 'free' ? 'white' : '#6b7280'
-              }}>
+              <Text className={`text-sm font-medium text-center ${selectedMode === 'free' ? 'text-white' : 'text-gray-500 dark:text-gray-400'}`}>
                 FREE
               </Text>
             </Pressable>
             
             <Pressable
               onPress={() => handleModeChange('timer')}
-              style={{
-                flex: 1,
-                paddingVertical: 12,
-                paddingHorizontal: 16,
-                borderRadius: 9999,
-                backgroundColor: selectedMode === 'timer' ? '#4f46e5' : 'transparent'
-              }}
+              className={`flex-1 py-3 px-4 rounded-full ${selectedMode === 'timer' ? 'bg-accent' : ''}`}
             >
-              <Text style={{
-                fontSize: 14,
-                fontWeight: '500',
-                textAlign: 'center',
-                color: selectedMode === 'timer' ? 'white' : '#6b7280'
-              }}>
+              <Text className={`text-sm font-medium text-center ${selectedMode === 'timer' ? 'text-white' : 'text-gray-500 dark:text-gray-400'}`}>
                 TIMER
               </Text>
             </Pressable>
             
             <Pressable
               onPress={() => handleModeChange('pomo')}
-              style={{
-                flex: 1,
-                paddingVertical: 12,
-                paddingHorizontal: 16,
-                borderRadius: 9999,
-                backgroundColor: selectedMode === 'pomo' ? '#4f46e5' : 'transparent'
-              }}
+              className={`flex-1 py-3 px-4 rounded-full ${selectedMode === 'pomo' ? 'bg-accent' : ''}`}
             >
-              <Text style={{
-                fontSize: 14,
-                fontWeight: '500',
-                textAlign: 'center',
-                color: selectedMode === 'pomo' ? 'white' : '#6b7280'
-              }}>
+              <Text className={`text-sm font-medium text-center ${selectedMode === 'pomo' ? 'text-white' : 'text-gray-500 dark:text-gray-400'}`}>
                 POMO
               </Text>
             </Pressable>
           </View>
 
           {/* Configuration Content */}
-          <View style={{
-            backgroundColor: 'white',
-            borderRadius: 16,
-            padding: 24,
-            marginBottom: 24,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.05,
-            shadowRadius: 2,
-            elevation: 1
-          }}>
+          <View className="bg-surface rounded-2xl p-6 mb-6 shadow">
             {renderConfiguration()}
           </View>
         </ScrollView>
 
         {/* Start Button */}
-        <View style={{
-          padding: 24,
-          backgroundColor: 'white',
-          borderTopWidth: 1,
-          borderTopColor: '#e5e7eb'
-        }}>
+        <View className="p-6 bg-surface border-t border-border">
           <Pressable
             onPress={handleStartSession}
             disabled={!isStartButtonEnabled}
-            style={{
-              width: '100%',
-              paddingVertical: 16,
-              backgroundColor: isStartButtonEnabled ? '#10b981' : '#d1d5db',
-              borderRadius: 16
-            }}
+            className={`w-full py-4 rounded-2xl ${isStartButtonEnabled ? 'bg-primary' : 'bg-gray-300'}`}
           >
-            <Text style={{
-              textAlign: 'center',
-              fontSize: 18,
-              fontWeight: '500',
-              color: isStartButtonEnabled ? 'white' : '#9ca3af'
-            }}>
+            <Text className={`text-center text-lg font-medium ${isStartButtonEnabled ? 'text-white' : 'text-gray-400'}`}>
               Start Studying
             </Text>
           </Pressable>

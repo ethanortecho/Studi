@@ -123,19 +123,19 @@ export default function MultiChartContainer({
             
             
             {/* Legend */}
-            <View className="flex-row items-center justify-center py- px-4">
+            <View className="flex-row items-center justify-center pt-10 px-4">
                 <Legend 
                     category_durations={categoryDurations} 
                     category_metadata={categoryMetadata} 
                 />
             </View>
-            <View className="flex-row items-center justify-center gap-2 mb-4">
+            <View className="flex-row items-center justify-center py-5 gap-2 mb-4">
                 {/* Pie Chart Button */}
                 <Pressable 
                     onPress={() => setSelectedChart('pie')}
                     className="flex-1 items-center"
                 >
-                    <Text className={`text-sm font-bold ${
+                    <Text className={`text-md font-bold ${
                         selectedChart === 'pie' 
                             ? 'text-white' 
                             : 'text-gray-500'
@@ -151,7 +151,7 @@ export default function MultiChartContainer({
                         disabled={!chartOptions.sessions.available}
                         className={`flex-1 items-center p-3 ${!chartOptions.sessions.available ? 'opacity-40' : ''}`}
                     >
-                        <Text className={`text-sm font-bold ${
+                        <Text className={`text-md font-bold ${
                             selectedChart === 'sessions' 
                                 ? 'text-white' 
                                 : 'text-gray-500'
@@ -168,7 +168,7 @@ export default function MultiChartContainer({
                         disabled={!chartOptions.bar.available}
                         className={`flex-1 items-center p-3 ${!chartOptions.bar.available ? 'opacity-40' : ''}`}
                     >
-                        <Text className={`text-sm font-bold ${
+                        <Text className={`text-md font-bold ${
                             selectedChart === 'bar' 
                                 ? 'text-white' 
                                 : 'text-gray-500'

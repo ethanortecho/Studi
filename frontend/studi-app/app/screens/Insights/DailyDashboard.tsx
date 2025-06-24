@@ -30,13 +30,7 @@ export default function DailyDashboard({
   rawData,
   loading
 }: DailyDashboardProps) {
-  if (loading) {
-    return (
-      <View className="flex-1  justify-center items-center">
-        <Text>Loading...</Text>
-      </View>
-    );
-  }
+  // 🔍 Debug: Log key day-level data
 
   return (
     <ScrollView 

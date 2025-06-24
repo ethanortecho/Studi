@@ -60,7 +60,7 @@ export default function WeeklyDashboard({
         />
       </View>
       {/* Off-white container for all dashboard content - edge to edge */}
-      <View className="bg-layout-off-white rounded-3xl mx-4 mb-4 px-3 py-4">
+      <View>
         
        
         <View className="px-4 pb-4">

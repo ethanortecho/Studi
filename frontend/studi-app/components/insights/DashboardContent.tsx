@@ -8,7 +8,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import DailyDashboard from '@/app/screens/Insights/DailyDashboard';
 import WeeklyDashboard from '@/app/screens/Insights/WeeklyDashboard';
-import { DashboardSkeleton, EmptyState } from './SkeletonLoader';
+import { DashboardSkeleton } from './SkeletonLoader';
 
 interface DashboardContentProps {
     selectedTab: string;
@@ -81,12 +81,6 @@ export default function DashboardContent({
         if (isLoading) {
             DEBUG_DASHBOARD && console.log(`⏱️ DashboardContent: ${type} skeleton render took ${(performance.now() - renderStart).toFixed(2)}ms`);
             return <DashboardSkeleton type={type} />;
-        }
-
-        // Show empty state
-        if (data?.isEmpty) {
-            DEBUG_DASHBOARD && console.log(`⏱️ DashboardContent: ${type} empty state render took ${(performance.now() - renderStart).toFixed(2)}ms`);
-            return <EmptyState message="No study sessions recorded" />;
         }
 
         // Show actual dashboard

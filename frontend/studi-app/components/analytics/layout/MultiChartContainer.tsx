@@ -27,6 +27,12 @@ interface MultiChartContainerProps {
     defaultChart?: 'pie' | 'sessions' | 'bar';
     showTitle?: boolean;
     title?: string;
+
+    /**
+     * Explicit flag from parent indicating that the day/week has no data at all.
+     * When provided it overrides internal checks so the parent can make the decision.
+     */
+    isEmpty?: boolean;
 }
 
 type ChartType = 'pie' | 'sessions' | 'bar';
@@ -46,37 +52,43 @@ export default function MultiChartContainer({
     weeklyChartData,
     defaultChart = 'pie',
     showTitle = true,
-    title = "Chart Analysis"
+    title = "Chart Analysis",
+    isEmpty
 }: MultiChartContainerProps) {
     const [selectedChart, setSelectedChart] = useState<ChartType>(defaultChart);
 
-    // ✅ Memoize chart availability and options
+    // 🚦 Single indicator: any non-zero duration means there is data
+    const hasAnyData = Object.values(categoryDurations || {}).some((duration) => duration > 0);
+
+    // ✅ Memoize chart availability and options – gated by hasAnyData to avoid zero-value noise
     const chartOptions = useMemo(() => {
-        const hasPieData = pieChartData && pieChartData.length > 0;
-        const hasSessionData = timeframe === 'daily' && timelineData && categoryMetadata;
-        const hasWeeklyData = timeframe === 'weekly' && weeklyChartData && Object.keys(weeklyChartData).length > 0;
-        
+        const hasPieData = hasAnyData && Array.isArray(pieChartData) && pieChartData.length > 0;
+
+        const hasSessionData = hasAnyData && timeframe === 'daily' && Array.isArray(timelineData) && timelineData.length > 0;
+
+        const hasWeeklyData = hasAnyData && timeframe === 'weekly' && weeklyChartData && Object.keys(weeklyChartData).length > 0;
+
         return {
-            pie: { 
+            pie: {
                 title: 'Subject Breakdown',
-                available: hasPieData, 
+                available: hasPieData,
                 label: 'Categories',
-                show: true // Always show pie chart option
+                show: true
             },
-            sessions: { 
+            sessions: {
                 title: 'Session Breakdown',
-                available: hasSessionData, 
+                available: hasSessionData,
                 label: 'Sessions',
                 show: timeframe === 'daily'
             },
-            bar: { 
+            bar: {
                 title: 'Weekly Trends',
-                available: hasWeeklyData, 
+                available: hasWeeklyData,
                 label: 'Weekly Trends',
                 show: timeframe === 'weekly'
             }
         };
-    }, [timeframe, pieChartData, timelineData, categoryMetadata, weeklyChartData]);
+    }, [timeframe, pieChartData, timelineData, weeklyChartData, hasAnyData]);
 
     // ✅ Memoize chart data for each type
     const chartData = useMemo<ChartData>(() => ({
@@ -85,50 +97,59 @@ export default function MultiChartContainer({
         bar: weeklyChartData
     }), [pieChartData, timelineData, categoryMetadata, weeklyChartData]);
 
-   
+    // 🚦 Single indicator: if all category durations are zero, treat as empty day
+    const noChartAvailable = typeof isEmpty === 'boolean' ? isEmpty : !hasAnyData;
 
     return (
         <DashboardCard className="bg-surface rounded-[35px]">
-            {showTitle && (
+            {showTitle && !noChartAvailable && (
                 <View className="flex-row  items-center justify-center py-5">
                     <Text className="text-2xl font-bold text-white mb-3 ">{chartOptions[selectedChart].title}</Text>
                 </View>
             )}
             
             {/* Chart Display */}
-            <View className="mb-2" style={{ height: 170 }}>
-                {selectedChart === 'pie' && chartOptions.pie.available && (
-                    <View className="items-center justify-center ">
-                        <CustomPieChart data={chartData.pie} />
-                    </View>
-                )}
-                {selectedChart === 'sessions' && chartOptions.sessions.available && chartData.sessions.timelineData && chartData.sessions.categoryMetadata && (
-                    <View className="px-2 h-full justify-center">
-                        <SessionBarchart 
-                            timelineData={chartData.sessions.timelineData} 
-                            categoryMetadata={chartData.sessions.categoryMetadata} 
-                            width={320}
-                        />
-                    </View>
-                )}
-                {selectedChart === 'bar' && chartOptions.bar.available && chartData.bar && (
-                    <View className="flex-row items-end justify-center h-full px- pt-2">
-                        <WeeklyBarChart data={chartData.bar}
-                        categoryMetadata={categoryMetadata} />
-                    </View>
+            <View className="mb-2 items-center justify-center" style={{ height: noChartAvailable ? 400 : 170 }}>
+                {noChartAvailable ? (
+                    <Text className="text-md text-gray-400">No data available for this day.</Text>
+                ) : (
+                    <>
+                        {selectedChart === 'pie' && chartOptions.pie.available && (
+                            <View className="items-center justify-center ">
+                                <CustomPieChart data={chartData.pie} />
+                            </View>
+                        )}
+                        {selectedChart === 'sessions' && chartOptions.sessions.available && chartData.sessions.timelineData && chartData.sessions.timelineData.length > 0 && chartData.sessions.categoryMetadata && (
+                            <View className="px-2 h-full justify-center">
+                                <SessionBarchart 
+                                    timelineData={chartData.sessions.timelineData} 
+                                    categoryMetadata={chartData.sessions.categoryMetadata} 
+                                    width={320}
+                                />
+                            </View>
+                        )}
+                        {selectedChart === 'bar' && chartOptions.bar.available && chartData.bar && (
+                            <View className="flex-row items-end justify-center h-full px- pt-2">
+                                <WeeklyBarChart data={chartData.bar}
+                                categoryMetadata={categoryMetadata} />
+                            </View>
+                        )}
+                    </>
                 )}
             </View>
-            
-            {/* Chart Toggle Buttons */}
-            
             
             {/* Legend */}
-            <View className="flex-row items-center justify-center pt-10 px-4">
-                <Legend 
-                    category_durations={categoryDurations} 
-                    category_metadata={categoryMetadata} 
-                />
-            </View>
+            {!noChartAvailable && (
+                <View className="flex-row items-center justify-center pt-10 px-4">
+                    <Legend 
+                        category_durations={categoryDurations} 
+                        category_metadata={categoryMetadata} 
+                    />
+                </View>
+            )}
+
+            {/* Chart Toggle Buttons */}
+            {!noChartAvailable && (
             <View className="flex-row items-center justify-center py-5 gap-2 mb-4">
                 {/* Pie Chart Button */}
                 <Pressable 
@@ -178,6 +199,7 @@ export default function MultiChartContainer({
                     </Pressable>
                 )}
             </View>
+            )}
         </DashboardCard>
     );
 }

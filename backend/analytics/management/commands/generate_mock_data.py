@@ -10,6 +10,21 @@ fake = Faker()
 class Command(BaseCommand):
     help = 'Generates mock data for testing'
 
+    def add_arguments(self, parser):
+        """Add optional CLI arguments to specify a custom date range."""
+        parser.add_argument(
+            '--start-date',
+            type=str,
+            dest='start_date',
+            help='Inclusive start date for data generation in YYYY-MM-DD format.'
+        )
+        parser.add_argument(
+            '--end-date',
+            type=str,
+            dest='end_date',
+            help='Inclusive end date for data generation in YYYY-MM-DD format.'
+        )
+
     def handle(self, *args, **kwargs):
         # Clear existing data
         CategoryBlock.objects.all().delete()
@@ -51,21 +66,43 @@ class Command(BaseCommand):
             category.save()
             category_objects.append(category)
 
-        # Use current date as reference (today)
-        reference_date = date.today()
+        # Determine the date range for which to generate data
+        start_date_str = kwargs.get('start_date')
+        end_date_str = kwargs.get('end_date')
 
-        # Create study sessions over the last 30 days
-        for day in range(30):
+        if start_date_str and end_date_str:
+            try:
+                start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+                end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+            except ValueError:
+                self.stderr.write(self.style.ERROR('Invalid date format. Use YYYY-MM-DD.'))
+                return
+
+            if start_date > end_date:
+                self.stderr.write(self.style.ERROR('--start-date must be earlier than or equal to --end-date.'))
+                return
+        elif not start_date_str and not end_date_str:
+            # Default behaviour ‒ last 30 days ending today
+            end_date = date.today()
+            start_date = end_date - timedelta(days=29)
+        else:
+            self.stderr.write(self.style.ERROR('You must provide either both --start-date and --end-date, or neither.'))
+            return
+
+        total_days = (end_date - start_date).days + 1  # inclusive
+
+        # Create study sessions, iterating backwards from end_date
+        for day in range(total_days):
             # 1-3 study sessions per day, with higher probability for recent days
             sessions_count = random.randint(1, 3)
             
             # Add some probability that older days have no sessions
-            if day > 20 and random.random() < 0.3:  # 30% chance of no sessions for days 21-30
+            if total_days >= 30 and day > 20 and random.random() < 0.3:
                 sessions_count = 0
             
             for _ in range(sessions_count):
                 # Calculate the date for this session (going backwards from reference date)
-                session_date = reference_date - timedelta(days=day)
+                session_date = end_date - timedelta(days=day)
                 
                 # Random hour between 8 AM and 8 PM (leaving room for duration)
                 start_hour = random.randint(8, 20)
@@ -133,4 +170,9 @@ class Command(BaseCommand):
                     current_time += breakdown_duration
                     remaining_minutes -= breakdown_minutes
 
-        self.stdout.write(self.style.SUCCESS(f'Successfully generated mock data for the last 30 days starting from {reference_date}')) 
+        self.stdout.write(
+            self.style.SUCCESS(
+                f'Successfully generated mock data from {start_date} to {end_date} '
+                f'({total_days} day{"s" if total_days != 1 else ""}).'
+            )
+        ) 

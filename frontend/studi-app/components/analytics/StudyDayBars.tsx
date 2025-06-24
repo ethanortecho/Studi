@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import DashboardCard from '@/components/insights/DashboardContainer';
 
 
@@ -153,11 +154,19 @@ const StudyDayBars: React.FC<StudyDayBarsProps> = ({ sessionTimes }) => {
             {/* Base background */}
             <View className="absolute inset-0 rounded-md bg-layout-off-white" />
             
-            {/* Morning indicator (left 30%) */}
-            <View className="absolute left-0 w-[30%] h-full rounded-md bg-category-yellow opacity-30" />
-            
-            {/* Evening indicator (right 30%) */}
-            <View className="absolute right-0 w-[30%] h-full rounded-md bg-category-purple opacity-30" />
+            {/* Smooth morning-to-evening gradient */}
+            <LinearGradient
+              colors={[
+                'rgba(243,196,75,0.3)',  // yellow 30%
+                'rgba(243,196,75,0)',    // fade → transparent
+                'rgba(90,79,207,0)',     // transparent
+                'rgba(90,79,207,0.3)',   // purple 30%
+              ]}
+              locations={[0, 0.35, 0.65, 1]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{ ...StyleSheet.absoluteFillObject, borderRadius: 6 }}
+            />
             
             {/* Session overlays */}
             {mergedSessions.map((session, sessionIndex) => {
@@ -171,13 +180,12 @@ const StudyDayBars: React.FC<StudyDayBarsProps> = ({ sessionTimes }) => {
               return (
                 <View
                   key={sessionIndex}
+                  className="bg-accent rounded-md"
                   style={{
                     position: 'absolute',
                     left: `${Math.max(0, startPercent)}%`,
                     width: `${Math.min(100 - Math.max(0, startPercent), widthPercent)}%`,
                     height: '100%',
-                    backgroundColor: '#374151',
-                    borderRadius: 6,
                     zIndex: 10,
                   }}
                 />
@@ -220,20 +228,23 @@ const StudyDayBars: React.FC<StudyDayBarsProps> = ({ sessionTimes }) => {
         Your sessions throughout the day
       </Text>
       
-      {/* Time axis labels */}
-      <View className="mb-4 ml-[52px] w-[280px]">
-        <View className="flex-row justify-between">
-          {timeWindow.timeLabels.map((label, index) => (
-            <Text key={index} className="text-xs text-gray-500">
-              {label}
-            </Text>
-          ))}
+      {/* Content wrapper with extra left padding */}
+      <View className="px-10">
+        {/* Time axis labels */}
+        <View className="mb-4 ml-3 w-[280px]">
+          <View className="flex-row justify-between">
+            {timeWindow.timeLabels.map((label, index) => (
+              <Text key={index} className="text-xs text-layout-faded-grey">
+                {label}
+              </Text>
+            ))}
+          </View>
         </View>
-      </View>
-      
-      {/* Day bars */}
-      <View>
-        {processedDays.map((dayData, index) => renderDayBar(dayData, index))}
+        
+        {/* Day bars */}
+        <View>
+          {processedDays.map((dayData, index) => renderDayBar(dayData, index))}
+        </View>
       </View>
     </DashboardCard>
   );

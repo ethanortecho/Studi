@@ -104,7 +104,7 @@ export default function MultiChartContainer({
         <DashboardCard className="bg-surface rounded-[35px]">
             {showTitle && !noChartAvailable && (
                 <View className="flex-row  items-center justify-center py-5">
-                    <Text className="text-2xl font-bold text-white mb-3 ">{chartOptions[selectedChart].title}</Text>
+                    <Text className="text-2xl font-bold text-white mt-5 mb-5 ">{chartOptions[selectedChart].title}</Text>
                 </View>
             )}
             

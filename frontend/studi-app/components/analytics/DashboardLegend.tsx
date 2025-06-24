@@ -26,10 +26,10 @@ export default function Legend({ category_durations, category_metadata }: Legend
                     if (!categoryMeta) return null;
                     
                     return (
-                        <View key={categoryName} className=" items-center">
+                        <View key={categoryName} className=" flex-row items-center">
                             <View 
                                 style={{ backgroundColor: categoryMeta.color }}
-                                className="w-14 h-1 rounded-sm mr-2"
+                                className="w-2 h-2 rounded-sm mr-2"
                             />
                             <Text className="text-white text-sm">
                                 {categoryMeta.name}

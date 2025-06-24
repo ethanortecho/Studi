@@ -54,6 +54,7 @@ interface SessionBarchartProps {
     };
   };
   width?: number;
+  rightPadding?: number; // Padding on the right side (in px) for axis and bars
 }
 
 interface ProcessedSession {
@@ -73,6 +74,7 @@ export default function SessionBarchart({
   timelineData,
   categoryMetadata,
   width = 320,
+  rightPadding = 16,
 }: SessionBarchartProps) {
   console.log('🎯 SessionBarchart: Component rendered with data:', {
     timelineDataLength: timelineData?.length || 0,
@@ -240,70 +242,64 @@ export default function SessionBarchart({
     );
   }
 
+  const axisPadding = rightPadding; // alias for clarity
+
   return (
-    <ScrollView className="max-h-56" showsVerticalScrollIndicator={false}>
-      <View >
-        <Text className="text-md font-bold text-category-purple mb-4">Sessions</Text>
+    <View
+      className="self-start"
+      style={{ width, alignSelf: 'flex-start' }}
+    >
+      <Text className="text-md font-bold text-category-purple mb-4 self-start">Sessions</Text>
 
-        {/* Timeline Container */}
-        <View className="mb-4 mx-5">
-          {sessions.map((session) => (
-            <View key={session.index} className="mb-3">
-              {/* Session Row */}
-              <View className="flex-row items-center">
-                {/* Session Label */}
-                <View className="w-16">
-                  <Text className="text-xs text-gray-500">Session {session.index}</Text>
-                  <Text className="text-xs text-gray-400">{formatDuration(session.durationMinutes)}</Text>
-                </View>
+      <ScrollView
+        className="max-h-56"
+        showsVerticalScrollIndicator={false}
+        style={{ paddingRight: axisPadding }}
+      >
+        <View className="items-start">
 
-                {/* Session Bar Container */}
-                <View className="flex-1 ml-2">
-                  <View 
-                    className="h-5 flex-row rounded overflow-hidden items-center"
-                    style={{ 
-                      width: `${session.barWidthPercent}%`,
-                      minWidth: 20 // Ensure very short sessions are still visible
-                    }}
+          {/* Timeline Container */}
+          <View className="mb-4 w-full">
+            {sessions.map((session) => (
+              <View key={session.index} className="mb-3">
+                {/* Session Row */}
+                <View className="flex-row items-center justify-start">
+                  {/* Session Label */}
+                  <View className="w-16">
+                    <Text className="text-xs text-gray-500">Session {session.index}</Text>
+                    <Text className="text-xs text-gray-400">{formatDuration(session.durationMinutes)}</Text>
+                  </View>
+
+                  {/* Session Bar Container */}
+                  <View
+                    className="flex-1 ml-2"
+                    style={{ paddingRight: axisPadding }}
                   >
-                    {session.segments.map((segment, segmentIndex) => (
-                      <View
-                        key={segmentIndex}
-                        className={segment.categoryName === 'Break' ? 'h-3' : 'h-full'}
-                        style={{
-                          width: `${segment.widthPercent}%`,
-                          backgroundColor: segment.color,
-                        }}
-                      />
-                    ))}
+                    <View 
+                      className="h-5 flex-row rounded overflow-hidden items-center"
+                      style={{ 
+                        width: `${session.barWidthPercent}%`,
+                        minWidth: 20 // Ensure very short sessions are still visible
+                      }}
+                    >
+                      {session.segments.map((segment, segmentIndex) => (
+                        <View
+                          key={segmentIndex}
+                          className={segment.categoryName === 'Break' ? 'h-3' : 'h-full'}
+                          style={{
+                            width: `${segment.widthPercent}%`,
+                            backgroundColor: segment.color,
+                          }}
+                        />
+                      ))}
+                    </View>
                   </View>
                 </View>
               </View>
-            </View>
-          ))}
-        </View>
-
-        {/* Time Axis */}
-        <View className="flex-row items-center mt-2">
-          <View className="w-16">
-            <Text className="text-xs text-gray-500 text-center">min</Text>
-          </View>
-          <View className="flex-1 relative h-5 ml-2">
-            {timeMarkers.map((marker, index) => (
-              <Text
-                key={index}
-                className="absolute text-xs text-gray-500"
-                style={{
-                  left: `${(marker / axisDurationMinutes) * 100}%`,
-                  transform: [{ translateX: -10 }],
-                }}
-              >
-                {marker}
-              </Text>
             ))}
           </View>
-        </View>
-      </View>
-    </ScrollView>
+        </View> {/* End Timeline Container */}
+      </ScrollView>
+    </View>
   );
 }

@@ -63,6 +63,15 @@ export default function MultiChartContainer({
 }: MultiChartContainerProps) {
     const [selectedChart, setSelectedChart] = useState<ChartType>(defaultChart);
 
+    // ⬇️ Consistent sizing for pie to avoid clipping
+    const PIE_SIZE = 175;          // diameter passed into CustomPieChart
+    const PIE_PADDING = 20;        // extra space for stroke / rounding
+    const chartContainerHeight = noChartAvailable
+        ? 400
+        : selectedChart === 'pie'
+            ? PIE_SIZE + PIE_PADDING
+            : 170;
+
     // 🚦 Single indicator: any non-zero duration means there is data
     const hasAnyData = Object.values(categoryDurations || {}).some((duration) => duration > 0);
 
@@ -137,14 +146,14 @@ export default function MultiChartContainer({
             )}
             
             {/* Chart Display */}
-            <View className="mb-2 items-center justify-center" style={{ height: noChartAvailable ? 400 : 170 }}>
+            <View className="mb-2 items-center justify-center" style={{ height: chartContainerHeight }}>
                 {noChartAvailable ? (
                     <Text className="text-md text-gray-400">No data available for this day.</Text>
                 ) : (
                     <>
                         {selectedChart === 'pie' && chartOptions.pie.available && (
                             <View className="items-center justify-center ">
-                                <CustomPieChart data={chartData.pie} />
+                                <CustomPieChart data={chartData.pie} size={PIE_SIZE} />
                             </View>
                         )}
                         {selectedChart === 'sessions' && chartOptions.sessions.available && chartData.sessions.timelineData && chartData.sessions.timelineData.length > 0 && chartData.sessions.categoryMetadata && (

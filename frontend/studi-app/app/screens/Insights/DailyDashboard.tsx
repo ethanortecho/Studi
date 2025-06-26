@@ -12,6 +12,7 @@ import MultiChartContainer from '@/components/analytics/layout/MultiChartContain
 interface DailyDashboardProps {
   totalHours: string;
   totalTime?: { hours: number; minutes: number };
+  percentGoal?: number | null;
   categoryDurations?: { [key: string]: number };
   categoryMetadata?: { [key: string]: CategoryMetadata };
   pieChartData?: Array<{ label: string; value: number; color: string }>;
@@ -23,6 +24,7 @@ interface DailyDashboardProps {
 export default function DailyDashboard({
   totalHours,
   totalTime,
+  percentGoal,
   categoryDurations,
   categoryMetadata,
   pieChartData,
@@ -47,6 +49,9 @@ export default function DailyDashboard({
           pieChartData={pieChartData || []}
           timelineData={timelineData}
           weeklyChartData={undefined}
+          totalTime={totalTime}
+          percentGoal={percentGoal ?? null}
+          showTitle={false}
         />
       </View>
       

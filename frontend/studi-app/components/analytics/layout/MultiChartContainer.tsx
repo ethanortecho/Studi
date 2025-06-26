@@ -33,6 +33,10 @@ interface MultiChartContainerProps {
      * When provided it overrides internal checks so the parent can make the decision.
      */
     isEmpty?: boolean;
+
+    /** Stats banner data */
+    totalTime?: { hours: number; minutes: number };
+    percentGoal?: number | null;
 }
 
 type ChartType = 'pie' | 'sessions' | 'bar';
@@ -53,7 +57,9 @@ export default function MultiChartContainer({
     defaultChart = 'pie',
     showTitle = true,
     title = "Chart Analysis",
-    isEmpty
+    isEmpty,
+    totalTime,
+    percentGoal
 }: MultiChartContainerProps) {
     const [selectedChart, setSelectedChart] = useState<ChartType>(defaultChart);
 
@@ -102,6 +108,28 @@ export default function MultiChartContainer({
 
     return (
         <DashboardCard className="bg-surface rounded-[35px]">
+            {/* Stats Banner */}
+            {!noChartAvailable && totalTime && percentGoal != null && (
+                <View className="flex-row justify-between px-6 pt-6">
+                    {/* Total Time */}
+                    <View>
+                        <View className="flex-row items-baseline">
+                            <Text className="text-white text-4xl font-bold">{totalTime.hours}</Text>
+                            <Text className="text-white text-lg font-semibold ml-1">h</Text>
+                            <Text className="text-white text-4xl font-bold ml-2">{totalTime.minutes}</Text>
+                            <Text className="text-white text-lg font-semibold ml-1">m</Text>
+                        </View>
+                        <Text className="text-gray-400 text-base">Study Time</Text>
+                    </View>
+
+                    {/* Percent to Goal */}
+                    <View className="items-end">
+                        <Text className="text-white text-4xl font-bold">{percentGoal}%</Text>
+                        <Text className="text-gray-400 text-base">to goal</Text>
+                    </View>
+                </View>
+            )}
+
             {showTitle && !noChartAvailable && (
                 <View className="flex-row  items-center justify-center py-5">
                     <Text className="text-2xl font-bold text-white mt-5 mb-5 ">{chartOptions[selectedChart].title}</Text>

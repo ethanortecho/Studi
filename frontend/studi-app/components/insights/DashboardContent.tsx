@@ -95,6 +95,7 @@ export default function DashboardContent({
                     timelineData={daily.timelineData}
                     rawData={daily.rawData}
                     loading={false}
+                    percentGoal={daily.percentGoal}
                 />
             );
             DEBUG_DASHBOARD && console.log(`⏱️ DashboardContent: Daily dashboard render took ${(performance.now() - renderStart).toFixed(2)}ms`);
@@ -112,6 +113,7 @@ export default function DashboardContent({
                     dailyBreakdown={weekly.dailyBreakdown}
                     rawData={weekly.rawData}
                     loading={false}
+                    percentGoal={weekly.percentGoal}
                 />
             );
             DEBUG_DASHBOARD && console.log(`⏱️ DashboardContent: Weekly dashboard render took ${(performance.now() - renderStart).toFixed(2)}ms`);

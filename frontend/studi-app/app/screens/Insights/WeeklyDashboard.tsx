@@ -13,6 +13,7 @@ import { CategoryMetadata } from '@/types/api';
 interface WeeklyDashboardProps {
   totalHours: string;
   totalTime?: { hours: number; minutes: number };
+  percentGoal?: number | null;
   categoryDurations?: { [key: string]: number };
   categoryMetadata?: { [key: string]: CategoryMetadata };
   pieChartData?: Array<{ label: string; value: number; color: string }>;
@@ -26,6 +27,7 @@ interface WeeklyDashboardProps {
 export default function WeeklyDashboard({
   totalHours,
   totalTime,
+  percentGoal,
   categoryDurations,
   categoryMetadata,
   pieChartData,
@@ -57,6 +59,9 @@ export default function WeeklyDashboard({
           pieChartData={pieChartData || []}
           timelineData={undefined}
           weeklyChartData={dailyBreakdown}
+          totalTime={totalTime}
+          percentGoal={percentGoal ?? null}
+          showTitle={false}
         />
       </View>
       {/* Off-white container for all dashboard content - edge to edge */}

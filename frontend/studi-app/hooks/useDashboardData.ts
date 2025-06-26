@@ -3,6 +3,7 @@ import useAggregateData from '@/utils/fetchApi';
 import { parseCategoryDurations, ParseStudyTrends, secondsToHours, secondsToHoursAndMinutes, filterBreakCategory, filterBreakFromDailyBreakdown } from '@/utils/parseData';
 import { DailyInsightsResponse, WeeklyInsightsResponse } from '@/types/api';
 import { formatDateForAPI, getWeekEnd, getWeekStart, navigateDate, getWeekDays } from '@/utils/dateUtils';
+import { useGoalForWeek } from '@/hooks/useGoalForWeek';
 
 interface UseDashboardDataParams {
     dailyDate?: Date;
@@ -31,6 +32,9 @@ export function useDashboardData({ dailyDate, weeklyDate }: UseDashboardDataPara
 
     const weeklyStartStr = formatDateForAPI(currentWeekStart);
     const weeklyEndStr = formatDateForAPI(getWeekEnd(currentWeekStart));
+
+    // Fetch study goal for the visible week
+    const { goal: weeklyGoal, loading: _goalLoading } = useGoalForWeek(currentWeekStart);
 
     DEBUG_DASHBOARD && console.log('📅 useDashboardData: Formatted dates:', { dailyDateStr, weeklyStartStr, weeklyEndStr });
 
@@ -101,7 +105,7 @@ export function useDashboardData({ dailyDate, weeklyDate }: UseDashboardDataPara
         if (!dailyData || dailyLoading) return false;
         const totalDuration = parseInt(dailyData.aggregate?.total_duration) || 0;
         const sessionCount = dailyData.aggregate?.session_count || 0;
-        const isEmpty = totalDuration === 0 && sessionCount === 0;
+        const isEmpty = totalDuration < 60 || (totalDuration === 0 && sessionCount === 0);
         
         const end = performance.now();
         DEBUG_DASHBOARD && console.log(`⏱️ useDashboardData: isDailyEmpty calculated in ${(end - start).toFixed(2)}ms, result: ${isEmpty}`);
@@ -145,6 +149,26 @@ export function useDashboardData({ dailyDate, weeklyDate }: UseDashboardDataPara
         const pieChartData = parseCategoryDurations(dailyData);
         DEBUG_DASHBOARD && console.log(`⏱️ parseCategoryDurations took ${(performance.now() - pieChartStart).toFixed(2)}ms`);
         
+        // 📊 Goal percentage calculation (daily)
+        let goalMinutes: number | null = null;
+        let percentGoal: number | null = null;
+        if (weeklyGoal) {
+            // Try find explicit DailyGoal entry first
+            const dayGoal = weeklyGoal.daily_goals?.find(g => g.date === dailyDateStr);
+            if (dayGoal) {
+                goalMinutes = dayGoal.target_minutes;
+            } else {
+                // fallback: even split across active weekdays or 7
+                const activeDays = weeklyGoal.active_weekdays?.length || 7;
+                goalMinutes = Math.round(weeklyGoal.total_minutes / activeDays);
+            }
+
+            const studiedMinutes = parseInt(dailyData.aggregate.total_duration) / 60;
+            if (goalMinutes > 0) {
+                percentGoal = Math.min(100, Math.round((studiedMinutes / goalMinutes) * 100));
+            }
+        }
+        
         const result = {
             totalHours,
             totalTime,
@@ -153,13 +177,16 @@ export function useDashboardData({ dailyDate, weeklyDate }: UseDashboardDataPara
             pieChartData,
             timelineData: dailyData.timeline_data,
             rawData: dailyData,
-            isEmpty: isDailyEmpty
+            isEmpty: isDailyEmpty,
+            goal: weeklyGoal,
+            goalMinutes,
+            percentGoal
         };
         
         const end = performance.now();
         DEBUG_DASHBOARD && console.log(`🏭 useDashboardData: Daily data processed in ${(end - start).toFixed(2)}ms`);
         return result;
-    }, [dailyData, isDailyEmpty]);
+    }, [dailyData, isDailyEmpty, weeklyGoal]);
 
     const processedWeeklyData = useMemo(() => {
         DEBUG_DASHBOARD && console.log('🏭 useDashboardData: Processing weekly data...');
@@ -191,6 +218,17 @@ export function useDashboardData({ dailyDate, weeklyDate }: UseDashboardDataPara
         const dailyBreakdown = filterBreakFromDailyBreakdown(weeklyData.daily_breakdown);
         DEBUG_DASHBOARD && console.log(`⏱️ filterBreakFromDailyBreakdown took ${(performance.now() - dailyBreakdownStart).toFixed(2)}ms`);
         
+        // 📊 Goal percentage calculation (weekly)
+        let weekGoalMinutes: number | null = null;
+        let weekPercentGoal: number | null = null;
+        if (weeklyGoal) {
+            weekGoalMinutes = weeklyGoal.total_minutes;
+            const studiedMinutes = parseInt(weeklyData.aggregate.total_duration) / 60;
+            if (weekGoalMinutes > 0) {
+                weekPercentGoal = Math.min(100, Math.round((studiedMinutes / weekGoalMinutes) * 100));
+            }
+        }
+        
         const result = {
             totalHours,
             totalTime,
@@ -201,13 +239,16 @@ export function useDashboardData({ dailyDate, weeklyDate }: UseDashboardDataPara
             sessionTimes: weeklyData.session_times,
             dailyBreakdown,
             rawData: weeklyData,
-            isEmpty: isWeeklyEmpty
+            isEmpty: isWeeklyEmpty,
+            goal: weeklyGoal,
+            goalMinutes: weekGoalMinutes,
+            percentGoal: weekPercentGoal
         };
         
         const end = performance.now();
         DEBUG_DASHBOARD && console.log(`🏭 useDashboardData: Weekly data processed in ${(end - start).toFixed(2)}ms`);
         return result;
-    }, [weeklyData, isWeeklyEmpty]);
+    }, [weeklyData, isWeeklyEmpty, weeklyGoal]);
 
     DEBUG_DASHBOARD && console.log('📊 useDashboardData: Returning processed data, loading states:', { 
         dailyLoading, 

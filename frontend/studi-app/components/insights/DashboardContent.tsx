@@ -96,6 +96,7 @@ export default function DashboardContent({
                     rawData={daily.rawData}
                     loading={false}
                     percentGoal={daily.percentGoal}
+                    isEmpty={daily.isEmpty}
                 />
             );
             DEBUG_DASHBOARD && console.log(`⏱️ DashboardContent: Daily dashboard render took ${(performance.now() - renderStart).toFixed(2)}ms`);
@@ -114,6 +115,7 @@ export default function DashboardContent({
                     rawData={weekly.rawData}
                     loading={false}
                     percentGoal={weekly.percentGoal}
+                    isEmpty={weekly.isEmpty}
                 />
             );
             DEBUG_DASHBOARD && console.log(`⏱️ DashboardContent: Weekly dashboard render took ${(performance.now() - renderStart).toFixed(2)}ms`);

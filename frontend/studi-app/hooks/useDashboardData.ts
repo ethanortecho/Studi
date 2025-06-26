@@ -119,7 +119,7 @@ export function useDashboardData({ dailyDate, weeklyDate }: UseDashboardDataPara
         if (!weeklyData || weeklyLoading) return false;
         const totalDuration = parseInt(weeklyData.aggregate?.total_duration) || 0;
         const sessionCount = weeklyData.aggregate?.session_count || 0;
-        const isEmpty = totalDuration === 0 && sessionCount === 0;
+        const isEmpty = totalDuration < 60 || (totalDuration === 0 && sessionCount === 0);
         
         const end = performance.now();
         DEBUG_DASHBOARD && console.log(`⏱️ useDashboardData: isWeeklyEmpty calculated in ${(end - start).toFixed(2)}ms, result: ${isEmpty}`);

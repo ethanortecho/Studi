@@ -22,6 +22,7 @@ interface WeeklyDashboardProps {
   dailyBreakdown?: { [date: string]: { total: number; categories: { [key: string]: number } } };
   rawData?: any;
   loading: boolean;
+  isEmpty?: boolean;
 }
 
 export default function WeeklyDashboard({
@@ -35,7 +36,8 @@ export default function WeeklyDashboard({
   sessionTimes,
   dailyBreakdown,
   rawData,
-  loading
+  loading,
+  isEmpty
 }: WeeklyDashboardProps) {
   if (loading) {
     return (
@@ -61,6 +63,7 @@ export default function WeeklyDashboard({
           weeklyChartData={dailyBreakdown}
           totalTime={totalTime}
           percentGoal={percentGoal ?? null}
+          isEmpty={isEmpty}
           showTitle={false}
         />
       </View>

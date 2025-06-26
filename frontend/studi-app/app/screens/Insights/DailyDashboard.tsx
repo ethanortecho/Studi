@@ -19,6 +19,7 @@ interface DailyDashboardProps {
   timelineData?: TimelineSession[];
   rawData?: any;
   loading: boolean;
+  isEmpty?: boolean;
 }
 
 export default function DailyDashboard({
@@ -30,7 +31,8 @@ export default function DailyDashboard({
   pieChartData,
   timelineData,
   rawData,
-  loading
+  loading,
+  isEmpty
 }: DailyDashboardProps) {
   // 🔍 Debug: Log key day-level data
 
@@ -51,6 +53,7 @@ export default function DailyDashboard({
           weeklyChartData={undefined}
           totalTime={totalTime}
           percentGoal={percentGoal ?? null}
+          isEmpty={isEmpty}
           showTitle={false}
         />
       </View>

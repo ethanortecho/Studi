@@ -51,7 +51,7 @@ export default function DashboardTabs({ onDataChange }: DashboardTabsProps) {
     }, [selectedTab, dailyWeekStart]);
 
     return (
-        <View className="flex-1">
+        <View className="flex-1 pt-20">
             {/* Tab Selector */}
             <View className="px-5  ">
                 <View className="flex-row rounded-2xl bg-surface px-2 py-2">

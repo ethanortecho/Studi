@@ -13,27 +13,43 @@ export default function Legend({ category_durations, category_metadata }: Legend
         .filter(([_, duration]) => duration > 0)
         .map(([categoryName, _]) => categoryName);
 
+    // Helper to format seconds into "Xh Ym" or "Xm"
+    const formatTime = (seconds: number) => {
+        const hrs = Math.floor(seconds / 3600);
+        const mins = Math.floor((seconds % 3600) / 60);
+        return hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
+    };
+
     return (
         <View>
-            
             <View className="flex-row flex-wrap items-center justify-center gap-4">
                 {categoriesWithData.map((categoryName) => {
                     // Find the metadata for this category by name
                     const categoryMeta = Object.values(category_metadata).find(
                         meta => meta.name === categoryName
                     );
-                    
+
                     if (!categoryMeta) return null;
-                    
+
+                    const durationSeconds = category_durations[categoryName] || 0;
+
                     return (
-                        <View key={categoryName} className=" flex-row items-center">
-                            <View 
+                        <View key={categoryName} className="flex-row items-center">
+                            {/* Color indicator */}
+                            <View
                                 style={{ backgroundColor: categoryMeta.color }}
-                                className="w-2 h-2 rounded-sm mr-2"
+                                className="w-3 h-3 rounded-sm mr-2"
                             />
-                            <Text className="text-white text-sm">
-                                {categoryMeta.name}
-                            </Text>
+
+                            {/* Name + Time */}
+                            <View>
+                                <Text className="text-white text-sm font-medium">
+                                    {categoryMeta.name}
+                                </Text>
+                                <Text className="text-gray-400 text-xs">
+                                    {formatTime(durationSeconds)}
+                                </Text>
+                            </View>
                         </View>
                     );
                 })}

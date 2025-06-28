@@ -1,8 +1,7 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { View, Text } from 'react-native';
+import DayTimeline, { DaySession, TimeWindow } from './DayTimeline';
 import DashboardCard from '@/components/insights/DashboardContainer';
-
 
 interface SessionTime {
   start_time: string;
@@ -14,23 +13,9 @@ interface StudyDayBarsProps {
   sessionTimes: SessionTime[];
 }
 
-interface DaySession {
-  startHour: number;
-  endHour: number;
-  startMinute: number;
-  endMinute: number;
-}
-
 interface ProcessedDayData {
   day: string;
   sessions: DaySession[];
-}
-
-interface TimeWindow {
-  startHour: number;
-  endHour: number;
-  totalHours: number;
-  timeLabels: string[];
 }
 
 const StudyDayBars: React.FC<StudyDayBarsProps> = ({ sessionTimes }) => {
@@ -106,144 +91,93 @@ const StudyDayBars: React.FC<StudyDayBarsProps> = ({ sessionTimes }) => {
   
   const { processedDays, timeWindow } = processedData;
   
-  const renderDayBar = (dayData: ProcessedDayData, index: number) => {
-    const barHeight = 32;
-    const barWidth = 280;
-    
-    // Merge overlapping sessions to avoid stacking
-    const mergedSessions = dayData.sessions.reduce((acc: DaySession[], session) => {
-      const sessionStart = session.startHour + session.startMinute / 60;
-      const sessionEnd = session.endHour + session.endMinute / 60;
-      
-      // Check if this session overlaps with any existing session
-      const overlapping = acc.find(existing => {
-        const existingStart = existing.startHour + existing.startMinute / 60;
-        const existingEnd = existing.endHour + existing.endMinute / 60;
-        return (sessionStart < existingEnd && sessionEnd > existingStart);
-      });
-      
-      if (overlapping) {
-        // Merge with existing session
-        const existingStart = overlapping.startHour + overlapping.startMinute / 60;
-        const existingEnd = overlapping.endHour + overlapping.endMinute / 60;
-        const newStart = Math.min(sessionStart, existingStart);
-        const newEnd = Math.max(sessionEnd, existingEnd);
-        
-        overlapping.startHour = Math.floor(newStart);
-        overlapping.startMinute = Math.round((newStart % 1) * 60);
-        overlapping.endHour = Math.floor(newEnd);
-        overlapping.endMinute = Math.round((newEnd % 1) * 60);
-      } else {
-        // Add as new session
-        acc.push(session);
-      }
-      
-      return acc;
-    }, []);
-    
-    return (
-      <View key={dayData.day} className="mb-3 bg-surface">
-        <View className="flex-row items-center">
-          {/* Day label */}
-          <Text className="text-sm font-medium text-gray-600 w-10 text-right mr-3">
-            {dayData.day}
-          </Text>
-          
-          {/* Bar container */}
-          <View className="relative" style={{ width: barWidth, height: barHeight }}>
-            {/* Base background */}
-            <View className="absolute inset-0 rounded-md bg-layout-off-white" />
-            
-            {/* Smooth morning-to-evening gradient */}
-            <LinearGradient
-              colors={[
-                'rgba(243,196,75,0.3)',  // yellow 30%
-                'rgba(243,196,75,0)',    // fade → transparent
-                'rgba(90,79,207,0)',     // transparent
-                'rgba(90,79,207,0.3)',   // purple 30%
-              ]}
-              locations={[0, 0.35, 0.65, 1]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={{ ...StyleSheet.absoluteFillObject, borderRadius: 6 }}
-            />
-            
-            {/* Session overlays */}
-            {mergedSessions.map((session, sessionIndex) => {
-              // Calculate position and width based on time window
-              const sessionStart = session.startHour + session.startMinute / 60;
-              const sessionEnd = session.endHour + session.endMinute / 60;
-              
-              const startPercent = ((sessionStart - timeWindow.startHour) / timeWindow.totalHours) * 100;
-              const widthPercent = ((sessionEnd - sessionStart) / timeWindow.totalHours) * 100;
-              
-              return (
-                <View
-                  key={sessionIndex}
-                  className="bg-accent rounded-md"
-                  style={{
-                    position: 'absolute',
-                    left: `${Math.max(0, startPercent)}%`,
-                    width: `${Math.min(100 - Math.max(0, startPercent), widthPercent)}%`,
-                    height: '100%',
-                    zIndex: 10,
-                  }}
-                />
-              );
-            })}
-            
-            {/* Morning/Evening icons */}
-            <View
-              style={{
-                position: 'absolute',
-                left: 8,
-                top: '50%',
-                transform: [{ translateY: -6 }],
-                zIndex: 5,
-              }}
-            >
-              <Text style={{ fontSize: 12, opacity: 0.6 }}>☀️</Text>
-            </View>
-            
-            <View
-              style={{
-                position: 'absolute',
-                right: 8,
-                top: '50%',
-                transform: [{ translateY: -6 }],
-                zIndex: 5,
-              }}
-            >
-              <Text style={{ fontSize: 12, opacity: 0.6 }}>🌙</Text>
-            </View>
-          </View>
-        </View>
-      </View>
-    );
-  };
+  /** Fixed timeline width used across header and day rows (allowing 24px end padding) */
+  const RIGHT_PADDING = 24; // space on the right of timeline so moon icon stays inside card
+  const TIMELINE_WIDTH = 280 - RIGHT_PADDING; // previously 280
+
+  /** Label column width (must match DayTimeline) */
+  const LABEL_COLUMN_WIDTH = 60; // 48 label + 12 margin
   
   return (
     <DashboardCard className="bg-surface rounded-[35px]">
       <Text className="text-xl font-semibold text-white py-10 px-8 text-center">
         Your sessions throughout the day
       </Text>
-      
-      {/* Content wrapper with extra left padding */}
+
+      {/* Content wrapper */}
       <View className="px-10 pb-10">
-        {/* Time axis labels */}
-        <View className="mb-4 ml-10 w-[280px]">
-          <View className="flex-row justify-between">
-            {timeWindow.timeLabels.map((label, index) => (
-              <Text key={index} className="text-xs text-layout-faded-grey">
-                {label}
-              </Text>
-            ))}
+        {/* Global header axis */}
+        <View
+          style={{
+            marginBottom: 24,
+            marginLeft: LABEL_COLUMN_WIDTH, // align with day timelines
+          }}
+        >
+          <View style={{ position: 'relative', width: TIMELINE_WIDTH }}>
+            {/* Baseline */}
+            <View
+              style={{
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                top: '50%',
+                height: 1,
+                backgroundColor: '#3A3D4D',
+                opacity: 0.6,
+              }}
+            />
+
+            {/* Tick labels */}
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+              }}
+            >
+              {['6am', '12pm', '6pm'].map((label) => (
+                <Text key={label} style={{ fontSize: 12, color: '#6C6C6C' }}>
+                  {label}
+                </Text>
+              ))}
+            </View>
+
+            {/* Sun & Moon icons */}
+            <Text
+              style={{
+                position: 'absolute',
+                left: -24, // place icon just outside timeline start
+                top: '50%',
+                transform: [{ translateY: -7 }],
+                fontSize: 14,
+              }}
+            >
+              ☀️
+            </Text>
+            <Text
+              style={{
+                position: 'absolute',
+                right: -RIGHT_PADDING, // align with right inset
+                top: '50%',
+                transform: [{ translateY: -7 }],
+                fontSize: 14,
+              }}
+            >
+              🌙
+            </Text>
           </View>
         </View>
-        
-        {/* Day bars */}
+
+        {/* Day timelines */}
         <View>
-          {processedDays.map((dayData, index) => renderDayBar(dayData, index))}
+          {processedDays.map((day) => (
+            <DayTimeline
+              key={day.day}
+              dayLabel={day.day}
+              sessions={day.sessions}
+              timeWindow={timeWindow}
+              timelineWidth={TIMELINE_WIDTH}
+            />
+          ))}
         </View>
       </View>
     </DashboardCard>

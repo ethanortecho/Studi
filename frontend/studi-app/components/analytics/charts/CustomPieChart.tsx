@@ -18,7 +18,7 @@ interface CustomPieChartProps {
 
 export default function CustomPieChart({ 
   data, 
-  size = 175, 
+  size = 165, 
   title = "Study Split",
   innerRadius = "55%",
   startAngle = 0,

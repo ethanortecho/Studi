@@ -17,38 +17,48 @@ export default function PomodoroConfig({ onConfigChange }: PomodoroConfigProps) 
   const presets = [
     { 
       id: 'classic',
-      label: '🍅 Classic: 4 × 25min work / 5min break', 
+      icon: '🍅',
+      name: 'Classic',
       work: 25, 
       break: 5, 
-      cycles: 4 
+      cycles: 4,
+      description: 'The original Pomodoro: four 25-minute focus blocks with quick 5-minute breaks to keep you fresh.'
     },
     { 
       id: 'focus',
-      label: '🎯 Deep Focus: 2 × 45min work / 15min break', 
+      icon: '🎯',
+      name: 'Deep Focus',
       work: 45, 
       break: 15, 
-      cycles: 2 
+      cycles: 2,
+      description: 'Two long 45-minute stretches and generous 15-minute breaks—great for tasks that need sustained concentration.'
     },
     { 
       id: 'extended',
-      label: '📚 Extended: 3 × 50min work / 10min break', 
+      icon: '📚',
+      name: 'Extended',
       work: 50, 
       break: 10, 
-      cycles: 3 
+      cycles: 3,
+      description: 'Three 50-minute work sessions with 10-minute pauses—ideal for reading chapters or lengthy problem-solving.'
     },
     { 
       id: 'sprint',
-      label: '⚡ Sprint: 6 × 15min work / 3min break', 
+      icon: '⚡',
+      name: 'Sprint',
       work: 15, 
       break: 3, 
-      cycles: 6 
+      cycles: 6,
+      description: 'Six fast-paced 15-minute bursts separated by 3-minute breaks—perfect for knocking out small tasks.'
     },
     { 
       id: 'micro',
-      label: '🔥 Micro: 8 × 10min work / 2min break', 
+      icon: '🔥',
+      name: 'Micro',
       work: 10, 
       break: 2, 
-      cycles: 8 
+      cycles: 8,
+      description: 'Eight bite-sized 10-minute sessions with 2-minute breaks—great when you only have slivers of time.'
     }
   ];
 
@@ -74,30 +84,59 @@ export default function PomodoroConfig({ onConfigChange }: PomodoroConfigProps) 
 
   return (
     <View className="p-4">
-      <Text className="text-lg font-bold text-gray-800 mb-4">
+      <Text className="text-lg font-bold text-gray-100 mb-4">
         Choose Pomodoro Configuration
       </Text>
       
-      {/* Preset Selection */}
-      <View className="space-y-2">
-        {presets.map((preset) => (
-          <TouchableOpacity
-            key={preset.id}
-            onPress={() => handlePresetSelect(preset)}
-            className={`p-3 rounded-lg border ${
-              selectedPreset === preset.id 
-                ? 'bg-blue-50 border-blue-500' 
-                : 'bg-white border-gray-300'
-            }`}
-          >
-            <Text className={`font-medium ${
-              selectedPreset === preset.id ? 'text-blue-700' : 'text-gray-700'
-            }`}>
-              {preset.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
+      {/* Preset Selection – table style similar to weekly-goal list */}
+      <View className="rounded-lg overflow-hidden border border-gray-700">
+        {presets.map((preset, idx) => {
+          const isSelected = selectedPreset === preset.id;
+          const isLast = idx === presets.length - 1;
+          const spec = `${preset.cycles} × ${preset.work} / ${preset.break} min`;
+          return (
+            <TouchableOpacity
+              key={preset.id}
+              onPress={() => handlePresetSelect(preset)}
+              className={`px-4 py-3 flex-row items-center justify-between ${
+                !isLast ? 'border-b border-gray-700' : ''
+              } ${isSelected ? 'bg-blue-600/20' : ''}`}
+            >
+              <Text
+                className={`text-gray-100 ${isSelected ? 'font-semibold' : 'text-gray-300'}`}
+                numberOfLines={1}
+              >
+                {`${preset.icon} ${preset.name}`}
+              </Text>
+              <Text
+                className={`text-gray-400 ml-2 ${isSelected ? 'text-gray-200' : ''}`}
+                numberOfLines={1}
+              >
+                {spec}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
+
+      {/* Selected preset description */}
+      {(() => {
+        const preset = presets.find(p => p.id === selectedPreset);
+        if (!preset) return null;
+        return (
+          <View className="mt-6">
+            <Text className="text-gray-100 font-semibold mb-1">
+              {`${preset.icon} ${preset.name}`}
+            </Text>
+            <Text className="text-gray-400 text-sm mb-2">
+              {`${preset.cycles} × ${preset.work} min work / ${preset.break} min break`}
+            </Text>
+            <Text className="text-gray-300 text-sm">
+              {preset.description}
+            </Text>
+          </View>
+        );
+      })()}
     </View>
   );
 } 

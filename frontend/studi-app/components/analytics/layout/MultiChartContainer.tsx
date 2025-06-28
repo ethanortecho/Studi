@@ -64,13 +64,13 @@ export default function MultiChartContainer({
     const [selectedChart, setSelectedChart] = useState<ChartType>(defaultChart);
 
     // ⬇️ Consistent sizing for pie to avoid clipping
-    const PIE_SIZE = 175;          // diameter passed into CustomPieChart
+    const PIE_SIZE = 165;          // diameter passed into CustomPieChart
     const PIE_PADDING = 20;        // extra space for stroke / rounding
-    const chartContainerHeight = noChartAvailable
+    const chartContainerHeight = isEmpty
         ? 400
         : selectedChart === 'pie'
             ? PIE_SIZE + PIE_PADDING
-            : 170;
+            : 160;
 
     // 🚦 Single indicator: any non-zero duration means there is data
     const hasAnyData = Object.values(categoryDurations || {}).some((duration) => duration > 0);
@@ -123,18 +123,18 @@ export default function MultiChartContainer({
                     {/* Total Time */}
                     <View>
                         <View className="flex-row items-baseline">
-                            <Text className="text-white text-4xl font-bold">{totalTime.hours}</Text>
-                            <Text className="text-white text-lg font-semibold ml-1">h</Text>
-                            <Text className="text-white text-4xl font-bold ml-2">{totalTime.minutes}</Text>
-                            <Text className="text-white text-lg font-semibold ml-1">m</Text>
+                            <Text className="text-white text-2xl font-bold">{totalTime.hours}</Text>
+                            <Text className="text-white text-2xl font-semibold ml-1">h</Text>
+                            <Text className="text-white text-2xl font-bold ml-2">{totalTime.minutes}</Text>
+                            <Text className="text-white text-2xl font-semibold ml-1">m</Text>
                         </View>
-                        <Text className="text-gray-400 text-base">Study Time</Text>
+                        <Text className="text-gray-400 text-md">Study Time</Text>
                     </View>
 
                     {/* Percent to Goal */}
                     <View className="items-end">
-                        <Text className="text-white text-4xl font-bold">{percentGoal}%</Text>
-                        <Text className="text-gray-400 text-base">to goal</Text>
+                        <Text className="text-white text-2xl font-bold">{percentGoal}%</Text>
+                        <Text className="text-gray-400 text-md">to goal</Text>
                     </View>
                 </View>
             )}
@@ -146,13 +146,13 @@ export default function MultiChartContainer({
             )}
             
             {/* Chart Display */}
-            <View className="mb-2 items-center justify-center" style={{ height: chartContainerHeight }}>
+            <View className="items-center justify-center" style={{ height: chartContainerHeight }}>
                 {noChartAvailable ? (
-                    <Text className="text-md text-gray-400">No data available for this day.</Text>
+                    <Text className="text-md text-gray-40 opaci">No data available for this day.</Text>
                 ) : (
                     <>
                         {selectedChart === 'pie' && chartOptions.pie.available && (
-                            <View className="items-center justify-center ">
+                            <View className="items-center mb-2 justify-center ">
                                 <CustomPieChart data={chartData.pie} size={PIE_SIZE} />
                             </View>
                         )}

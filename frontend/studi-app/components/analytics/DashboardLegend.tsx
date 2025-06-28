@@ -22,7 +22,7 @@ export default function Legend({ category_durations, category_metadata }: Legend
 
     return (
         <View>
-            <View className="flex-row flex-wrap items-center justify-center gap-4">
+            <View className="flex-row flex-wrap px-5 justify-left gap-4">
                 {categoriesWithData.map((categoryName) => {
                     // Find the metadata for this category by name
                     const categoryMeta = Object.values(category_metadata).find(

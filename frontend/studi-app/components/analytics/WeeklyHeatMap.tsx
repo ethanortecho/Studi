@@ -229,9 +229,9 @@ const StudyDayBars: React.FC<StudyDayBarsProps> = ({ sessionTimes }) => {
       </Text>
       
       {/* Content wrapper with extra left padding */}
-      <View className="px-10">
+      <View className="px-10 pb-10">
         {/* Time axis labels */}
-        <View className="mb-4 ml-3 w-[280px]">
+        <View className="mb-4 ml-10 w-[280px]">
           <View className="flex-row justify-between">
             {timeWindow.timeLabels.map((label, index) => (
               <Text key={index} className="text-xs text-layout-faded-grey">

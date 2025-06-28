@@ -4,7 +4,7 @@ import CustomPieChart from '@/components/analytics/charts/CustomPieChart';
 import TotalHours from '@/components/analytics/TotalHoursContainer';
 import Legend from '@/components/analytics/DashboardLegend';
 import WeeklyBarchartContainer from '@/components/analytics/WeeklyBarchartContainer';
-import StudyDayBars from '@/components/analytics/StudyDayBars';
+import StudyDayBars from '@/components/analytics/WeeklyHeatMap';
 import DebugDataViewer from '@/components/analytics/DebugDataViewer';
 import DashboardCard from '@/components/insights/DashboardContainer';
 import MultiChartContainer from '@/components/analytics/layout/MultiChartContainer';

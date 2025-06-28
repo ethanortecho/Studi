@@ -3,7 +3,7 @@ import { Text, View, Pressable } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import TimerConfigModal, { TimerConfig } from '@/components/modals/TimerConfigModal';
+import TimerConfigModal, { TimerConfig } from '@/components/timerconfig/TimerConfigModal';
 
 export default function HomeScreen() {
     const [modalVisible, setModalVisible] = useState(false);

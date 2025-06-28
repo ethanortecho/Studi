@@ -134,7 +134,7 @@ export default function TimerConfigModal({ visible, onClose, onStartSession }: T
           </View>
 
           {/* Configuration Content */}
-          <View className="bg-surface rounded-2xl p-6 mb-6 shadow">
+          <View className=" p-6 mb-6 shadow">
             {renderConfiguration()}
           </View>
         </ScrollView>

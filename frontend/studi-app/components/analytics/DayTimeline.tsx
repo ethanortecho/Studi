@@ -132,13 +132,13 @@ const styles = StyleSheet.create({
   rowContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12, // space between rows (tighten density)
+    marginBottom: 20, // space between rows (tighten density)
   },
   dayLabel: {
     width: 48, // fixed column width (~"Mon" text width + padding)
     marginRight: 12,
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 10,
+    fontWeight: '400',
     color: '#FFFFFF',
   },
   timelineContainer: {

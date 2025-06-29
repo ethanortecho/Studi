@@ -91,16 +91,15 @@ const StudyDayBars: React.FC<StudyDayBarsProps> = ({ sessionTimes }) => {
   
   const { processedDays, timeWindow } = processedData;
   
-  /** Fixed timeline width used across header and day rows (allowing 24px end padding) */
-  const RIGHT_PADDING = 24; // space on the right of timeline so moon icon stays inside card
-  const TIMELINE_WIDTH = 280 - RIGHT_PADDING; // previously 280
+  /** Fixed timeline width used across header and day rows */
+  const TIMELINE_WIDTH = 250;
 
   /** Label column width (must match DayTimeline) */
   const LABEL_COLUMN_WIDTH = 60; // 48 label + 12 margin
   
   return (
     <DashboardCard className="bg-surface rounded-[35px]">
-      <Text className="text-xl font-semibold text-white py-10 px-8 text-center">
+      <Text className="text-xl font-semibold text-white py-14 pt-10 px-8 text-center">
         Your sessions throughout the day
       </Text>
 
@@ -141,14 +140,15 @@ const StudyDayBars: React.FC<StudyDayBarsProps> = ({ sessionTimes }) => {
               ))}
             </View>
 
-            {/* Sun & Moon icons */}
+            {/* Sun & Moon icons above timeline */}
             <Text
               style={{
                 position: 'absolute',
-                left: -24, // place icon just outside timeline start
-                top: '50%',
-                transform: [{ translateY: -7 }],
+                left: 0,
+                bottom: '100%', // above baseline container
+                marginBottom: 4,
                 fontSize: 14,
+                textAlign: 'center',
               }}
             >
               ☀️
@@ -156,10 +156,11 @@ const StudyDayBars: React.FC<StudyDayBarsProps> = ({ sessionTimes }) => {
             <Text
               style={{
                 position: 'absolute',
-                right: -RIGHT_PADDING, // align with right inset
-                top: '50%',
-                transform: [{ translateY: -7 }],
+                right: 0,
+                bottom: '100%',
+                marginBottom: 4,
                 fontSize: 14,
+                textAlign: 'center',
               }}
             >
               🌙

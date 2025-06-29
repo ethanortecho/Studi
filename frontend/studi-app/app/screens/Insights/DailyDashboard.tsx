@@ -8,6 +8,7 @@ import SubjectBreakdown from '@/components/analytics/layout/SubjectBreakdown';
 import SessionBarchart from '@/components/analytics/SessionBarchart';
 import { CategoryMetadata, TimelineSession } from '@/types/api';
 import MultiChartContainer from '@/components/analytics/layout/MultiChartContainer';
+import DailyHourBars from '@/components/analytics/DailyHourBars';
 
 interface DailyDashboardProps {
   totalHours: string;
@@ -57,6 +58,17 @@ export default function DailyDashboard({
           showTitle={false}
         />
       </View>
+      {/* Hourly bars below main charts */}
+      {timelineData && timelineData.length > 0 && (
+        <View className="px-4 pb-4">
+          <DailyHourBars 
+            timelineData={timelineData}
+            categoryMetadata={categoryMetadata || {}}
+            width={300}
+            height={100}
+          />
+        </View>
+      )}
       
 
         

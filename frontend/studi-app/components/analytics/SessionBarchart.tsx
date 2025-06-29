@@ -298,7 +298,7 @@ export default function SessionBarchart({
               </View>
             ))}
           </View>
-        </View> {/* End Timeline Container */}
+        </View>{/* End Timeline Container */}
       </ScrollView>
     </View>
   );

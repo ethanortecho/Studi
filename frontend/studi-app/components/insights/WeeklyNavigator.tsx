@@ -5,6 +5,7 @@ import {
   PanResponder,
   GestureResponderEvent,
   PanResponderGestureState,
+  Pressable,
 } from 'react-native';
 import {
   getWeekStart,
@@ -13,6 +14,7 @@ import {
 } from '@/utils/dateUtils';
 import PagedCarousel from '@/components/navigation/PagedCarousel';
 import WeekCard from './WeekCard';
+import { Ionicons } from '@expo/vector-icons';
 
 interface WeeklyNavigatorProps {
   /** Sunday of the currently-selected week */
@@ -76,15 +78,42 @@ export default function WeeklyNavigator({
 
   return (
     <View className="mb-3 px-4 mt-5" {...panResponder.panHandlers}>
-      <PagedCarousel
-        items={items}
-        itemsPerPage={1}
-        pageWidth={Dimensions.get('window').width - 32}
-        renderItem={renderItem}
-        keyExtractor={(d) => d.toISOString()}
-        contentContainerStyle={{ height: 80 }}
-        flatListProps={{ style: { height: 80 } }}
-      />
+      <View className="relative items-center justify-center">
+        {/* Week card carousel */}
+        <PagedCarousel
+          items={items}
+          itemsPerPage={1}
+          pageWidth={Dimensions.get('window').width - 32}
+          renderItem={renderItem}
+          keyExtractor={(d) => d.toISOString()}
+          contentContainerStyle={{ height: 80 }}
+          flatListProps={{ style: { height: 80 } }}
+        />
+
+        {/* Left arrow */}
+        {canGoPrev && (
+          <Pressable
+            onPress={() => onSelect(navigateWeek(weekStart, 'prev'))}
+            className="absolute left-2 p-1"
+            hitSlop={6}
+            style={{ top: '50%', transform: [{ translateY: -20 }] }}
+          >
+            <Ionicons name="chevron-back" size={24} color="white" style={{ opacity: 0.6 }} />
+          </Pressable>
+        )}
+
+        {/* Right arrow */}
+        {canGoNext && (
+          <Pressable
+            onPress={() => onSelect(navigateWeek(weekStart, 'next'))}
+            className="absolute right-2 p-1"
+            hitSlop={6}
+            style={{ top: '50%', transform: [{ translateY: -20 }] }}
+          >
+            <Ionicons name="chevron-forward" size={24} color="white" style={{ opacity: 0.6 }} />
+          </Pressable>
+        )}
+      </View>
     </View>
   );
 } 

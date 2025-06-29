@@ -12,15 +12,25 @@ interface WeekCardProps {
  * Displays the date range like "Jun 15-21" or spanning two months.
  */
 export default function WeekCard({ weekStart, isSelected, onPress }: WeekCardProps) {
+  // Calculate the end-of-week date (Saturday)
   const weekEnd = new Date(weekStart);
   weekEnd.setDate(weekStart.getDate() + 6);
 
-  const startMonth = weekStart.toLocaleDateString('en-US', { month: 'short' });
-  const endMonth = weekEnd.toLocaleDateString('en-US', { month: 'short' });
+  /**
+   * Returns the day number with an ordinal suffix (1st, 2nd, 3rd, etc.).
+   */
+  const formatOrdinal = (day: number) => {
+    const v = day % 100;
+    const suffix = ['th', 'st', 'nd', 'rd'][(v - 20) % 10] ?? (['th', 'st', 'nd', 'rd'][v] ?? 'th');
+    return `${day}${suffix}`;
+  };
+
+  const startMonth = weekStart.toLocaleDateString('en-US', { month: 'long' });
+  const endMonth = weekEnd.toLocaleDateString('en-US', { month: 'long' });
 
   const rangeLabel = startMonth === endMonth
-    ? `${startMonth} ${weekStart.getDate()}-${weekEnd.getDate()}`
-    : `${startMonth} ${weekStart.getDate()}-${endMonth} ${weekEnd.getDate()}`;
+    ? `${startMonth} ${formatOrdinal(weekStart.getDate())} - ${formatOrdinal(weekEnd.getDate())}`
+    : `${startMonth} ${formatOrdinal(weekStart.getDate())} - ${endMonth} ${formatOrdinal(weekEnd.getDate())}`;
 
   return (
     <Pressable onPress={onPress} className="w-full ">

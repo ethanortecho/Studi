@@ -148,7 +148,9 @@ export default function MultiChartContainer({
             {/* Chart Display */}
             <View className="items-center justify-center" style={{ height: chartContainerHeight }}>
                 {noChartAvailable ? (
-                    <Text className="text-md text-gray-40 opaci">No data available for this day.</Text>
+                    <Text className="text-md text-gray-400">
+                        {`No data available for this ${timeframe === 'weekly' ? 'week' : 'day'}.`}
+                    </Text>
                 ) : (
                     <>
                         {selectedChart === 'pie' && chartOptions.pie.available && (

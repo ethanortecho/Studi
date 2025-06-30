@@ -233,23 +233,15 @@ export default function SessionBarchart({
     timeMarkersCount: timeMarkers.length
   });
 
-  if (sessions.length === 0) {
-    return (
-      <View className="p-3 bg-white rounded-2xl">
-        <Text className="text-md font-bold text-category-purple mb-4">Sessions</Text>
-        <Text className="text-gray-500 text-center py-4">No sessions available</Text>
-      </View>
-    );
-  }
+  
 
   const axisPadding = rightPadding; // alias for clarity
 
   return (
     <View
-      className="self-start"
+      className="self-start pl-10"
       style={{ width, alignSelf: 'flex-start' }}
     >
-      <Text className="text-md font-bold text-category-purple mb-4 self-start">Sessions</Text>
 
       <ScrollView
         className="max-h-56"

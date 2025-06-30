@@ -77,7 +77,7 @@ export default function DailyNavigator({
   }, [weekStart]);
 
   return (
-    <View className="mt-5 mb-3 px-3" {...panResponder.panHandlers}>
+    <View className="mt-3 mb-0 px-3" {...panResponder.panHandlers}>
       <React.Fragment>
        
         <PagedCarousel

@@ -39,7 +39,7 @@ export default function CustomPieChart({
       height: size, 
       width: size,
       alignItems: 'center',
-      justifyContent: 'center'
+      justifyContent: 'center',
     }}>
       <View style={{
         width: size,

@@ -77,7 +77,7 @@ export default function WeeklyNavigator({
   );
 
   return (
-    <View className="mb-3 px-4 mt-5" {...panResponder.panHandlers}>
+    <View className="mb-0 px-4 mt-3" {...panResponder.panHandlers}>
       <View className="relative items-center justify-center">
         {/* Week card carousel */}
         <PagedCarousel

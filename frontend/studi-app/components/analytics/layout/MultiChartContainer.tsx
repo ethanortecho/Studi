@@ -1,11 +1,12 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, Dimensions } from 'react-native';
 import DashboardCard from '@/components/insights/DashboardContainer';
 import CustomPieChart from '@/components/analytics/charts/CustomPieChart';
 import Legend from '@/components/analytics/DashboardLegend';
 import WeeklyBarChart from '@/components/analytics/WeeklyBarchart';
 import SessionBarchart from '../SessionBarchart';
 import { CategoryMetadata, TimelineSession } from '@/types/api';
+import PagedCarousel from '@/components/navigation/PagedCarousel';
 
 
 interface MultiChartContainerProps {
@@ -70,7 +71,7 @@ export default function MultiChartContainer({
         ? 400
         : selectedChart === 'pie'
             ? PIE_SIZE + PIE_PADDING
-            : 160;
+            : 185;
 
     // 🚦 Single indicator: any non-zero duration means there is data
     const hasAnyData = Object.values(categoryDurations || {}).some((duration) => duration > 0);
@@ -115,8 +116,28 @@ export default function MultiChartContainer({
     // 🚦 Single indicator: if all category durations are zero, treat as empty day
     const noChartAvailable = typeof isEmpty === 'boolean' ? isEmpty : !hasAnyData;
 
+    /* ------------------------------------------------------------------
+       Chart Pages & Carousel Setup
+    ------------------------------------------------------------------ */
+    const chartPages = useMemo<ChartType[]>(() => {
+        // Determine which chart types should actually render as pages – maintain order
+        const pages: ChartType[] = [];
+        if (chartOptions.pie.available) pages.push('pie');
+        if (chartOptions.sessions.available && chartOptions.sessions.show) pages.push('sessions');
+        if (chartOptions.bar.available && chartOptions.bar.show) pages.push('bar');
+        return pages;
+    }, [chartOptions]);
+
+    // Keep selectedChart in sync with visible page
+    const handlePageChange = (pageIdx: number) => {
+        setSelectedChart(chartPages[pageIdx]);
+    };
+
+    // Width of one page equals card width (screen minus horizontal margins)
+    const PAGE_WIDTH = Dimensions.get('window').width - 32; // parent adds mx-4 (≈16px each side)
+
     return (
-        <DashboardCard className="bg-surface rounded-[35px]">
+        <DashboardCard className="bg-surface rounded-[35px] ">
             {/* Stats Banner */}
             {!noChartAvailable && totalTime && percentGoal != null && (
                 <View className="flex-row justify-between px-6 pt-6">
@@ -145,35 +166,51 @@ export default function MultiChartContainer({
                 </View>
             )}
             
-            {/* Chart Display */}
+            {/* Chart Display – swipeable */}
             <View className="items-center justify-center" style={{ height: chartContainerHeight }}>
                 {noChartAvailable ? (
                     <Text className="text-md text-gray-400">
                         {`No data available for this ${timeframe === 'weekly' ? 'week' : 'day'}.`}
                     </Text>
                 ) : (
-                    <>
-                        {selectedChart === 'pie' && chartOptions.pie.available && (
-                            <View className="items-center mb-2 justify-center ">
-                                <CustomPieChart data={chartData.pie} size={PIE_SIZE} />
-                            </View>
-                        )}
-                        {selectedChart === 'sessions' && chartOptions.sessions.available && chartData.sessions.timelineData && chartData.sessions.timelineData.length > 0 && chartData.sessions.categoryMetadata && (
-                            <View className="px-2 h-full justify-center">
-                                <SessionBarchart 
-                                    timelineData={chartData.sessions.timelineData} 
-                                    categoryMetadata={chartData.sessions.categoryMetadata} 
-                                    width={320}
-                                />
-                            </View>
-                        )}
-                        {selectedChart === 'bar' && chartOptions.bar.available && chartData.bar && (
-                            <View className="flex-row items-end justify-center h-full px- pt-2">
-                                <WeeklyBarChart data={chartData.bar}
-                                categoryMetadata={categoryMetadata} />
-                            </View>
-                        )}
-                    </>
+                    <PagedCarousel
+                        items={chartPages}
+                        itemsPerPage={1}
+                        keyExtractor={(type) => type}
+                        pageWidth={PAGE_WIDTH}
+                        onPageChange={handlePageChange}
+                        renderItem={({ item }) => {
+                            switch (item) {
+                                case 'pie':
+                                    return (
+                                        <View className="items-center justify-center" style={{ width: PAGE_WIDTH }}>
+                                            <CustomPieChart data={chartData.pie} size={PIE_SIZE} />
+                                        </View>
+                                    );
+                                case 'sessions':
+                                    return (
+                                        <View className="px-2 h-full justify-center" style={{ width: PAGE_WIDTH }}>
+                                            <SessionBarchart 
+                                                timelineData={chartData.sessions.timelineData!} 
+                                                categoryMetadata={chartData.sessions.categoryMetadata} 
+                                                width={320}
+                                            />
+                                        </View>
+                                    );
+                                case 'bar':
+                                    return (
+                                        <View className="flex-row items-end justify-center h-full" style={{ width: PAGE_WIDTH }}>
+                                            <WeeklyBarChart 
+                                                data={chartData.bar!}
+                                                categoryMetadata={categoryMetadata} 
+                                            />
+                                        </View>
+                                    );
+                                default:
+                                    return null;
+                            }
+                        }}
+                    />
                 )}
             </View>
             
@@ -187,57 +224,16 @@ export default function MultiChartContainer({
                 </View>
             )}
 
-            {/* Chart Toggle Buttons */}
-            {!noChartAvailable && (
-            <View className="flex-row items-center justify-center py-5 gap-2 mb-4">
-                {/* Pie Chart Button */}
-                <Pressable 
-                    onPress={() => setSelectedChart('pie')}
-                    className="flex-1 items-center"
-                >
-                    <Text className={`text-md font-bold ${
-                        selectedChart === 'pie' 
-                            ? 'text-white' 
-                            : 'text-gray-500'
-                    }`}>
-                        {chartOptions.pie.label}
-                    </Text>
-                </Pressable>
-                
-                {/* Sessions Button (Daily only) */}
-                {chartOptions.sessions.show && (
-                    <Pressable 
-                        onPress={() => setSelectedChart('sessions')}
-                        disabled={!chartOptions.sessions.available}
-                        className={`flex-1 items-center p-3 ${!chartOptions.sessions.available ? 'opacity-40' : ''}`}
-                    >
-                        <Text className={`text-md font-bold ${
-                            selectedChart === 'sessions' 
-                                ? 'text-white' 
-                                : 'text-gray-500'
-                        }`}>
-                            {chartOptions.sessions.label}
-                        </Text>
-                    </Pressable>
-                )}
-                
-                {/* Weekly Bar Button (Weekly only) */} 
-                {chartOptions.bar.show && (
-                    <Pressable 
-                        onPress={() => setSelectedChart('bar')}
-                        disabled={!chartOptions.bar.available}
-                        className={`flex-1 items-center p-3 ${!chartOptions.bar.available ? 'opacity-40' : ''}`}
-                    >
-                        <Text className={`text-md font-bold ${
-                            selectedChart === 'bar' 
-                                ? 'text-white' 
-                                : 'text-gray-500'
-                        }`}>
-                            {chartOptions.bar.label}
-                        </Text>
-                    </Pressable>
-                )}
-            </View>
+            {/* Dot Indicator */}
+            {!noChartAvailable && chartPages.length > 1 && (
+                <View className="flex-row items-center justify-center py-5 gap-2 mb-4">
+                    {chartPages.map((_, idx) => (
+                        <View
+                            key={idx}
+                            className={`w-2 h-2 rounded-full mx-1 ${idx === chartPages.indexOf(selectedChart) ? 'bg-white' : 'bg-gray-500'}`}
+                        />
+                    ))}
+                </View>
             )}
         </DashboardCard>
     );

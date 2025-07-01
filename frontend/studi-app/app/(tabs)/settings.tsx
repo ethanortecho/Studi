@@ -1,28 +1,34 @@
 import React from 'react';
-import { Text, View, Pressable } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 
 export default function SettingsScreen() {
-    return (
-        <SafeAreaView className="flex-1">
-            <View className="p-4">
-                <Text className="text-2xl font-bold text-gray-800 mb-6">Settings</Text>
-                
-                <Pressable 
-                    onPress={() => router.push('/screens/manage-categories' as any)}
-                    className="bg-blue-500 py-3 px-4 rounded-lg"
-                >
-                    <Text className="text-white font-medium text-center">Manage Categories</Text>
-                </Pressable>
+  /** Helper to render a single row */
+  const Row = ({ label, onPress, isLast = false }: { label: string; onPress: () => void; isLast?: boolean }) => (
+    <Pressable onPress={onPress} className={`border-b ${isLast ? '' : 'border-border'}`}>
+      {({ pressed }) => (
+        <View className={`px-4 py-4 ${pressed ? 'bg-surface' : 'bg-transparent'}`}>
+          <Text className="text-primaryText font-medium">{label}</Text>
+        </View>
+      )}
+    </Pressable>
+  );
 
-                <Pressable
-                    onPress={() => router.push('/screens/set-weekly-goal?edit=1' as any)}
-                    className="bg-purple-600 py-3 px-4 rounded-lg mt-4"
-                >
-                    <Text className="text-white font-medium text-center">Manage Study Goal</Text>
-                </Pressable>
-            </View>
-        </SafeAreaView>
-    );
+  return (
+    <SafeAreaView className="flex-1 bg-background">
+      {/* Header */}
+      <View className="px-4 pt-4 pb-3 bg-background">
+        <Text className="text-2xl font-bold text-primaryText">Settings</Text>
+      </View>
+      {/* Divider under header */}
+      <View className="border-b border-border" />
+
+      {/* Options */}
+      <View className="flex-col">
+        <Row label="Manage Categories" onPress={() => router.push('/screens/manage-categories' as any)} />
+        <Row label="Manage Study Goal" onPress={() => router.push('/screens/set-weekly-goal?edit=1' as any)} isLast />
+      </View>
+    </SafeAreaView>
+  );
 } 

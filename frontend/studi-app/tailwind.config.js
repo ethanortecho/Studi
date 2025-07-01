@@ -17,6 +17,10 @@ module.exports = {
         primary: 'rgb(var(--color-primary) / <alpha-value>)',
         accent: 'rgb(var(--color-accent) / <alpha-value>)',
         
+        // Semantic text colors
+        primaryText: 'rgb(var(--color-primaryText) / <alpha-value>)',
+        secondaryText: 'rgb(var(--color-secondaryText) / <alpha-value>)',
+        
         // Layout colors
         layout: {
           'off-white': '#EEEDED',

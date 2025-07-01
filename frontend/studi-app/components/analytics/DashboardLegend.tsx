@@ -43,10 +43,10 @@ export default function Legend({ category_durations, category_metadata }: Legend
 
                             {/* Name + Time */}
                             <View>
-                                <Text className="text-white text-sm font-medium">
+                                <Text className="text-primaryText text-sm font-medium">
                                     {categoryMeta.name}
                                 </Text>
-                                <Text className="text-gray-400 text-xs">
+                                <Text className="text-secondaryText text-xs">
                                     {formatTime(durationSeconds)}
                                 </Text>
                             </View>

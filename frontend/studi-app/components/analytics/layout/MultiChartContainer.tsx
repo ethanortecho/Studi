@@ -144,32 +144,32 @@ export default function MultiChartContainer({
                     {/* Total Time */}
                     <View>
                         <View className="flex-row items-baseline">
-                            <Text className="text-white text-2xl font-bold">{totalTime.hours}</Text>
-                            <Text className="text-white text-2xl font-semibold ml-1">h</Text>
-                            <Text className="text-white text-2xl font-bold ml-2">{totalTime.minutes}</Text>
-                            <Text className="text-white text-2xl font-semibold ml-1">m</Text>
+                            <Text className="text-primaryText text-2xl font-bold">{totalTime.hours}</Text>
+                            <Text className="text-primaryText text-2xl font-semibold ml-1">h</Text>
+                            <Text className="text-primaryText text-2xl font-bold ml-2">{totalTime.minutes}</Text>
+                            <Text className="text-primaryText text-2xl font-semibold ml-1">m</Text>
                         </View>
-                        <Text className="text-gray-400 text-md">Study Time</Text>
+                        <Text className="text-secondaryText text-md">Study Time</Text>
                     </View>
 
                     {/* Percent to Goal */}
                     <View className="items-end">
-                        <Text className="text-white text-2xl font-bold">{percentGoal}%</Text>
-                        <Text className="text-gray-400 text-md">to goal</Text>
+                        <Text className="text-primaryText text-2xl font-bold">{percentGoal}%</Text>
+                        <Text className="text-secondaryText text-md">to goal</Text>
                     </View>
                 </View>
             )}
 
             {showTitle && !noChartAvailable && (
                 <View className="flex-row  items-center justify-center py-5">
-                    <Text className="text-2xl font-bold text-white mt-5 mb-5 ">{chartOptions[selectedChart].title}</Text>
+                    <Text className="text-2xl font-bold text-primaryText mt-5 mb-5 ">{chartOptions[selectedChart].title}</Text>
                 </View>
             )}
             
             {/* Chart Display – swipeable */}
             <View className="items-center justify-center" style={{ height: chartContainerHeight }}>
                 {noChartAvailable ? (
-                    <Text className="text-md text-gray-400">
+                    <Text className="text-md text-secondaryText">
                         {`No data available for this ${timeframe === 'weekly' ? 'week' : 'day'}.`}
                     </Text>
                 ) : (
@@ -230,7 +230,7 @@ export default function MultiChartContainer({
                     {chartPages.map((_, idx) => (
                         <View
                             key={idx}
-                            className={`w-2 h-2 rounded-full mx-1 ${idx === chartPages.indexOf(selectedChart) ? 'bg-white' : 'bg-gray-500'}`}
+                            className={`w-2 h-2 rounded-full mx-1 ${idx === chartPages.indexOf(selectedChart) ? 'bg-primaryText' : 'bg-secondaryText'}`}
                         />
                     ))}
                 </View>

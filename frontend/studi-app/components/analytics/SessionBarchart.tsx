@@ -258,8 +258,8 @@ export default function SessionBarchart({
                 <View className="flex-row items-center justify-start">
                   {/* Session Label */}
                   <View className="w-16">
-                    <Text className="text-xs text-gray-500">Session {session.index}</Text>
-                    <Text className="text-xs text-gray-400">{formatDuration(session.durationMinutes)}</Text>
+                    <Text className="text-xs text-secondaryText">Session {session.index}</Text>
+                    <Text className="text-xs text-secondaryText">{formatDuration(session.durationMinutes)}</Text>
                   </View>
 
                   {/* Session Bar Container */}

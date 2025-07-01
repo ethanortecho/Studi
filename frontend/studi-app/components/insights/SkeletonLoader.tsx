@@ -117,7 +117,7 @@ export function EmptyState({ message = "No study sessions recorded" }: { message
   return (
     <View className="bg-layout-off-white rounded-3xl mx-4 mb-4 px-3 py-4">
       <View className="flex-1 justify-center items-center py-20">
-        <Text className="text-layout-faded-grey text-lg text-center">
+        <Text className="text-center text-secondaryText text-lg text-center">
           {message}
         </Text>
       </View>

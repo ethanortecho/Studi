@@ -56,11 +56,11 @@ export default function WeekNavigator({
         className={`flex-1 mx-1 w-14 h-20 rounded-3xl items-center justify-center bg-primary/60 ${isSelected ? 'border-2 border-white' : 'border border-transparent'}`}
       >
         {/* Dot */}
-        <View className={`w-2 h-2 rounded-full mb-1 ${showDot ? 'bg-white' : 'bg-transparent'}`} />
+        <View className={`w-2 h-2 rounded-full mb-1 ${showDot ? 'bg-primaryText' : 'bg-transparent'}`} />
         {/* Weekday */}
-        <Text className="text-xs text-white font-medium mb-1">{dayLabel}</Text>
+        <Text className="text-xs text-primaryText font-medium mb-1">{dayLabel}</Text>
         {/* Date number */}
-        <Text className="text-base text-white font-bold">{dateLabel}</Text>
+        <Text className="text-base text-primaryText font-bold">{dateLabel}</Text>
       </View>
     );
   };
@@ -81,7 +81,7 @@ export default function WeekNavigator({
 
   return (
     <View className="mb-4 px-4" {...panResponder.panHandlers}>
-      <Text className="text-center text-layout-faded-grey text-xs mb-2 font-medium">
+      <Text className="text-center text-secondaryText text-xs mb-2 font-medium">
         {weekRangeLabel}
       </Text>
       <FlatList

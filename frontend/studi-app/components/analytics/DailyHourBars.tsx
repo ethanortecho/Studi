@@ -112,7 +112,7 @@ const DailyHourBars: React.FC<Props> = ({
   return (
     <DashboardCard className="bg-surface rounded-[35px]">
       {/* Title */}
-      <Text className="text-xl font-semibold text-white py-14 pt-10 px-8 text-center">
+      <Text className="text-xl font-semibold text-primaryText py-14 pt-10 px-8 text-center">
         Study minutes per hour
       </Text>
 

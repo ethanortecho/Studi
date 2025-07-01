@@ -24,9 +24,9 @@ export default function DayCard({ date, isSelected, showDot = false, onPress }: 
       {/* Dot */}
       <View className={`w-2 h-2 rounded-full mb-1 ${showDot ? 'bg-white' : 'bg-transparent'}`} />
       {/* Weekday label */}
-      <Text className="text-xs text-white font-medium mb-1">{weekday}</Text>
+      <Text className="text-xs text-primaryText font-medium mb-1">{weekday}</Text>
       {/* Day number */}
-      <Text className="text-base text-white font-bold">{dayNum}</Text>
+      <Text className="text-base text-primaryText font-bold">{dayNum}</Text>
     </Pressable>
 
     

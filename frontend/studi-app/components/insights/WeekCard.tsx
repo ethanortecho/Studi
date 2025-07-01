@@ -37,7 +37,7 @@ export default function WeekCard({ weekStart, isSelected, onPress }: WeekCardPro
       <View
         className={`w-full h-20 rounded-3xl items-center justify-center bg-surface`}
       >
-        <Text className="text-lg font-bold text-white">{rangeLabel}</Text>
+        <Text className="text-lg font-bold text-primaryText">{rangeLabel}</Text>
       </View>
     </Pressable>
   );

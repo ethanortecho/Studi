@@ -112,7 +112,7 @@ const WeeklyBarchart: React.FC<WeeklyBarchartProps> = ({
   if (!data || !categoryMetadata || categories.length === 0) {
     return (
       <View>
-        <ThemedText className="text-gray-500">No data available</ThemedText>
+        <ThemedText className="text-secondaryText">No data available</ThemedText>
       </View>
     );
   }

@@ -31,7 +31,7 @@ const WeeklyBarchartContainer: React.FC<WeeklyBarchartContainerProps> = ({
     return (
       <View className="bg-white rounded-lg py-4 px-0">
         <Text className="text-md font-bold text-category-purple mb-3">Weekly Activity</Text>
-        <Text className="text-gray-500">Loading weekly data...</Text>
+        <Text className="text-secondaryText">Loading weekly data...</Text>
       </View>
     );
   }

@@ -22,7 +22,7 @@ export default function DayCard({ date, isSelected, showDot = false, onPress }: 
       className={`flex-2 h-20  rounded-[15px] items-center justify-center ${isSelected ? 'bg-primary' : 'bg-surface border border-transparent'}`}
     >
       {/* Dot */}
-      <View className={`w-2 h-2 rounded-full mb-1 ${showDot ? 'bg-white' : 'bg-transparent'}`} />
+      <View className={`w-2 h-2 rounded-full mb-1 ${showDot ? 'bg-secondaryText' : 'bg-transparent'}`} />
       {/* Weekday label */}
       <Text className="text-xs text-primaryText font-medium mb-1">{weekday}</Text>
       {/* Day number */}

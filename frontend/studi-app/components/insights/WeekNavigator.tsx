@@ -56,7 +56,7 @@ export default function WeekNavigator({
         className={`flex-1 mx-1 w-14 h-20 rounded-3xl items-center justify-center bg-primary/60 ${isSelected ? 'border-2 border-white' : 'border border-transparent'}`}
       >
         {/* Dot */}
-        <View className={`w-2 h-2 rounded-full mb-1 ${showDot ? 'bg-primaryText' : 'bg-transparent'}`} />
+        <View className={`w-2 h-2 rounded-full mb-1 ${showDot ? 'bg-secondaryText' : 'bg-transparent'}`} />
         {/* Weekday */}
         <Text className="text-xs text-primaryText font-medium mb-1">{dayLabel}</Text>
         {/* Date number */}

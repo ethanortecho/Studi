@@ -13,26 +13,26 @@ export default function TotalHours({ totalTime, totalHours }: TotalHoursProps) {
       {totalTime ? (
         // New format: Xh Ymin
         <View className="flex-row items-baseline">
-          <Text className="text-white text-5xl font-bold">
+          <Text className="text-primaryText text-5xl font-bold">
             {totalTime.hours}
           </Text>
-          <Text className="text-white text-lg font-semibold ml-1">
+          <Text className="text-primaryText text-lg font-semibold ml-1">
             h
           </Text>
-          <Text className="text-white text-5xl font-bold ml-2">
+          <Text className="text-primaryText text-5xl font-bold ml-2">
             {totalTime.minutes}
           </Text>
-          <Text className="text-white text-lg font-semibold ml-1">
+          <Text className="text-primaryText text-lg font-semibold ml-1">
             min
           </Text>
         </View>
       ) : (
         // Fallback to old format
         <View className="flex-row items-baseline">
-          <Text className="text-white text-5xl font-bold">
+          <Text className="text-primaryText text-5xl font-bold">
             {totalHours}
           </Text>
-          <Text className="text-white text-lg font-semibold ml-1">
+          <Text className="text-primaryText text-lg font-semibold ml-1">
             hours
           </Text>
         </View>

@@ -1,14 +1,15 @@
 export const light = {
-  text: '#11181C',
-  background: '#FFFFFF',
-  surface: '#F5F5F5',
-  primary: '#282257', // Brand purple (same as dark)
-  icon: '#687076',
-  tint: '#0a7ea4',
-  tabIconDefault: '#687076',
-  tabIconSelected: '#0a7ea4',
-  border: '#E5E7EB',
-  accent: '#5D3EDA',  // Brand purple accent
+  primaryText: '#828282',
+  secondaryText: '#A3A3A3',
+  background: '#D4DCF0', //light blue
+  surface: '#FFFFFF', //white
+  primary: '#3F2E91', // Brand purple
+  accent: '#5D3EDA',  // purple accent
+  icon: '#9BA1A6',
+  tint: '#FFFFFF',
+  tabIconDefault: '#9BA1A6',
+  tabIconSelected: '#FFFFFF',
+  border: '#2D2F31',
 } as const;
 
 export type LightTheme = typeof light; 

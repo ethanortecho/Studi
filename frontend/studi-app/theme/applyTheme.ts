@@ -3,7 +3,7 @@ import { light } from './light';
 import { vars } from 'nativewind';
 
 export type ThemeMode = 'light' | 'dark';
-export type ThemeTokens = typeof dark;
+export type ThemeTokens = typeof light;
 
 // Helper to convert #rrggbb to "r g b" format required by Tailwind rgb(var(...))
 const hexToRgb = (hex: string) => {

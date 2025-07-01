@@ -42,18 +42,18 @@ class Command(BaseCommand):
 
         # Create categories (limited to 5) with frontend-matching colors
         categories = [
-            'Mathematics',
-            'Computer Science',
-            'Physics',
-            'Literature',
-            'History'
+            'Finance',
+            'Marketing',
+            'Calculus',
+            'English',
+            'Comp Sci',
         ]
         color_mapping = {
-            'Mathematics': '#5A4FCF',      # Purple
-            'Computer Science': '#4F9DDE', # Blue  
-            'Physics': '#F3C44B',          # Yellow
-            'Literature': '#F46D75',       # Coral
-            'History': '#2EC4B6',          # Teal
+            'Finance': '#5A4FCF',      # Purple
+            'Marketing': '#4F9DDE', # Blue  
+            'Calculus': '#F3C44B',          # Yellow
+            'English': '#F46D75',       # Coral
+            'Comp Sci': '#2EC4B6',          # Teal
         }
         
         category_objects = []

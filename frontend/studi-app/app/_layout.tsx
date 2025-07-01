@@ -1,11 +1,11 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack, router, usePathname } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import * as SystemUI from 'expo-system-ui';
 import { Appearance } from 'react-native';
-import { useEffect } from 'react';
+import React, { useEffect, useState, useMemo, createContext, useContext } from 'react';
 import 'react-native-reanimated';
 import '../global.css';
 import { 
@@ -17,11 +17,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { cssInterop } from 'nativewind';
 import { StudySessionProvider } from '@/context/StudySessionContext';
-import { applyDarkTheme } from '@/theme/applyTheme';
+import { applyDarkTheme, applyLightTheme, ThemeMode } from '@/theme/applyTheme';
 import { dark } from '@/theme/dark';
 import { light } from '@/theme/light';
 import { useWeeklyGoal } from '@/hooks/useWeeklyGoal';
-
 import { useColorScheme } from '@/hooks/useColorScheme';
 
 // Fix SafeAreaView compatibility with NativeWind
@@ -34,6 +33,18 @@ SplashScreen.preventAutoHideAsync();
 // (status-bar notch and home-indicator strip) start with the correct theme.
 const initialScheme = Appearance.getColorScheme();
 SystemUI.setBackgroundColorAsync(initialScheme === 'dark' ? dark.background : light.background);
+
+/* ------------------------------------------------------------------
+   Theme Context (light | dark) – allows screens to toggle mode
+------------------------------------------------------------------ */
+interface ThemeContextProps {
+  mode: ThemeMode;
+  toggle: () => void;
+}
+
+const ThemeContext = createContext<ThemeContextProps>({ mode: 'dark', toggle: () => {} });
+
+export const useThemeMode = () => useContext(ThemeContext);
 
 export default function RootLayout() {
   // Guard: redirect to goal-setting screen if none exists
@@ -57,7 +68,15 @@ export default function RootLayout() {
     'Poppins-Bold': Poppins_700Bold,
   });
 
-  const darkStyles = applyDarkTheme() as any;
+  // Manage theme mode state (default to dark)
+  const [themeMode, setThemeMode] = useState<ThemeMode>('dark');
+
+  // Recompute style vars whenever mode changes
+  const themeStyles = useMemo(() => {
+    return themeMode === 'dark' ? (applyDarkTheme() as any) : (applyLightTheme() as any);
+  }, [themeMode]);
+
+  const toggleTheme = () => setThemeMode((prev) => (prev === 'dark' ? 'light' : 'dark'));
 
   // Ensure the OS background outside the safe area matches our theme
   useEffect(() => {
@@ -77,20 +96,22 @@ export default function RootLayout() {
 
   return (
     <StudySessionProvider>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <SafeAreaView edges={['left', 'right']} style={[{ flex: 1 }, darkStyles]}>
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="screens/manage-categories" options={{ headerShown: true, title: 'Manage Categories' }} />
-            <Stack.Screen name="screens/set-weekly-goal" options={{ headerShown: false }} />
-            <Stack.Screen name="screens/record" options={{ headerShown: true, title: 'Record Session' }} />
-            <Stack.Screen name="screens/timer/stopwatch" options={{ headerShown: false }} />
-            <Stack.Screen name="screens/timer/countdown" options={{ headerShown: false }} />
-            <Stack.Screen name="+not-found" />
-          </Stack>
-        </SafeAreaView>
-        <StatusBar translucent backgroundColor="transparent" style="light" />
-      </ThemeProvider>
+      <NavigationThemeProvider value={themeMode === 'dark' ? DarkTheme : DefaultTheme}>
+        <ThemeContext.Provider value={{ mode: themeMode, toggle: toggleTheme }}>
+          <SafeAreaView edges={['left', 'right']} style={[{ flex: 1 }, themeStyles]}>
+            <Stack>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="screens/manage-categories" options={{ headerShown: true, title: 'Manage Categories' }} />
+              <Stack.Screen name="screens/set-weekly-goal" options={{ headerShown: false }} />
+              <Stack.Screen name="screens/record" options={{ headerShown: true, title: 'Record Session' }} />
+              <Stack.Screen name="screens/timer/stopwatch" options={{ headerShown: false }} />
+              <Stack.Screen name="screens/timer/countdown" options={{ headerShown: false }} />
+              <Stack.Screen name="+not-found" />
+            </Stack>
+          </SafeAreaView>
+          <StatusBar translucent backgroundColor="transparent" style="light" />
+        </ThemeContext.Provider>
+      </NavigationThemeProvider>
     </StudySessionProvider>
   );
 }

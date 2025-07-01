@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
 import { Text, View, Pressable } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useThemeMode } from '@/app/_layout';
+import { dark } from '@/theme/dark';
+import { light } from '@/theme/light';
 import { ThemedView } from '@/components/ThemedView';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -7,6 +11,8 @@ import TimerConfigModal, { TimerConfig } from '@/components/timerconfig/TimerCon
 
 export default function HomeScreen() {
     const [modalVisible, setModalVisible] = useState(false);
+
+    const { mode: themeMode, toggle: toggleTheme } = useThemeMode();
 
     const handleStartStudying = () => {
         setModalVisible(true);
@@ -44,10 +50,20 @@ export default function HomeScreen() {
 
     return (
         <SafeAreaView className="flex-1 bg-background">
-            <View className="p-6">
+            <View className="p-6 flex-row justify-between items-center">
                 <Text className="text-3xl font-medium text-indigo-800 mb-2">
                     Welcome Back,
                 </Text>
+                {/* Theme Toggle Button */}
+                <Pressable onPress={toggleTheme} hitSlop={8} className="p-2 rounded-full bg-surface/60">
+                    <Ionicons 
+                        name={themeMode === 'dark' ? 'sunny' : 'moon'} 
+                        size={24} 
+                        color={themeMode === 'dark' ? light.text : dark.text} 
+                    />
+                </Pressable>
+            </View>
+            <View className="px-6 mb-4">
                 <Text className="text-3xl font-bold text-indigo-600">
                     Ethan
                 </Text>

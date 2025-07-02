@@ -42,21 +42,18 @@ export function useDashboardData({ dailyDate, weeklyDate }: UseDashboardDataPara
     const { data: dailyResponse, loading: dailyLoading } = useAggregateData('daily', dailyDateStr, undefined);
     const { data: weeklyResponse, loading: weeklyLoading } = useAggregateData('weekly', weeklyStartStr, weeklyEndStr);
 
-    // Prefetch adjacent dates for faster navigation
+    // Prefetch adjacent dates *only if those dates are NOT already in the current weekDates array*.
+    // This prevents redundant hook instances and extra console noise when switching between days
+    // inside the same week.
     const currentDaily = dailyDate || new Date();
     const currentWeekly = weeklyDate || getWeekStart(new Date());
     
-    // Prefetch previous/next day (but don't use the results - just for caching)
     const prevDay = navigateDate(currentDaily, 'prev', 'daily');
     const nextDay = navigateDate(currentDaily, 'next', 'daily');
     const prevWeek = navigateDate(currentWeekly, 'prev', 'weekly');
     const nextWeek = navigateDate(currentWeekly, 'next', 'weekly');
 
-    DEBUG_DASHBOARD && console.log('🚀 useDashboardData: Prefetching adjacent dates...');
-    useAggregateData('daily', formatDateForAPI(prevDay), undefined);
-    useAggregateData('daily', formatDateForAPI(nextDay), undefined);
-    useAggregateData('weekly', formatDateForAPI(getWeekStart(prevWeek)), formatDateForAPI(getWeekEnd(prevWeek)));
-    useAggregateData('weekly', formatDateForAPI(getWeekStart(nextWeek)), formatDateForAPI(getWeekEnd(nextWeek)));
+    DEBUG_DASHBOARD && console.log('🚀 useDashboardData: Skipping daily prev/next prefetch — 7 days already loaded');
 
     // 🔄 Fetch all 7 daily responses for the current week (prefetch)
     const weekDailyResults = weekDates.map(dateStr => {

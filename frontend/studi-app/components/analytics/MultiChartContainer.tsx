@@ -3,8 +3,8 @@ import { View, Text, Dimensions } from 'react-native';
 import DashboardCard from '@/components/insights/DashboardContainer';
 import CustomPieChart from '@/components/analytics/charts/CustomPieChart';
 import Legend from '@/components/analytics/DashboardLegend';
-import WeeklyBarChart from '@/components/analytics/WeeklyBarchart';
-import SessionBarchart from '../SessionBarchart';
+import WeeklyBarChart from '@/components/analytics/charts/WeeklyBarchart';
+import SessionBarchart from './charts/SessionBarchart';
 import { CategoryMetadata, TimelineSession } from '@/types/api';
 import PagedCarousel from '@/components/navigation/PagedCarousel';
 
@@ -12,7 +12,7 @@ import PagedCarousel from '@/components/navigation/PagedCarousel';
 interface MultiChartContainerProps {
     // Required for all views
     timeframe: 'daily' | 'weekly';
-    categoryMetadata: { [key: string]: CategoryMetadata };
+    categoryMetadata: { [key: string]: CategoryMetadata }
     categoryDurations: { [key: string]: number };
     
     // Chart data

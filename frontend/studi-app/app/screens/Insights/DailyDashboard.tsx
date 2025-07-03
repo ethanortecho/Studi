@@ -5,10 +5,10 @@ import Legend from '@/components/analytics/DashboardLegend';
 import DebugDataViewer from '@/components/analytics/DebugDataViewer';
 import DashboardCard from '@/components/insights/DashboardContainer';
 import SubjectBreakdown from '@/components/analytics/layout/SubjectBreakdown';
-import SessionBarchart from '@/components/analytics/SessionBarchart';
+import SessionBarchart from '@/components/analytics/charts/SessionBarchart';
 import { CategoryMetadata, TimelineSession } from '@/types/api';
-import MultiChartContainer from '@/components/analytics/layout/MultiChartContainer';
-import DailyHourBars from '@/components/analytics/DailyHourBars';
+import MultiChartContainer from '@/components/analytics/MultiChartContainer';
+import DailyHourBars from '@/components/analytics/charts/DailyHourBars';
 
 interface DailyDashboardProps {
   totalHours: string;

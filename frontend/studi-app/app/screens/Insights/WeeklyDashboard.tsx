@@ -4,10 +4,10 @@ import CustomPieChart from '@/components/analytics/charts/CustomPieChart';
 import TotalHours from '@/components/analytics/TotalHoursContainer';
 import Legend from '@/components/analytics/DashboardLegend';
 import WeeklyBarchartContainer from '@/components/analytics/WeeklyBarchartContainer';
-import StudyDayBars from '@/components/analytics/WeeklySessionTimeline';
+import StudyDayBars from '@/components/analytics/charts/WeeklySessionTimeline';
 import DebugDataViewer from '@/components/analytics/DebugDataViewer';
 import DashboardCard from '@/components/insights/DashboardContainer';
-import MultiChartContainer from '@/components/analytics/layout/MultiChartContainer';
+import MultiChartContainer from '@/components/analytics/MultiChartContainer';
 import { CategoryMetadata } from '@/types/api';
 
 interface WeeklyDashboardProps {

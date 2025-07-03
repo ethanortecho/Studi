@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { View, Text } from 'react-native';
-import DayTimeline, { DaySession, TimeWindow } from './DayTimeline';
+import DayTimeline, { DaySession, TimeWindow } from '../DayTimeline';
 import DashboardCard from '@/components/insights/DashboardContainer';
 
 interface SessionTime {

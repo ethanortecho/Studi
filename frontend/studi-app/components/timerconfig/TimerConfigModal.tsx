@@ -94,9 +94,9 @@ export default function TimerConfigModal({ visible, onClose, onStartSession }: T
         {/* Header */}
         <View className="flex-row justify-between items-center p-4 border-b border-border bg-surface">
           <Pressable onPress={onClose}>
-            <Text className="text-gray-500 text-lg">Cancel</Text>
+            <Text className="text-secondaryText text-lg">Cancel</Text>
           </Pressable>
-          <Text className="text-lg font-semibold text-text">Configure Timer</Text>
+          <Text className="text-lg font-semibold text-primaryText">Configure Timer</Text>
           <View className="w-16" />
         </View>
 
@@ -109,7 +109,7 @@ export default function TimerConfigModal({ visible, onClose, onStartSession }: T
               onPress={() => handleModeChange('free')}
               className={`flex-1 py-3 px-4 rounded-full ${selectedMode === 'free' ? 'bg-accent' : ''}`}
             >
-              <Text className={`text-sm font-medium text-center ${selectedMode === 'free' ? 'text-white' : 'text-gray-500 dark:text-gray-400'}`}>
+              <Text className={`text-sm font-medium text-center ${selectedMode === 'free' ? 'text-white' : 'text-secondaryText'}`}>
                 FREE
               </Text>
             </Pressable>
@@ -118,7 +118,7 @@ export default function TimerConfigModal({ visible, onClose, onStartSession }: T
               onPress={() => handleModeChange('timer')}
               className={`flex-1 py-3 px-4 rounded-full ${selectedMode === 'timer' ? 'bg-accent' : ''}`}
             >
-              <Text className={`text-sm font-medium text-center ${selectedMode === 'timer' ? 'text-white' : 'text-gray-500 dark:text-gray-400'}`}>
+              <Text className={`text-sm font-medium text-center ${selectedMode === 'timer' ? 'text-white' : 'text-secondaryText'}`}>
                 TIMER
               </Text>
             </Pressable>
@@ -127,7 +127,7 @@ export default function TimerConfigModal({ visible, onClose, onStartSession }: T
               onPress={() => handleModeChange('pomo')}
               className={`flex-1 py-3 px-4 rounded-full ${selectedMode === 'pomo' ? 'bg-accent' : ''}`}
             >
-              <Text className={`text-sm font-medium text-center ${selectedMode === 'pomo' ? 'text-white' : 'text-gray-500 dark:text-gray-400'}`}>
+              <Text className={`text-sm font-medium text-center ${selectedMode === 'pomo' ? 'text-white' : 'text-secondaryText'}`}>
                 POMO
               </Text>
             </Pressable>
@@ -140,7 +140,7 @@ export default function TimerConfigModal({ visible, onClose, onStartSession }: T
         </ScrollView>
 
         {/* Start Button */}
-        <View className="p-6 bg-surface border-t border-border">
+        <View className="p-6">
           <Pressable
             onPress={handleStartSession}
             disabled={!isStartButtonEnabled}

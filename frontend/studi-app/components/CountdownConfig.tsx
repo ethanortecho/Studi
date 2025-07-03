@@ -31,13 +31,13 @@ export default function CountdownConfig({ onConfigChange }: CountdownConfigProps
   };
 
   return (
-    <View className="space-y-6">
-      <Text className="text-lg font-bold text-gray-100">
+    <View>
+      <Text className="text-lg font-bold text-gray-100 mb-4">
         Choose Study Duration
       </Text>
 
       {/* Info card */}
-      <View className="p-4 rounded-lg border border-gray-700 bg-gray-800/60 mb-6">
+      <View className="p-4 rounded-lg border border-gray-700 bg-gray-800/60 mb-4">
         <Text className="text-gray-100 font-semibold mb-2 text-center">
           Stay on track with a set timer ⏲️
         </Text>
@@ -46,16 +46,8 @@ export default function CountdownConfig({ onConfigChange }: CountdownConfigProps
         </Text>
       </View>
 
-      {/* Feature list */}
-      <View className="space-y-1 mb-6">
-        <Text className="text-sm font-medium text-gray-100">Features:</Text>
-        <Text className="text-sm text-gray-300">• Fixed-duration study sessions</Text>
-        <Text className="text-sm text-gray-300">• Subtle sound / haptic alert at end</Text>
-        <Text className="text-sm text-gray-300">• Optional custom duration</Text>
-      </View>
-
       {/* Preset Options – table style */}
-      <View className="rounded-lg overflow-hidden border border-gray-700">
+      <View className="rounded-lg overflow-hidden border border-gray-700 mb-4">
         {presets.map((preset, idx) => {
           const isSelected = selectedPreset === preset.value;
           const isLast = idx === presets.length - 1;
@@ -64,7 +56,7 @@ export default function CountdownConfig({ onConfigChange }: CountdownConfigProps
               key={preset.value}
               onPress={() => handlePresetSelect(preset.value)}
               className={`px-4 py-3 ${!isLast ? 'border-b border-gray-700' : ''} ${
-                isSelected ? 'bg-blue-600/20' : ''
+                isSelected ? 'bg-accent' : ''
               }`}
             >
               <Text
@@ -81,7 +73,7 @@ export default function CountdownConfig({ onConfigChange }: CountdownConfigProps
 
       {/* Custom Input */}
       <View>
-        <Text className="text-sm font-medium text-gray-100 mb-2">
+        <Text className="text-sm font-medium text-secondaryText mb-2">
           Or set custom duration
         </Text>
         <View className="flex-row items-center space-x-2">
@@ -91,9 +83,9 @@ export default function CountdownConfig({ onConfigChange }: CountdownConfigProps
             placeholder="30"
             placeholderTextColor="#888"
             keyboardType="numeric"
-            className="flex-1 p-3 border border-gray-700 rounded-lg bg-gray-800 text-gray-100"
+            className="flex-1 p-3 border border-gray-700 rounded-lg bg-gray-800 text-primaryText"
           />
-          <Text className="text-gray-300 font-medium">minutes</Text>
+          <Text className="text-secondaryText font-medium pl-2">minutes</Text>
         </View>
       </View>
     </View>

@@ -6,9 +6,10 @@ import { CancelSessionModal } from '@/components/modals/CancelSessionModal';
 import { router } from 'expo-router';
 import { useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import CategoryScrollViewCarousel from '@/components/record/CategoryScrollViewCarousel';
 import { useTimerBackground } from './useTimerBackground';
-import TimerControls from './TimerControls';
+import FloatingCategoryFAB from '../FloatingCategoryFAB';
+import FloatingTimerControls from '../FloatingTimerControls';
+import CategorySelectionModal from '../CategorySelectionModal';
 
 // Timer type from route
 type TimerType = 'stopwatch' | 'countdown' | 'pomo';
@@ -31,6 +32,7 @@ export default function TimerScreen({
   const [isLoading, setIsLoading] = useState(false);
   const [sessionStarted, setSessionStarted] = useState(false);
   const [pendingCategoryId, setPendingCategoryId] = useState<string | number | null>(null);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
   
   // Extract timer hook methods and state
   const { startTimer, pauseTimer, resumeTimer, stopTimer, cancelTimer, status, formatTime } = timerHook;
@@ -51,7 +53,25 @@ export default function TimerScreen({
     console.log("TimerScreen: handleFirstCategorySelect called with categoryId:", categoryId);
     setSessionStarted(true);
     setPendingCategoryId(categoryId);
+    setShowCategoryModal(false); // Close modal after selection
     console.log("TimerScreen: Set sessionStarted=true and pendingCategoryId=", categoryId);
+  };
+  
+  // Handler for category switch during session
+  const handleCategorySwitchDuringSession = async (categoryId: string | number) => {
+    console.log("TimerScreen: handleCategorySwitchDuringSession called with categoryId:", categoryId);
+    try {
+      await switchCategory(Number(categoryId));
+      setShowCategoryModal(false);
+      console.log("TimerScreen: Category switch completed during session");
+    } catch (error) {
+      console.error("TimerScreen: Error switching category during session:", error);
+    }
+  };
+  
+  // Handler for FAB press
+  const handleFABPress = () => {
+    setShowCategoryModal(true);
   };
   
   // For countdown and pomo, if there's a selectedCategoryId from route params, 
@@ -89,6 +109,15 @@ export default function TimerScreen({
       doSwitchCategory();
     }
   }, [sessionId, pendingCategoryId]); // Removed switchCategory from dependencies
+  
+  // Show modal automatically for initial category selection (stopwatch only)
+  useEffect(() => {
+    // For stopwatch timer without preselected category, show modal immediately
+    if (timerType === 'stopwatch' && !selectedCategoryId && !sessionId && !sessionStarted && !showCategoryModal) {
+      console.log("TimerScreen: Auto-showing category modal for initial selection");
+      setShowCategoryModal(true);
+    }
+  }, [timerType, selectedCategoryId, sessionId, sessionStarted, showCategoryModal]);
 
   return (
     <View className="flex-1" style={{ backgroundColor: categoryColor }}>
@@ -96,16 +125,14 @@ export default function TimerScreen({
       <View className="flex-1">
         {/* Cancel Button */}
         {(status === 'running' || status === 'paused') && (
-          <View className="px-10">
-            <Pressable 
+          <Pressable 
             onPress={() => setShowCancelModal(true)}
-            className=" absolute top-4 right-4 p-3 z-10 bg-black bg-opacity-20 rounded-full"
+            className="absolute top-12 right-6 p-3 z-10 bg-black bg-opacity-20 rounded-full"
             style={{ 
               shadowColor: '#000', 
-              shadowOffset: { width: 0, height: 2 }, 
-              shadowOpacity: 0.3, 
-              shadowRadius: 4,
-              
+              shadowOffset: { width: 0, height: 4 }, 
+              shadowOpacity: 0.25, 
+              shadowRadius: 8,
               width: 44,
               height: 44,
               alignItems: 'center',
@@ -114,54 +141,46 @@ export default function TimerScreen({
           >
             <Text className="text-white text-xl font-bold">✕</Text>
           </Pressable>
-
-          </View>
-          
         )}
 
-        {/* Timer Display - Top 50% */}
-        <View className="flex-1 justify-center items-center" style={{ flex: 0.5 }}>
+        {/* Timer Display - Full Screen */}
+        <View className="flex-1 justify-center items-center">
           {timerDisplayComponent}
         </View>
-
-        {/* Bottom Controls - Bottom 50% */}
-        <View className="bg-white rounded-[50px] px-6" style={{ flex: 0.7 }}>
-          <View className="flex-1">
-            {/* Category Carousel */}
-            <View style={{ height: 250}}>
-              <CategoryScrollViewCarousel 
-                sessionStarted={sessionStarted} 
-                onFirstCategorySelect={handleFirstCategorySelect}
-                onImmediateColorChange={handleInstantColorChange}
-              />
-            </View>
-            
-            {/* Control Buttons */}
-            {status !== 'idle' ? (
-              <TimerControls
-                status={status}
-                onPauseResume={() => {
-                  if (status === 'running') {
-                    pauseTimer();
-                  } else if (status === 'paused') {
-                    resumeTimer();
-                  }
-                }}
-                onStop={async () => {
-                  try {
-                    await stopTimer();
-                  } catch (error) {
-                    console.error("Timer stop error:", error);
-                  }
-                }}
-              />
-            ) : (
-              <View className="items-center mt-4">
-                <Text className="text-gray-400 text-sm font-medium">Select a category to start session</Text>
-              </View>
-            )}
-          </View>
-        </View>
+        
+        {/* Floating Category FAB */}
+        <FloatingCategoryFAB 
+          onPress={handleFABPress}
+          isSessionActive={isSessionActive}
+        />
+        
+        {/* Floating Timer Controls */}
+        <FloatingTimerControls
+          status={status}
+          onPauseResume={() => {
+            if (status === 'running') {
+              pauseTimer();
+            } else if (status === 'paused') {
+              resumeTimer();
+            }
+          }}
+          onStop={async () => {
+            try {
+              await stopTimer();
+            } catch (error) {
+              console.error("Timer stop error:", error);
+            }
+          }}
+        />
+        
+        {/* Category Selection Modal */}
+        <CategorySelectionModal
+          visible={showCategoryModal}
+          onClose={() => setShowCategoryModal(false)}
+          onCategorySelect={isSessionActive ? handleCategorySwitchDuringSession : handleFirstCategorySelect}
+          onImmediateColorChange={handleInstantColorChange}
+          isInitialSelection={!isSessionActive}
+        />
       </View>
       
       <CancelSessionModal

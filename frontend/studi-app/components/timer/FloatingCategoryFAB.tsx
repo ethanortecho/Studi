@@ -19,9 +19,10 @@ export default function FloatingCategoryFAB({ onPress, isSessionActive }: Floati
   };
   
   return (
-    <Pressable
+    <View>
+      <Pressable
       onPress={onPress}
-      className="absolute bottom-32 left-6 right-6 h-14 bg-background rounded-full items-center justify-center flex-row"
+      className="absolute bottom-32 left-14 right-14 h-20 bg-background rounded-full items-center justify-center flex-row"
       style={{ 
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
@@ -30,10 +31,13 @@ export default function FloatingCategoryFAB({ onPress, isSessionActive }: Floati
         elevation: 8
       }}
     >
-      <Text className="text-primaryText font-semibold text-base flex-1 text-center" numberOfLines={1} ellipsizeMode="tail">
+      <Text className="text-primaryText text-lg font-semibold  flex-1 ml-14" numberOfLines={1} ellipsizeMode="tail">
         {getFABText()}
       </Text>
-      <Text className="text-primaryText ml-2 text-base">↑</Text>
+      <Text className="text-primaryText mr-8 ">↑</Text>
     </Pressable>
+
+    </View>
+    
   );
 }

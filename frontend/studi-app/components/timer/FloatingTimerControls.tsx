@@ -12,12 +12,12 @@ export default function FloatingTimerControls({ status, onPauseResume, onStop, o
   // Always show controls
   
   return (
-    <View className="absolute bottom-16 left-6 right-6 flex-row justify-center items-end" style={{ gap: 16 }}>
+    <View className="absolute bottom-16 left-6 right-6 flex-row justify-center items-end" style={{ gap: 25 }}>
       {/* Cancel Button */}
       <View className="items-center">
         <Pressable 
           onPress={onCancel}
-          className="h-14 w-14 bg-surface rounded-full items-center justify-center"
+          className="h-20 w-20 bg-surface rounded-full items-center justify-center"
           style={{ 
             shadowColor: '#000', 
             shadowOffset: { width: 0, height: 4 }, 
@@ -35,7 +35,7 @@ export default function FloatingTimerControls({ status, onPauseResume, onStop, o
       <View className="items-center">
         <Pressable 
           onPress={onPauseResume}
-          className="h-14 w-14 bg-surface rounded-full items-center justify-center"
+          className="h-20 w-20 bg-surface rounded-full items-center justify-center"
           style={{ 
             shadowColor: '#000', 
             shadowOffset: { width: 0, height: 4 }, 
@@ -57,7 +57,7 @@ export default function FloatingTimerControls({ status, onPauseResume, onStop, o
       <View className="items-center">
         <Pressable 
           onPress={onStop}
-          className="h-14 w-14 bg-surface rounded-full items-center justify-center"
+          className="h-20 w-20 bg-surface rounded-full items-center justify-center"
           style={{ 
             shadowColor: '#000', 
             shadowOffset: { width: 0, height: 4 }, 

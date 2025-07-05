@@ -130,10 +130,13 @@ export default function TimerScreen({
         </View>
         
         {/* Floating Category FAB */}
-        <FloatingCategoryFAB 
-          onPress={handleFABPress}
-          isSessionActive={isSessionActive}
-        />
+        <View className="absolute bottom-32 left-20 right-20">
+          <FloatingCategoryFAB 
+            onPress={handleFABPress}
+            isSessionActive={isSessionActive}
+          />
+        </View>
+        
         
         {/* Floating Timer Controls */}
         <FloatingTimerControls

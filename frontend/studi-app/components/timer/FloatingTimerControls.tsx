@@ -12,7 +12,7 @@ export default function FloatingTimerControls({ status, onPauseResume, onStop, o
   // Always show controls
   
   return (
-    <View className="absolute bottom-16 left-6 right-6 flex-row justify-center items-end" style={{ gap: 25 }}>
+    <View className="flex-row justify-center items-end px-6 mb-14" style={{ gap: 25 }}>
       {/* Cancel Button */}
       <View className="items-center">
         <Pressable 

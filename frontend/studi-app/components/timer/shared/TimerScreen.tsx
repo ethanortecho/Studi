@@ -122,23 +122,15 @@ export default function TimerScreen({
   return (
     <View className={`flex-1 ${categoryColor ? '' : 'bg-background'}`} style={categoryColor ? { backgroundColor: categoryColor } : {}}>
       <StatusBar backgroundColor={categoryColor || 'transparent'} barStyle="light-content" />
-      <View className="flex-1">
+      {/* Main content stacked vertically */}
+      <SafeAreaView className="flex-1" edges={['bottom']}>
 
-        {/* Timer Display - Full Screen */}
+        {/* Timer Display - occupies remaining space */}
         <View className="flex-1 justify-center items-center">
           {timerDisplayComponent}
         </View>
-        
-        {/* Floating Category FAB */}
-        <View className="absolute bottom-32 left-20 right-20">
-          <FloatingCategoryFAB 
-            onPress={handleFABPress}
-            isSessionActive={isSessionActive}
-          />
-        </View>
-        
-        
-        {/* Floating Timer Controls */}
+
+        {/* Controls row */}
         <FloatingTimerControls
           status={status}
           onPauseResume={() => {
@@ -157,7 +149,16 @@ export default function TimerScreen({
           }}
           onCancel={() => setShowCancelModal(true)}
         />
-        
+
+        {/* Category FAB with a small top margin for spacing */}
+        <View className="mt-4">
+          <FloatingCategoryFAB 
+            onPress={handleFABPress}
+            isSessionActive={isSessionActive}
+            status={status}
+          />
+        </View>
+
         {/* Category Selection Modal */}
         <CategorySelectionModal
           visible={showCategoryModal}
@@ -169,8 +170,8 @@ export default function TimerScreen({
           onImmediateColorChange={handleInstantColorChange}
           isInitialSelection={!isSessionActive}
         />
-      </View>
-      
+      </SafeAreaView>
+       
       <CancelSessionModal
         visible={showCancelModal}
         onClose={() => setShowCancelModal(false)}

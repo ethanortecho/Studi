@@ -14,19 +14,20 @@ export default function FloatingCategoryFAB({ onPress, isSessionActive, status }
   // Find current category - both are numbers, so compare directly
   const currentCategory = categories.find(cat => Number(cat.id) === Number(currentCategoryId));
   
-  // Show text based on status
+  // Show text based on status - only show Paused or actual category name
   const getFABText = () => {
     if (status === 'paused') {
       return 'Paused';
     }
-    return currentCategory ? currentCategory.name : 'Select Subject';
+    // Always return the category name if available, otherwise empty string
+    return currentCategory?.name || '';
   };
   
   // Determine if FAB should be disabled
   const isDisabled = status === 'paused';
 
   return (
-    <View className="items-center">
+    <View className="items-center pb-20">
       <Pressable
         onPress={!isDisabled ? onPress : undefined}
         disabled={isDisabled}
@@ -50,11 +51,10 @@ export default function FloatingCategoryFAB({ onPress, isSessionActive, status }
         )}
       </Pressable>
 
-      {isDisabled && (
-        <Text className="mt-2 text-sm text-secondaryText text-center">
-          Resume to continue with your study session
-        </Text>
-      )}
+      {/* Always show subtitle text */}
+      <Text className="mt-2 text-sm text-primaryText text-center">
+        {isDisabled ? 'Resume to continue with your study session' : 'Tap to switch subject'}
+      </Text>
     </View>
   );
 }

@@ -46,13 +46,24 @@ export function useTimerBackground({
 
   // Instant color change handler (will be passed to carousel)
   const handleInstantColorChange = (categoryId: string | number) => {
-    const newColor = getCategoryColorById(categoryId);
-    setSelectedPreviewColor(newColor);
+    if (categoryId === '' || categoryId === null || categoryId === undefined) {
+      // Reset preview color
+      setSelectedPreviewColor(null);
+    } else {
+      const newColor = getCategoryColorById(categoryId);
+      setSelectedPreviewColor(newColor);
+    }
+  };
+
+  // Reset preview color function
+  const resetPreviewColor = () => {
+    setSelectedPreviewColor(null);
   };
 
   return {
     categoryColor,
     handleInstantColorChange,
+    resetPreviewColor,
     selectedPreviewColor
   };
 } 

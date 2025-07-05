@@ -225,7 +225,7 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
       if (activeSessionId) {
         const res = await createCategoryBlock(String(activeSessionId), String(newCategoryId), new Date());
         setCurrentCategoryBlockId(res.id);
-        setCurrentCategoryId(newCategoryId);
+        setCurrentCategoryId(Number(newCategoryId));
         // Clear paused category when switching to a new category
         setPausedCategoryId(null);
         return res;

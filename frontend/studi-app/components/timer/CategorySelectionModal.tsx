@@ -46,20 +46,16 @@ export default function CategorySelectionModal({
     onCategorySelect(categoryId);
   };
   
-  const handleCategoryPreview = (color: string) => {
-    setPreviewColor(color);
+  const handleCategoryPreview = (categoryId: string | number) => {
     if (onImmediateColorChange) {
-      onImmediateColorChange(color);
+      onImmediateColorChange(categoryId);
     }
   };
   
   const handleModalClose = () => {
     // Reset preview color when closing without selection
     setPreviewColor(null);
-    if (onImmediateColorChange) {
-      // Reset to default/current category color
-      onImmediateColorChange(''); // Empty string will trigger default color logic
-    }
+    // Don't call onImmediateColorChange - let useTimerBackground handle default logic
     onClose();
   };
   
@@ -133,7 +129,7 @@ export default function CategorySelectionModal({
                 <Pressable
                   key={category.id}
                   onPress={() => handleCategoryPress(category.id)}
-                  onPressIn={() => handleCategoryPreview(category.color)}
+                  onPressIn={() => handleCategoryPreview(category.id)}
                   className={`p-4 rounded-xl mb-3 flex-row items-center justify-between ${isSelected ? 'border-2' : 'border border-gray-200'}`}
                   style={{ 
                     backgroundColor: isSelected ? `${category.color}20` : 'white',

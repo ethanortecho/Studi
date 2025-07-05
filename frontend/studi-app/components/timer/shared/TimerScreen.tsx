@@ -38,7 +38,7 @@ export default function TimerScreen({
   const { startTimer, pauseTimer, resumeTimer, stopTimer, cancelTimer, status, formatTime } = timerHook;
   
   // Use shared background color logic
-  const { categoryColor, handleInstantColorChange } = useTimerBackground({
+  const { categoryColor, handleInstantColorChange, resetPreviewColor } = useTimerBackground({
     selectedCategoryId,
     categories,
     getCurrentCategoryColor: useContext(StudySessionContext).getCurrentCategoryColor
@@ -176,7 +176,10 @@ export default function TimerScreen({
         {/* Category Selection Modal */}
         <CategorySelectionModal
           visible={showCategoryModal}
-          onClose={() => setShowCategoryModal(false)}
+          onClose={() => {
+            resetPreviewColor();
+            setShowCategoryModal(false);
+          }}
           onCategorySelect={isSessionActive ? handleCategorySwitchDuringSession : handleFirstCategorySelect}
           onImmediateColorChange={handleInstantColorChange}
           isInitialSelection={!isSessionActive}

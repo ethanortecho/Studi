@@ -32,7 +32,7 @@ export default function TimerControls({ status, onPauseResume, onStop }: TimerCo
         </Pressable>
       )}
 
-      <Pressable 
+      <Pressable 1
         onPress={onPauseResume}
         className="h-12 w-12 bg-transparent border-2 border-primary rounded-full items-center justify-center"
         style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 }}

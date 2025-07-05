@@ -273,9 +273,9 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
   const getCurrentCategoryColor = () => {
     if (currentCategoryId) {
       const category = categories.find(cat => Number(cat.id) === Number(currentCategoryId));
-      return category?.color || '#E5E7EB';
+      return category?.color || null;
     }
-    return '#E5E7EB'; // Default gray if no category selected
+    return null; // Return null to let TimerScreen use theme background
   };
 
   return (

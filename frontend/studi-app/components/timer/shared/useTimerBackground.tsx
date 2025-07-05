@@ -17,7 +17,7 @@ export function useTimerBackground({
   // Synchronous color lookup function
   const getCategoryColorById = (categoryId: string | number) => {
     const category = categories.find(cat => Number(cat.id) === Number(categoryId));
-    return category?.color || '#E5E7EB';
+    return category?.color || '#E5E7EB'; // Keep gray as fallback for now
   };
 
   // Updated background color logic with instant preview priority
@@ -29,17 +29,17 @@ export function useTimerBackground({
     
     // 2. Use current session category color
     const currentColor = getCurrentCategoryColor();
-    if (currentColor !== '#E5E7EB') {
+    if (currentColor && currentColor !== '#E5E7EB') {
       return currentColor;
     }
     
     // 3. Fallback: use selected category color from route params
     if (selectedCategoryId) {
       const selectedCategory = categories.find(cat => Number(cat.id) === Number(selectedCategoryId));
-      return selectedCategory?.color || '#E5E7EB';
+      return selectedCategory?.color || null;
     }
     
-    return '#E5E7EB'; // Default gray
+    return null; // Return null to indicate use default theme background
   };
 
   const categoryColor = getBackgroundColor();

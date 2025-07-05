@@ -1,5 +1,5 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
-import { View, Text, Modal, Pressable, ScrollView, Animated, Dimensions } from 'react-native';
+import React, { useContext } from 'react';
+import { View, Text, Modal, Pressable, ScrollView } from 'react-native';
 import { StudySessionContext } from '@/context/StudySessionContext';
 
 interface CategorySelectionModalProps {
@@ -10,8 +10,6 @@ interface CategorySelectionModalProps {
   isInitialSelection?: boolean;
 }
 
-const { height: screenHeight } = Dimensions.get('window');
-
 export default function CategorySelectionModal({ 
   visible, 
   onClose, 
@@ -20,26 +18,6 @@ export default function CategorySelectionModal({
   isInitialSelection = false 
 }: CategorySelectionModalProps) {
   const { categories, currentCategoryId } = useContext(StudySessionContext);
-  const slideAnim = useRef(new Animated.Value(screenHeight)).current;
-  const [previewColor, setPreviewColor] = useState<string | null>(null);
-  
-  useEffect(() => {
-    if (visible) {
-      // Slide up animation
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }).start();
-    } else {
-      // Slide down animation
-      Animated.timing(slideAnim, {
-        toValue: screenHeight,
-        duration: 250,
-        useNativeDriver: true,
-      }).start();
-    }
-  }, [visible]);
   
   const handleCategoryPress = (categoryId: string | number) => {
     console.log('CategorySelectionModal: Category selected:', categoryId);
@@ -53,9 +31,6 @@ export default function CategorySelectionModal({
   };
   
   const handleModalClose = () => {
-    // Reset preview color when closing without selection
-    setPreviewColor(null);
-    // Don't call onImmediateColorChange - let useTimerBackground handle default logic
     onClose();
   };
   
@@ -77,29 +52,18 @@ export default function CategorySelectionModal({
     <Modal
       visible={visible}
       transparent={true}
-      animationType="none"
+      animationType="slide"
       onRequestClose={handleModalClose}
     >
       {/* Backdrop */}
       <Pressable 
-        className="flex-1 bg-black bg-opacity-50"
+        className="flex-1 bg-transparent justify-end"
         onPress={handleModalClose}
       >
         {/* Modal Content */}
-        <Animated.View
-          style={[
-            {
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              backgroundColor: 'white',
-              borderTopLeftRadius: 24,
-              borderTopRightRadius: 24,
-              maxHeight: screenHeight * 0.7,
-              transform: [{ translateY: slideAnim }],
-            }
-          ]}
+        <Pressable
+          className="bg-surface rounded-t-3xl max-h-[70vh]"
+          onPress={() => {}} // Prevent modal close when tapping content
         >
           {/* Handle Bar */}
           <View className="items-center py-3">
@@ -108,10 +72,10 @@ export default function CategorySelectionModal({
           
           {/* Header */}
           <View className="px-6 pb-4">
-            <Text className="text-xl font-bold text-gray-900 mb-2">
+            <Text className="text-xl font-bold text-primaryText mb-2">
               {getHeaderText()}
             </Text>
-            <Text className="text-sm text-gray-600">
+            <Text className="text-sm text-secondaryText">
               {getSubHeaderText()}
             </Text>
           </View>
@@ -132,8 +96,8 @@ export default function CategorySelectionModal({
                   onPressIn={() => handleCategoryPreview(category.id)}
                   className={`p-4 rounded-xl mb-3 flex-row items-center justify-between ${isSelected ? 'border-2' : 'border border-gray-200'}`}
                   style={{ 
-                    backgroundColor: isSelected ? `${category.color}20` : 'white',
-                    borderColor: isSelected ? category.color : '#E5E7EB',
+                    backgroundColor: isSelected ? `${category.color}20` : 'rgb(var(--color-surface))',
+                    borderColor: isSelected ? category.color : 'rgb(var(--color-border) / 0.2)',
                     shadowColor: '#000',
                     shadowOffset: { width: 0, height: 1 },
                     shadowOpacity: 0.1,
@@ -149,7 +113,7 @@ export default function CategorySelectionModal({
                     />
                     
                     {/* Category Name */}
-                    <Text className={`font-medium ${isSelected ? 'text-gray-900' : 'text-gray-700'}`}>
+                    <Text className={`font-medium ${isSelected ? 'text-primaryText' : 'text-secondaryText'}`}>
                       {category.name}
                     </Text>
                   </View>
@@ -164,7 +128,7 @@ export default function CategorySelectionModal({
               );
             })}
           </ScrollView>
-        </Animated.View>
+        </Pressable>
       </Pressable>
     </Modal>
   );

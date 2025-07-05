@@ -120,28 +120,9 @@ export default function TimerScreen({
   }, [timerType, selectedCategoryId, sessionId, sessionStarted, showCategoryModal]);
 
   return (
-    <View className="flex-1" style={{ backgroundColor: categoryColor }}>
-      <StatusBar backgroundColor={categoryColor} barStyle="light-content" />
+    <View className={`flex-1 ${categoryColor ? '' : 'bg-background'}`} style={categoryColor ? { backgroundColor: categoryColor } : {}}>
+      <StatusBar backgroundColor={categoryColor || 'transparent'} barStyle="light-content" />
       <View className="flex-1">
-        {/* Cancel Button */}
-        {(status === 'running' || status === 'paused') && (
-          <Pressable 
-            onPress={() => setShowCancelModal(true)}
-            className="absolute top-12 right-6 p-3 z-10 bg-black bg-opacity-20 rounded-full"
-            style={{ 
-              shadowColor: '#000', 
-              shadowOffset: { width: 0, height: 4 }, 
-              shadowOpacity: 0.25, 
-              shadowRadius: 8,
-              width: 44,
-              height: 44,
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            <Text className="text-white text-xl font-bold">✕</Text>
-          </Pressable>
-        )}
 
         {/* Timer Display - Full Screen */}
         <View className="flex-1 justify-center items-center">
@@ -171,6 +152,7 @@ export default function TimerScreen({
               console.error("Timer stop error:", error);
             }
           }}
+          onCancel={() => setShowCancelModal(true)}
         />
         
         {/* Category Selection Modal */}

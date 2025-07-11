@@ -188,11 +188,7 @@ class WeeklyInsights(APIView):
         daily_breakdown = StudyAnalytics.get_aggregates_in_range(user, start_date, end_date, timeframe='daily')
         session_times = StudyAnalytics.get_weekly_session_times(user, start_date, end_date)
 
-        # Calculate average session duration in hours
-        total_sessions = sum(day.session_count for day in daily_breakdown)
-        
-        # Calculate average break duration in hours
-        all_breaks = StudyAnalytics.get_all_breaks_in_range(user, start_date, end_date)
+      
        
 
         # Ensure all days of the week are represented
@@ -272,19 +268,19 @@ class MonthlyInsights(APIView):
             weekly_breakdown.append({
                 'start_date': aggregate.start_date,
                 'end_date': aggregate.end_date,
-                'total_duration': round(aggregate.total_duration.total_seconds() / 3600, 2),
+                'total_duration': round(aggregate.total_duration / 3600, 2),
                 'category_durations': aggregate.category_durations
             })
 
         # Calculate average session duration in hours
         total_sessions = monthly_aggregate.session_count
         avg_session_duration = (
-            monthly_aggregate.total_duration.total_seconds() / 3600 / total_sessions
+            monthly_aggregate.total_duration / 3600 / total_sessions
         ) if total_sessions > 0 else 0
 
         response_data = {
             'statistics': {
-                'total_hours': monthly_aggregate.total_duration.total_seconds() / 3600,
+                'total_hours': monthly_aggregate.total_duration / 3600,
                 'total_sessions': total_sessions
             },
             'monthly_aggregate': AggregateSerializer(monthly_aggregate).data,

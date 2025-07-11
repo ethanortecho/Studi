@@ -1,28 +1,35 @@
 import React from 'react';
-import { ThemedText } from '../../../components/ThemedText';
-import { ThemedView } from '../../../components/ThemedView';
-import { StyleSheet, View, ScrollView, Text } from 'react-native';
-import { Colors } from '@/constants/Colors';
+import { View, ScrollView, Text } from 'react-native';
 import DebugDataViewer from '@/components/analytics/DebugDataViewer';
-import TotalHours from '@/components/analytics/TotalHoursContainer';
-import Legend from '@/components/analytics/DashboardLegend';
-import DashboardCard from '@/components/insights/DashboardContainer';
+import MultiChartContainer from '@/components/analytics/MultiChartContainer';
 import { CategoryMetadata } from '@/types/api';
 
 interface MonthlyDashboardProps {
-  totalHours: string;
+  totalHours: number;
+  totalTime: { hours: number; minutes: number };
+  percentGoal: number | null;
   categoryDurations?: { [key: string]: number };
   categoryMetadata?: { [key: string]: CategoryMetadata };
+  pieChartData?: Array<{ label: string; value: number; color: string }>;
+  dailyBreakdown?: Array<{ date: string; total_duration: number; category_durations: { [key: string]: number } }>;
+  heatmapData?: { [date: string]: number };
   rawData?: any;
   loading: boolean;
+  isEmpty: boolean;
 }
 
 export default function MonthlyDashboard({
   totalHours,
+  totalTime,
+  percentGoal,
   categoryDurations,
   categoryMetadata,
+  pieChartData,
+  dailyBreakdown,
+  heatmapData,
   rawData,
-  loading
+  loading,
+  isEmpty
 }: MonthlyDashboardProps) {
   if (loading) {
     return (
@@ -33,78 +40,35 @@ export default function MonthlyDashboard({
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollContent}>
-      <View style={styles.container}>
-        {/* Off-white container for dashboard content */}
-        <View className="bg-layout-off-white rounded-3xl mx-4 mb-4 px-3 py-4">
-          
-          {/* Legend */}
-          <View className="p-4 pb-0">
-            <DashboardCard>
-              {categoryDurations && categoryMetadata && (
-                <Legend
-                  category_durations={categoryDurations}
-                  category_metadata={categoryMetadata}
-                />
-              )}
-            </DashboardCard>
-          </View>
-
-          {/* Total Hours */}
-          <View className="px-4 pb-4">
-            <View className="bg-layout-grey-blue rounded-lg p-4">
-              <TotalHours totalHours={totalHours} />
-            </View>
-          </View>
-
-          {/* Placeholder for additional monthly content */}
-          <View className="px-4 pb-4">
-            <ThemedView style={styles.messageContainer}>
-              <ThemedText style={styles.messageText}>
-                Additional monthly analytics coming soon...
-              </ThemedText>
-            </ThemedView>
-          </View>
-        </View>
-        
-        {/* Debug Data Viewer */}
-        <View style={styles.debugContainer}>
-          {rawData && (
-            <DebugDataViewer 
-              data={rawData} 
-              label="Monthly Dashboard Raw Data" 
-            />
-          )}
-        </View>
+    <ScrollView 
+      className="flex-1" 
+      contentContainerStyle={{ paddingBottom: 30 }}
+      showsVerticalScrollIndicator={false}
+    >
+      <View className="mx-4 mb-4">
+        <MultiChartContainer 
+          timeframe="monthly"
+          categoryMetadata={categoryMetadata || {}}
+          categoryDurations={categoryDurations || {}}
+          pieChartData={pieChartData || []}
+          monthlyChartData={dailyBreakdown}
+          totalTime={totalTime}
+          percentGoal={percentGoal}
+          isEmpty={isEmpty}
+          showTitle={false}
+        />
+      </View>
+      
+      {/* Debug Data Viewer */}
+      <View className="mb-5 px-4">
+        {rawData && (
+          <DebugDataViewer 
+            data={rawData} 
+            label="Monthly Dashboard Raw Data" 
+          />
+        )}
       </View>
     </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-    scrollContent: {
-        flexGrow: 1,
-        paddingBottom: 30,
-    },
-    container: {
-        flex: 1,
-        padding: 16,
-    },
-    messageContainer: {
-        backgroundColor: Colors.light.surface,
-        padding: 20,
-        borderRadius: 8,
-        marginBottom: 20,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    messageText: {
-        fontSize: 16,
-        fontWeight: '500',
-    },
-    debugContainer: {
-        marginTop: 10,
-        marginBottom: 20,
-        width: '100%',
-    }
-});

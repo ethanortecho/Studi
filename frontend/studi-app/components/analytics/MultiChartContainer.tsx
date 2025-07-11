@@ -4,6 +4,7 @@ import DashboardCard from '@/components/insights/DashboardContainer';
 import CustomPieChart from '@/components/analytics/charts/CustomPieChart';
 import Legend from '@/components/analytics/DashboardLegend';
 import WeeklyBarChart from '@/components/analytics/charts/WeeklyBarchart';
+import MonthlyBarChart from '@/components/analytics/charts/MonthlyBarchart';
 import SessionBarchart from './charts/SessionBarchart';
 import { CategoryMetadata, TimelineSession } from '@/types/api';
 import PagedCarousel from '@/components/navigation/PagedCarousel';
@@ -11,7 +12,7 @@ import PagedCarousel from '@/components/navigation/PagedCarousel';
 
 interface MultiChartContainerProps {
     // Required for all views
-    timeframe: 'daily' | 'weekly';
+    timeframe: 'daily' | 'weekly' | 'monthly';
     categoryMetadata: { [key: string]: CategoryMetadata }
     categoryDurations: { [key: string]: number };
     
@@ -23,6 +24,9 @@ interface MultiChartContainerProps {
     
     // Weekly-specific data  
     weeklyChartData?: { [date: string]: { total: number; categories: { [key: string]: number } } };
+    
+    // Monthly-specific data
+    monthlyChartData?: Array<{ date: string; total_duration: number; category_durations: { [key: string]: number } }>;
     
     // Optional customization
     defaultChart?: 'pie' | 'sessions' | 'bar';
@@ -45,7 +49,7 @@ type ChartType = 'pie' | 'sessions' | 'bar';
 interface ChartData {
     pie: Array<{ label: string; value: number; color: string }>;
     sessions: { timelineData?: TimelineSession[]; categoryMetadata: { [key: string]: CategoryMetadata } };
-    bar: { [date: string]: { total: number; categories: { [key: string]: number } } } | undefined;
+    bar: { [date: string]: { total: number; categories: { [key: string]: number } } } | Array<{ date: string; total_duration: number; category_durations: { [key: string]: number } }> | undefined;
 }
 
 export default function MultiChartContainer({ 
@@ -55,6 +59,7 @@ export default function MultiChartContainer({
     timeframe, 
     pieChartData, 
     weeklyChartData,
+    monthlyChartData,
     defaultChart = 'pie',
     showTitle = true,
     title = "Chart Analysis",
@@ -84,6 +89,8 @@ export default function MultiChartContainer({
 
         const hasWeeklyData = hasAnyData && timeframe === 'weekly' && weeklyChartData && Object.keys(weeklyChartData).length > 0;
 
+        const hasMonthlyData = hasAnyData && timeframe === 'monthly' && monthlyChartData && monthlyChartData.length > 0;
+
         return {
             pie: {
                 title: 'Subject Breakdown',
@@ -98,20 +105,20 @@ export default function MultiChartContainer({
                 show: timeframe === 'daily'
             },
             bar: {
-                title: 'Weekly Trends',
-                available: hasWeeklyData,
-                label: 'Weekly Trends',
-                show: timeframe === 'weekly'
+                title: timeframe === 'weekly' ? 'Weekly Trends' : 'Monthly Trends',
+                available: hasWeeklyData || hasMonthlyData,
+                label: timeframe === 'weekly' ? 'Weekly Trends' : 'Monthly Trends',
+                show: timeframe === 'weekly' || timeframe === 'monthly'
             }
         };
-    }, [timeframe, pieChartData, timelineData, weeklyChartData, hasAnyData]);
+    }, [timeframe, pieChartData, timelineData, weeklyChartData, monthlyChartData, hasAnyData]);
 
     // ✅ Memoize chart data for each type
     const chartData = useMemo<ChartData>(() => ({
         pie: pieChartData,
         sessions: { timelineData, categoryMetadata },
-        bar: weeklyChartData
-    }), [pieChartData, timelineData, categoryMetadata, weeklyChartData]);
+        bar: timeframe === 'weekly' ? weeklyChartData : monthlyChartData
+    }), [pieChartData, timelineData, categoryMetadata, weeklyChartData, monthlyChartData, timeframe]);
 
     // 🚦 Single indicator: if all category durations are zero, treat as empty day
     const noChartAvailable = typeof isEmpty === 'boolean' ? isEmpty : !hasAnyData;
@@ -139,7 +146,7 @@ export default function MultiChartContainer({
     return (
         <DashboardCard className="bg-surface rounded-[35px] ">
             {/* Stats Banner */}
-            {!noChartAvailable && totalTime && percentGoal != null && (
+            {!noChartAvailable && totalTime && (
                 <View className="flex-row justify-between px-6 pt-6">
                     {/* Total Time */}
                     <View>
@@ -152,11 +159,13 @@ export default function MultiChartContainer({
                         <Text className="text-secondaryText text-md">Study Time</Text>
                     </View>
 
-                    {/* Percent to Goal */}
-                    <View className="items-end">
-                        <Text className="text-primaryText text-2xl font-bold">{percentGoal}%</Text>
-                        <Text className="text-secondaryText text-md">to goal</Text>
-                    </View>
+                    {/* Percent to Goal (only show if percentGoal exists) */}
+                    {percentGoal != null && (
+                        <View className="items-end">
+                            <Text className="text-primaryText text-2xl font-bold">{percentGoal}%</Text>
+                            <Text className="text-secondaryText text-md">to goal</Text>
+                        </View>
+                    )}
                 </View>
             )}
 
@@ -170,7 +179,7 @@ export default function MultiChartContainer({
             <View className="items-center justify-center" style={{ height: chartContainerHeight }}>
                 {noChartAvailable ? (
                     <Text className="text-md text-secondaryText">
-                        {`No data available for this ${timeframe === 'weekly' ? 'week' : 'day'}.`}
+                        {`No data available for this ${timeframe === 'weekly' ? 'week' : timeframe === 'monthly' ? 'month' : 'day'}.`}
                     </Text>
                 ) : (
                     <PagedCarousel
@@ -200,10 +209,17 @@ export default function MultiChartContainer({
                                 case 'bar':
                                     return (
                                         <View className="flex-row items-end justify-center h-full" style={{ width: PAGE_WIDTH }}>
-                                            <WeeklyBarChart 
-                                                data={chartData.bar!}
-                                                categoryMetadata={categoryMetadata} 
-                                            />
+                                            {timeframe === 'weekly' ? (
+                                                <WeeklyBarChart 
+                                                    data={chartData.bar as { [date: string]: { total: number; categories: { [key: string]: number } } }}
+                                                    categoryMetadata={categoryMetadata} 
+                                                />
+                                            ) : (
+                                                <MonthlyBarChart 
+                                                    data={chartData.bar as Array<{ date: string; total_duration: number; category_durations: { [key: string]: number } }>}
+                                                    categoryMetadata={categoryMetadata} 
+                                                />
+                                            )}
                                         </View>
                                     );
                                 default:

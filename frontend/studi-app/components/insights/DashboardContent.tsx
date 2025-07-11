@@ -8,15 +8,18 @@ import Animated, {
 } from 'react-native-reanimated';
 import DailyDashboard from '@/app/screens/Insights/DailyDashboard';
 import WeeklyDashboard from '@/app/screens/Insights/WeeklyDashboard';
+import MonthlyDashboard from '@/app/screens/Insights/MonthlyDashboard';
 import { DashboardSkeleton } from './SkeletonLoader';
 
 interface DashboardContentProps {
     selectedTab: string;
     dailyDate?: Date;
     weeklyDate?: Date;
+    monthlyDate?: Date;
     daily: any;
     weekly: any;
-    loading: { daily: boolean; weekly: boolean };
+    monthly: any;
+    loading: { daily: boolean; weekly: boolean; monthly: boolean };
 }
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -26,8 +29,10 @@ export default function DashboardContent({
     selectedTab, 
     dailyDate, 
     weeklyDate,
+    monthlyDate,
     daily,
     weekly,
+    monthly,
     loading
 }: DashboardContentProps) {
     const renderCount = useRef(0);
@@ -36,7 +41,8 @@ export default function DashboardContent({
     DEBUG_DASHBOARD && console.log(`🔄 DashboardContent: Render #${renderCount.current}`, {
         selectedTab,
         dailyDate: dailyDate?.toISOString().split('T')[0],
-        weeklyDate: weeklyDate?.toISOString().split('T')[0]
+        weeklyDate: weeklyDate?.toISOString().split('T')[0],
+        monthlyDate: monthlyDate?.toISOString().split('T')[0]
     });
 
     // Animation values
@@ -47,7 +53,7 @@ export default function DashboardContent({
         DEBUG_DASHBOARD && console.log('🎬 DashboardContent: Tab animation triggered for:', selectedTab);
         const animationStart = performance.now();
         
-        const targetPosition = selectedTab === 'daily' ? 0 : -screenWidth;
+        const targetPosition = selectedTab === 'daily' ? 0 : selectedTab === 'weekly' ? -screenWidth : -screenWidth * 2;
         translateX.value = withTiming(targetPosition, {
             duration: 300,
             easing: Easing.out(Easing.cubic),
@@ -63,13 +69,15 @@ export default function DashboardContent({
         };
     });
 
-    const renderDashboardContent = (type: 'daily' | 'weekly') => {
+    const renderDashboardContent = (type: 'daily' | 'weekly' | 'monthly') => {
         DEBUG_DASHBOARD && console.log(`🎯 DashboardContent: Rendering ${type} dashboard...`);
         const renderStart = performance.now();
         
         const isDaily = type === 'daily';
-        const data = isDaily ? daily : weekly;
-        const isLoading = isDaily ? loading.daily : loading.weekly;
+        const isWeekly = type === 'weekly';
+        const isMonthly = type === 'monthly';
+        const data = isDaily ? daily : isWeekly ? weekly : monthly;
+        const isLoading = isDaily ? loading.daily : isWeekly ? loading.weekly : loading.monthly;
 
         DEBUG_DASHBOARD && console.log(`📊 DashboardContent: ${type} dashboard state:`, {
             isLoading,
@@ -101,7 +109,7 @@ export default function DashboardContent({
             );
             DEBUG_DASHBOARD && console.log(`⏱️ DashboardContent: Daily dashboard render took ${(performance.now() - renderStart).toFixed(2)}ms`);
             return dashboardRender;
-        } else if (!isDaily && weekly) {
+        } else if (isWeekly && weekly) {
             const dashboardRender = (
                 <WeeklyDashboard 
                     totalHours={weekly.totalHours || '0.00'}
@@ -120,6 +128,24 @@ export default function DashboardContent({
             );
             DEBUG_DASHBOARD && console.log(`⏱️ DashboardContent: Weekly dashboard render took ${(performance.now() - renderStart).toFixed(2)}ms`);
             return dashboardRender;
+        } else if (isMonthly && monthly) {
+            const dashboardRender = (
+                <MonthlyDashboard 
+                    totalHours={monthly.totalHours || 0}
+                    totalTime={monthly.totalTime}
+                    categoryDurations={monthly.categoryDurations}
+                    categoryMetadata={monthly.categoryMetadata}
+                    pieChartData={monthly.pieChartData}
+                    dailyBreakdown={monthly.dailyBreakdown}
+                    heatmapData={monthly.heatmapData}
+                    rawData={monthly.rawData}
+                    loading={false}
+                    percentGoal={monthly.percentGoal}
+                    isEmpty={monthly.isEmpty}
+                />
+            );
+            DEBUG_DASHBOARD && console.log(`⏱️ DashboardContent: Monthly dashboard render took ${(performance.now() - renderStart).toFixed(2)}ms`);
+            return dashboardRender;
         }
 
         DEBUG_DASHBOARD && console.log(`⚠️ DashboardContent: ${type} dashboard returned null`);
@@ -133,7 +159,7 @@ export default function DashboardContent({
             <Animated.View 
                 style={[animatedStyle, { 
                     flexDirection: 'row', 
-                    width: screenWidth * 2,
+                    width: screenWidth * 3,
                     flex: 1
                 }]}
             >
@@ -145,6 +171,11 @@ export default function DashboardContent({
                 {/* Weekly Dashboard */}
                 <View style={{ width: screenWidth, flex: 1 }}>
                     {renderDashboardContent('weekly')}
+                </View>
+                
+                {/* Monthly Dashboard */}
+                <View style={{ width: screenWidth, flex: 1 }}>
+                    {renderDashboardContent('monthly')}
                 </View>
             </Animated.View>
         </View>

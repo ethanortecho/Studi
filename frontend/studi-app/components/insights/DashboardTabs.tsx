@@ -3,7 +3,8 @@ import { Text, View, Pressable } from 'react-native';
 import DashboardContent from './DashboardContent';
 import DailyNavigator from './DailyNavigator';
 import WeeklyNavigator from './WeeklyNavigator';
-import { getDefaultDate, getWeekStart, navigateWeek } from '@/utils/dateUtils';
+import MonthlyNavigator from './MonthlyNavigator';
+import { getDefaultDate, getWeekStart, navigateWeek, getMonthStart } from '@/utils/dateUtils';
 import { useDashboardData } from '@/hooks/useDashboardData';
 
 interface DashboardTabsProps {
@@ -21,19 +22,26 @@ export default function DashboardTabs({ onDataChange }: DashboardTabsProps) {
     // Weekly view state
     const [weeklyDate, setWeeklyDate] = useState(getDefaultDate('weekly'));
 
+    // Monthly view state
+    const [monthlyDate, setMonthlyDate] = useState(getMonthStart(today));
+
     // Get dashboard data
-    const { daily, weekly, loading, weekDaily } = useDashboardData({ dailyDate: selectedDailyDate, weeklyDate });
+    const { daily, weekly, monthly, loading, weekDaily } = useDashboardData({ 
+        dailyDate: selectedDailyDate, 
+        weeklyDate,
+        monthlyDate 
+    });
 
     // Expose current tab's data to parent
     React.useEffect(() => {
-        const currentData = selectedTab === 'daily' ? daily : weekly;
+        const currentData = selectedTab === 'daily' ? daily : selectedTab === 'weekly' ? weekly : monthly;
         if (currentData && onDataChange) {
             onDataChange({
                 totalTime: currentData.totalTime,
                 totalHours: currentData.totalHours
             });
         }
-    }, [selectedTab, daily, weekly, onDataChange]);
+    }, [selectedTab, daily, weekly, monthly, onDataChange]);
 
     const handleDailyWeekNavigation = (direction: 'prev' | 'next') => {
         setDailyWeekStart(current => {
@@ -71,10 +79,18 @@ export default function DashboardTabs({ onDataChange }: DashboardTabsProps) {
                             Weekly
                         </Text>
                     </Pressable>
+                    <Pressable 
+                        onPress={() => setSelectedTab('monthly')} 
+                        className={`flex-1 items-center py-2 px-4 rounded-2xl ${selectedTab === 'monthly' ? 'bg-accent' : ''}`}
+                    >
+                        <Text className={`font-bold text-xl ${selectedTab === 'monthly' ? 'text-primaryText' : 'text-secondaryText'}`}>
+                            Monthly
+                        </Text>
+                    </Pressable>
                 </View>
             </View>
 
-            {/* Date / Week Navigation */}
+            {/* Date / Week / Month Navigation */}
             {selectedTab === 'daily' ? (
                 <DailyNavigator
                     weekStart={dailyWeekStart}
@@ -83,10 +99,15 @@ export default function DashboardTabs({ onDataChange }: DashboardTabsProps) {
                     onNavigate={handleDailyWeekNavigation}
                     hasData={weekDaily?.hasData}
                 />
-            ) : (
+            ) : selectedTab === 'weekly' ? (
                 <WeeklyNavigator
                     selectedWeekStart={weeklyDate}
                     onSelect={(date) => setWeeklyDate(date)}
+                />
+            ) : (
+                <MonthlyNavigator
+                    selectedMonth={monthlyDate}
+                    onSelect={(date) => setMonthlyDate(date)}
                 />
             )}
             
@@ -95,8 +116,10 @@ export default function DashboardTabs({ onDataChange }: DashboardTabsProps) {
                 selectedTab={selectedTab}
                 dailyDate={selectedDailyDate}
                 weeklyDate={weeklyDate}
+                monthlyDate={monthlyDate}
                 daily={daily}
                 weekly={weekly}
+                monthly={monthly}
                 loading={loading}
             />
         </View>

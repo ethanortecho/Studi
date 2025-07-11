@@ -1,26 +1,29 @@
 import { useEffect, useMemo, useState } from 'react';
 import useAggregateData from '@/utils/fetchApi';
 import { parseCategoryDurations, ParseStudyTrends, secondsToHours, secondsToHoursAndMinutes, filterBreakCategory, filterBreakFromDailyBreakdown } from '@/utils/parseData';
-import { DailyInsightsResponse, WeeklyInsightsResponse } from '@/types/api';
-import { formatDateForAPI, getWeekEnd, getWeekStart, navigateDate, getWeekDays } from '@/utils/dateUtils';
+import { DailyInsightsResponse, WeeklyInsightsResponse, MonthlyInsightsResponse } from '@/types/api';
+import { formatDateForAPI, getWeekEnd, getWeekStart, navigateDate, getWeekDays, getMonthStart, getMonthEnd } from '@/utils/dateUtils';
 import { useGoalForWeek } from '@/hooks/useGoalForWeek';
 
 interface UseDashboardDataParams {
     dailyDate?: Date;
     weeklyDate?: Date;
+    monthlyDate?: Date;
 }
 
 // Toggle for verbose dashboard logging
 const DEBUG_DASHBOARD = false;
 
-export function useDashboardData({ dailyDate, weeklyDate }: UseDashboardDataParams = {}) {
+export function useDashboardData({ dailyDate, weeklyDate, monthlyDate }: UseDashboardDataParams = {}) {
     DEBUG_DASHBOARD && console.log('🔄 useDashboardData: Hook called with dates:', { 
         dailyDate: dailyDate?.toISOString().split('T')[0], 
-        weeklyDate: weeklyDate?.toISOString().split('T')[0] 
+        weeklyDate: weeklyDate?.toISOString().split('T')[0],
+        monthlyDate: monthlyDate?.toISOString().split('T')[0] 
     });
     
     const [dailyData, setDailyData] = useState<DailyInsightsResponse | null>(null);
     const [weeklyData, setWeeklyData] = useState<WeeklyInsightsResponse | null>(null);
+    const [monthlyData, setMonthlyData] = useState<MonthlyInsightsResponse | null>(null);
 
     // Format dates for API
     const dailyDateStr = dailyDate ? formatDateForAPI(dailyDate) : formatDateForAPI(new Date());
@@ -32,15 +35,21 @@ export function useDashboardData({ dailyDate, weeklyDate }: UseDashboardDataPara
 
     const weeklyStartStr = formatDateForAPI(currentWeekStart);
     const weeklyEndStr = formatDateForAPI(getWeekEnd(currentWeekStart));
+    
+    // Monthly date formatting
+    const currentMonthStart = monthlyDate || getMonthStart(new Date());
+    const monthlyStartStr = formatDateForAPI(currentMonthStart);
+    const monthlyEndStr = formatDateForAPI(getMonthEnd(currentMonthStart));
 
     // Fetch study goal for the visible week
     const { goal: weeklyGoal, loading: _goalLoading } = useGoalForWeek(currentWeekStart);
 
-    DEBUG_DASHBOARD && console.log('📅 useDashboardData: Formatted dates:', { dailyDateStr, weeklyStartStr, weeklyEndStr });
+    DEBUG_DASHBOARD && console.log('📅 useDashboardData: Formatted dates:', { dailyDateStr, weeklyStartStr, weeklyEndStr, monthlyStartStr, monthlyEndStr });
 
-    // Fetch data for daily and weekly dashboards
+    // Fetch data for daily, weekly, and monthly dashboards
     const { data: dailyResponse, loading: dailyLoading } = useAggregateData('daily', dailyDateStr, undefined);
     const { data: weeklyResponse, loading: weeklyLoading } = useAggregateData('weekly', weeklyStartStr, weeklyEndStr);
+    const { data: monthlyResponse, loading: monthlyLoading } = useAggregateData('monthly', monthlyStartStr, monthlyEndStr);
 
     // Prefetch adjacent dates *only if those dates are NOT already in the current weekDates array*.
     // This prevents redundant hook instances and extra console noise when switching between days
@@ -94,6 +103,13 @@ export function useDashboardData({ dailyDate, weeklyDate }: UseDashboardDataPara
         }
     }, [weeklyResponse]);
 
+    useEffect(() => {
+        if (monthlyResponse) {
+            DEBUG_DASHBOARD && console.log('📈 useDashboardData: Monthly response received, updating state');
+            setMonthlyData(monthlyResponse);
+        }
+    }, [monthlyResponse]);
+
     // Check if data is empty
     const isDailyEmpty = useMemo(() => {
         DEBUG_DASHBOARD && console.log('🔍 useDashboardData: Calculating isDailyEmpty...');
@@ -122,6 +138,20 @@ export function useDashboardData({ dailyDate, weeklyDate }: UseDashboardDataPara
         DEBUG_DASHBOARD && console.log(`⏱️ useDashboardData: isWeeklyEmpty calculated in ${(end - start).toFixed(2)}ms, result: ${isEmpty}`);
         return isEmpty;
     }, [weeklyData, weeklyLoading]);
+
+    const isMonthlyEmpty = useMemo(() => {
+        DEBUG_DASHBOARD && console.log('🔍 useDashboardData: Calculating isMonthlyEmpty...');
+        const start = performance.now();
+        
+        if (!monthlyData || monthlyLoading) return false;
+        const totalDuration = parseInt(monthlyData.monthly_aggregate?.total_duration) || 0;
+        const sessionCount = monthlyData.monthly_aggregate?.session_count || 0;
+        const isEmpty = totalDuration < 60 || (totalDuration === 0 && sessionCount === 0);
+        
+        const end = performance.now();
+        DEBUG_DASHBOARD && console.log(`⏱️ useDashboardData: isMonthlyEmpty calculated in ${(end - start).toFixed(2)}ms, result: ${isEmpty}`);
+        return isEmpty;
+    }, [monthlyData, monthlyLoading]);
 
     // Process data for each dashboard
     const processedDailyData = useMemo(() => {
@@ -247,11 +277,83 @@ export function useDashboardData({ dailyDate, weeklyDate }: UseDashboardDataPara
         return result;
     }, [weeklyData, isWeeklyEmpty, weeklyGoal]);
 
+    // Process monthly data
+    const processedMonthlyData = useMemo(() => {
+        DEBUG_DASHBOARD && console.log('🏭 useDashboardData: Processing monthly data...');
+        const start = performance.now();
+        
+        if (!monthlyData) return null;
+        
+        // Handle null monthly_aggregate
+        const aggregate = monthlyData.monthly_aggregate;
+        if (!aggregate) {
+            return {
+                totalHours: 0,
+                totalTime: { hours: 0, minutes: 0 },
+                categoryDurations: {},
+                categoryMetadata: monthlyData.category_metadata || {},
+                pieChartData: [],
+                dailyBreakdown: monthlyData.daily_breakdown || [],
+                heatmapData: monthlyData.heatmap_data || {},
+                rawData: monthlyData,
+                isEmpty: true,
+                percentGoal: null
+            };
+        }
+        
+        const totalHoursStart = performance.now();
+        const totalHours = parseInt(aggregate.total_duration) / 3600;
+        DEBUG_DASHBOARD && console.log(`⏱️ monthly totalHours took ${(performance.now() - totalHoursStart).toFixed(2)}ms`);
+        
+        const totalTimeStart = performance.now();
+        const totalSeconds = parseInt(aggregate.total_duration);
+        const totalTime = {
+            hours: Math.floor(totalSeconds / 3600),
+            minutes: Math.floor((totalSeconds % 3600) / 60)
+        };
+        DEBUG_DASHBOARD && console.log(`⏱️ monthly totalTime took ${(performance.now() - totalTimeStart).toFixed(2)}ms`);
+        
+        const categoryDurationsStart = performance.now();
+        const categoryDurations = filterBreakCategory(aggregate.category_durations);
+        DEBUG_DASHBOARD && console.log(`⏱️ monthly filterBreakCategory took ${(performance.now() - categoryDurationsStart).toFixed(2)}ms`);
+        
+        const pieChartStart = performance.now();
+        // Create pie chart data from category durations
+        const pieChartData = Object.entries(categoryDurations).map(([categoryName, duration]) => {
+            const categoryMetadata = Object.values(monthlyData.category_metadata || {}).find(meta => meta.name === categoryName);
+            return {
+                label: categoryName,
+                value: duration,
+                color: categoryMetadata?.color || '#CCCCCC'
+            };
+        });
+        DEBUG_DASHBOARD && console.log(`⏱️ monthly pieChartData took ${(performance.now() - pieChartStart).toFixed(2)}ms`);
+        
+        const result = {
+            totalHours,
+            totalTime,
+            categoryDurations,
+            categoryMetadata: monthlyData.category_metadata || {},
+            pieChartData,
+            dailyBreakdown: monthlyData.daily_breakdown || [],
+            heatmapData: monthlyData.heatmap_data || {},
+            rawData: monthlyData,
+            isEmpty: isMonthlyEmpty,
+            percentGoal: null // Monthly goals not implemented yet
+        };
+        
+        const end = performance.now();
+        DEBUG_DASHBOARD && console.log(`🏭 useDashboardData: Monthly data processed in ${(end - start).toFixed(2)}ms`);
+        return result;
+    }, [monthlyData, isMonthlyEmpty]);
+
     DEBUG_DASHBOARD && console.log('📊 useDashboardData: Returning processed data, loading states:', { 
         dailyLoading, 
         weeklyLoading,
+        monthlyLoading,
         hasDaily: !!processedDailyData,
-        hasWeekly: !!processedWeeklyData
+        hasWeekly: !!processedWeeklyData,
+        hasMonthly: !!processedMonthlyData
     });
 
     const anyWeekDailyLoading = Object.values(weekDaily.loading).some(Boolean);
@@ -259,9 +361,11 @@ export function useDashboardData({ dailyDate, weeklyDate }: UseDashboardDataPara
     return {
         daily: processedDailyData,
         weekly: processedWeeklyData,
+        monthly: processedMonthlyData,
         loading: {
             daily: dailyLoading || anyWeekDailyLoading,
-            weekly: weeklyLoading
+            weekly: weeklyLoading,
+            monthly: monthlyLoading
         },
         weekDaily
     };

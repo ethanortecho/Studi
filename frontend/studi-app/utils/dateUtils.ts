@@ -161,4 +161,20 @@ export function navigateWeek(currentWeekStart: Date, direction: 'prev' | 'next')
   const newWeek = new Date(currentWeekStart);
   newWeek.setDate(currentWeekStart.getDate() + (direction === 'next' ? 7 : -7));
   return newWeek;
+}
+
+// Month utility functions
+export function getMonthStart(date: Date): Date {
+  const monthStart = new Date(date);
+  monthStart.setDate(1);
+  monthStart.setHours(0, 0, 0, 0);
+  return monthStart;
+}
+
+export function getMonthEnd(date: Date): Date {
+  const monthEnd = new Date(date);
+  monthEnd.setMonth(monthEnd.getMonth() + 1);
+  monthEnd.setDate(0);
+  monthEnd.setHours(23, 59, 59, 999);
+  return monthEnd;
 } 

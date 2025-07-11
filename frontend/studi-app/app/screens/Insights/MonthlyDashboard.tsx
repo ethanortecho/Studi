@@ -2,6 +2,7 @@ import React from 'react';
 import { View, ScrollView, Text } from 'react-native';
 import DebugDataViewer from '@/components/analytics/DebugDataViewer';
 import MultiChartContainer from '@/components/analytics/MultiChartContainer';
+import MonthlyHeatmap from '@/components/analytics/charts/MonthlyHeatmap';
 import { CategoryMetadata } from '@/types/api';
 
 interface MonthlyDashboardProps {
@@ -13,6 +14,7 @@ interface MonthlyDashboardProps {
   pieChartData?: Array<{ label: string; value: number; color: string }>;
   dailyBreakdown?: Array<{ date: string; total_duration: number; category_durations: { [key: string]: number } }>;
   heatmapData?: { [date: string]: number };
+  monthDate: Date;
   rawData?: any;
   loading: boolean;
   isEmpty: boolean;
@@ -27,6 +29,7 @@ export default function MonthlyDashboard({
   pieChartData,
   dailyBreakdown,
   heatmapData,
+  monthDate,
   rawData,
   loading,
   isEmpty
@@ -56,6 +59,14 @@ export default function MonthlyDashboard({
           percentGoal={percentGoal}
           isEmpty={isEmpty}
           showTitle={false}
+        />
+      </View>
+      
+      {/* Monthly Heatmap */}
+      <View className="mx-4 mb-4">
+        <MonthlyHeatmap 
+          heatmapData={heatmapData}
+          monthDate={monthDate}
         />
       </View>
       

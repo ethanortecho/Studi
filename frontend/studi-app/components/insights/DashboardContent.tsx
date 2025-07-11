@@ -138,6 +138,7 @@ export default function DashboardContent({
                     pieChartData={monthly.pieChartData}
                     dailyBreakdown={monthly.dailyBreakdown}
                     heatmapData={monthly.heatmapData}
+                    monthDate={monthlyDate || new Date()}
                     rawData={monthly.rawData}
                     loading={false}
                     percentGoal={monthly.percentGoal}

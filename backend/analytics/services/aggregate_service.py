@@ -33,6 +33,10 @@ class AggregateUpdateService:
             week_start, week_end = get_week_boundaries(session_date)
             AggregateUpdateService._update_weekly_aggregate(user, week_start, week_end)
             
+            # Update monthly aggregate
+            month_start, month_end = get_month_boundaries(session_date)
+            AggregateUpdateService._update_monthly_aggregate(user, month_start, month_end)
+            
             print(f"Successfully updated all aggregates for session {session.id}")
             
             # Update goals progress
@@ -108,6 +112,37 @@ class AggregateUpdateService:
         
         action = "Created" if created else "Updated"
         print(f"{action} weekly aggregate: {aggregate_data['session_count']} sessions, {aggregate_data['total_duration']} seconds")
+    
+    @staticmethod
+    def _update_monthly_aggregate(user, month_start, month_end):
+        """Update or create monthly aggregate for a specific month"""
+        print(f"Updating monthly aggregate for {user.username} from {month_start} to {month_end}")
+        
+        # Calculate fresh aggregate data for this month
+        aggregate_data = AggregateUpdateService._calculate_fresh_aggregate(
+            user, month_start, month_end, 'monthly'
+        )
+        
+        # Determine if this period is final (not current month)
+        is_final = not is_current_period(month_start, 'monthly')
+        
+        # Update or create aggregate
+        monthly_aggregate, created = Aggregate.objects.update_or_create(
+            user=user,
+            time_frame='monthly',
+            start_date=month_start,
+            end_date=month_end,
+            defaults={
+                'total_duration': aggregate_data['total_duration'],
+                'category_durations': aggregate_data['category_durations'],
+                'session_count': aggregate_data['session_count'],
+                'break_count': aggregate_data['break_count'],
+                'is_final': is_final
+            }
+        )
+        
+        action = "Created" if created else "Updated"
+        print(f"{action} monthly aggregate: {aggregate_data['session_count']} sessions, {aggregate_data['total_duration']} seconds")
     
     @staticmethod
     def _calculate_fresh_aggregate(user, start_date, end_date, timeframe):

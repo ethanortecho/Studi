@@ -70,4 +70,31 @@ export interface WeeklyInsightsResponse {
     avg_break_duration: number;
     avg_daily_study_time: number;
   };
-} 
+}
+
+export interface MonthlyInsightsResponse {
+  statistics: {
+    total_hours: number;
+    total_sessions: number;
+  };
+  monthly_aggregate: {
+    id: number;
+    total_duration: string;
+    category_durations: { [key: string]: number };
+    start_date: string;
+    end_date: string;
+    session_count: number;
+    break_count: number;
+    time_frame: string;
+    user: number;
+    is_final: boolean;
+    last_updated: string;
+  } | null;
+  daily_breakdown: Array<{
+    date: string;
+    total_duration: number;
+    category_durations: { [key: string]: number };
+  }>;
+  heatmap_data: { [date: string]: number };
+  category_metadata: { [key: string]: CategoryMetadata };
+}

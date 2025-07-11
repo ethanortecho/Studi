@@ -238,6 +238,15 @@ class MonthlyInsights(APIView):
                 status=status.HTTP_403_FORBIDDEN
             )
             
+        user_categories = StudyAnalytics.get_category_list(user)
+        category_data = {}
+
+        for category in user_categories:
+            category_data[category.id] = {
+                "name": category.name,
+                "color": category.color
+            }
+            
         start_date = request.query_params.get('start_date')
         end_date = request.query_params.get('end_date')
 
@@ -259,32 +268,44 @@ class MonthlyInsights(APIView):
         # Get monthly aggregate
         monthly_aggregate = StudyAnalytics.get_aggregate_data(user, start_date, end_date, timeframe='monthly')
         
-        # Get all weekly aggregates within this month
-        weekly_aggregates = StudyAnalytics.get_aggregates_in_range(user, start_date, end_date, timeframe='weekly')
+        # Get all daily aggregates within this month
+        daily_aggregates = StudyAnalytics.get_aggregates_in_range(user, start_date, end_date, timeframe='daily')
         
-        # Format weekly data
-        weekly_breakdown = []
-        for aggregate in weekly_aggregates:
-            weekly_breakdown.append({
-                'start_date': aggregate.start_date,
-                'end_date': aggregate.end_date,
+        # Format daily data for breakdown
+        daily_breakdown = []
+        for aggregate in daily_aggregates:
+            daily_breakdown.append({
+                'date': aggregate.start_date,
                 'total_duration': round(aggregate.total_duration / 3600, 2),
                 'category_durations': aggregate.category_durations
             })
 
-        # Calculate average session duration in hours
-        total_sessions = monthly_aggregate.session_count
-        avg_session_duration = (
-            monthly_aggregate.total_duration / 3600 / total_sessions
-        ) if total_sessions > 0 else 0
+        # Create heatmap data structure (date-value pairs)
+        heatmap_data = {}
+        current_date = start_date
+        while current_date <= end_date:
+            date_str = current_date.strftime('%Y-%m-%d')
+            heatmap_data[date_str] = 0
+            current_date += timedelta(days=1)
+        
+        # Fill in actual data
+        for aggregate in daily_aggregates:
+            date_str = aggregate.start_date.strftime('%Y-%m-%d')
+            heatmap_data[date_str] = round(aggregate.total_duration / 3600, 2)
+
+        # Calculate statistics
+        total_sessions = monthly_aggregate.session_count if monthly_aggregate else 0
+        total_hours = monthly_aggregate.total_duration / 3600 if monthly_aggregate else 0
 
         response_data = {
             'statistics': {
-                'total_hours': monthly_aggregate.total_duration / 3600,
+                'total_hours': total_hours,
                 'total_sessions': total_sessions
             },
-            'monthly_aggregate': AggregateSerializer(monthly_aggregate).data,
-            'weekly_breakdown': weekly_breakdown
+            'monthly_aggregate': AggregateSerializer(monthly_aggregate).data if monthly_aggregate else None,
+            'daily_breakdown': daily_breakdown,
+            'heatmap_data': heatmap_data,
+            'category_metadata': category_data
         }
 
         return Response(response_data, status=status.HTTP_200_OK)

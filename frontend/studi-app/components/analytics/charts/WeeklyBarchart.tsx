@@ -15,11 +15,25 @@ const DAY_MAP: Record<string, string> = {
   'SU': 'Su'
 };
 
+// Map week numbers to display names
+const WEEK_MAP: Record<number, string> = {
+  1: 'W1',
+  2: 'W2',
+  3: 'W3',
+  4: 'W4'
+};
+
 interface DailyBreakdownData {
   [date: string]: {
     total: number;
     categories?: { [key: string]: number };
   };
+}
+
+interface MonthlyBreakdownData {
+  date: string;
+  total_duration: number;
+  category_durations: { [key: string]: number };
 }
 
 interface CategoryMetadata {
@@ -28,8 +42,9 @@ interface CategoryMetadata {
 }
 
 interface WeeklyBarchartProps {
-  data?: DailyBreakdownData;
+  data?: DailyBreakdownData | MonthlyBreakdownData[];
   categoryMetadata?: { [key: string]: CategoryMetadata };
+  timeframe?: 'weekly' | 'monthly';
   width?: number;
   height?: number;
 }
@@ -37,6 +52,7 @@ interface WeeklyBarchartProps {
 const WeeklyBarchart: React.FC<WeeklyBarchartProps> = ({ 
   data,
   categoryMetadata,
+  timeframe = 'weekly',
   width = 500,
   height = 150
 }) => {
@@ -53,61 +69,139 @@ const WeeklyBarchart: React.FC<WeeklyBarchartProps> = ({
       };
     }
 
-    const dayOrder = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'];
-    const sortedDays = Object.keys(data).sort((a, b) => 
-      dayOrder.indexOf(a) - dayOrder.indexOf(b)
-    );
+    if (timeframe === 'weekly') {
+      // Weekly data processing (original logic)
+      const weeklyData = data as DailyBreakdownData;
+      const dayOrder = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'];
+      const sortedDays = Object.keys(weeklyData).sort((a, b) => 
+        dayOrder.indexOf(a) - dayOrder.indexOf(b)
+      );
 
-    const allCategories = new Set<string>();
-    Object.values(data).forEach(dayData => {
-      if (dayData.categories) {
-        Object.keys(dayData.categories).forEach(cat => allCategories.add(cat));
-      }
-    });
-    // Note: Break category is now filtered at the data processing level
-    const categoryList = Array.from(allCategories);
-
-    const transformedData = sortedDays.map(day => {
-      const dayData: any = {
-        day: DAY_MAP[day] || day,
-      };
-      
-      categoryList.forEach(category => {
-        const seconds = data[day]?.categories?.[category] || 0;
-        const hours = Math.round(seconds / 3600 * 100) / 100;
-        dayData[category] = hours;
+      const allCategories = new Set<string>();
+      Object.values(weeklyData).forEach(dayData => {
+        if (dayData.categories) {
+          Object.keys(dayData.categories).forEach(cat => allCategories.add(cat));
+        }
       });
-      
-      return dayData;
-    });
+      const categoryList = Array.from(allCategories);
 
-    const simpleData = sortedDays.map(day => {
-      const totalSeconds = data[day]?.total || 0;
-      const hours = Math.round(totalSeconds / 3600 * 100) / 100;
+      const transformedData = sortedDays.map(day => {
+        const dayData: any = {
+          period: DAY_MAP[day] || day,
+        };
+        
+        categoryList.forEach(category => {
+          const seconds = weeklyData[day]?.categories?.[category] || 0;
+          const hours = Math.round(seconds / 3600 * 100) / 100;
+          dayData[category] = hours;
+        });
+        
+        return dayData;
+      });
+
+      const simpleData = sortedDays.map(day => {
+        const totalSeconds = weeklyData[day]?.total || 0;
+        const hours = Math.round(totalSeconds / 3600 * 100) / 100;
+        return {
+          period: DAY_MAP[day] || day,
+          total: hours
+        };
+      });
+
+      const maxTotalHours = Math.max(...sortedDays.map(day => {
+        const totalSeconds = weeklyData[day]?.total || 0;
+        return Math.round(totalSeconds / 3600 * 100) / 100;
+      }));
+
+      const categoryColors = categoryList.map(category => {
+        const metadataEntry = Object.values(categoryMetadata).find(meta => meta.name === category);
+        return metadataEntry?.color || '#CCCCCC';
+      });
+
       return {
-        day: DAY_MAP[day] || day,
-        total: hours
+        chartData: transformedData,
+        simpleChartData: simpleData,
+        categories: categoryList,
+        colors: categoryColors,
+        maxTotal: maxTotalHours
       };
-    });
+    } else {
+      // Monthly data processing (group daily data into 4 weeks)
+      const monthlyData = data as MonthlyBreakdownData[];
+      
+      // Group daily data into 4 weeks
+      const weeklyData: { [week: number]: { total: number; categories: { [key: string]: number } } } = {
+        1: { total: 0, categories: {} },
+        2: { total: 0, categories: {} },
+        3: { total: 0, categories: {} },
+        4: { total: 0, categories: {} }
+      };
 
-    const categoryColors = categoryList.map(category => {
-      const metadataEntry = Object.values(categoryMetadata).find(meta => meta.name === category);
-      return metadataEntry?.color || '#CCCCCC';
-    });
+      // Sort data by date and group into weeks
+      const sortedData = [...monthlyData].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-    const maxTotalHours = Math.max(...sortedDays.map(day => {
-      const totalSeconds = data[day]?.total || 0;
-      return Math.round(totalSeconds / 3600 * 100) / 100;
-    }));
+      sortedData.forEach((dayData, index) => {
+        const weekNumber = Math.min(Math.floor(index / 7) + 1, 4);
+        
+        // Add total duration (convert to hours)
+        const hours = Math.round(dayData.total_duration * 100) / 100;
+        weeklyData[weekNumber].total += hours;
+        
+        // Add category durations
+        Object.entries(dayData.category_durations).forEach(([category, seconds]) => {
+          const categoryHours = Math.round(seconds / 3600 * 100) / 100;
+          if (!weeklyData[weekNumber].categories[category]) {
+            weeklyData[weekNumber].categories[category] = 0;
+          }
+          weeklyData[weekNumber].categories[category] += categoryHours;
+        });
+      });
 
-    return {
-      chartData: transformedData,
-      simpleChartData: simpleData,
-      categories: categoryList,
-      colors: categoryColors,
-      maxTotal: maxTotalHours
-    };
-  }, [data, categoryMetadata]);
+      // Get all categories
+      const allCategories = new Set<string>();
+      Object.values(weeklyData).forEach(weekData => {
+        Object.keys(weekData.categories).forEach(cat => allCategories.add(cat));
+      });
+      const categoryList = Array.from(allCategories);
+
+      // Transform data for chart
+      const transformedData = [1, 2, 3, 4].map(week => {
+        const weekData: any = {
+          period: WEEK_MAP[week] || `W${week}`,
+        };
+        
+        categoryList.forEach(category => {
+          const hours = weeklyData[week]?.categories?.[category] || 0;
+          weekData[category] = hours;
+        });
+        
+        return weekData;
+      });
+
+      const simpleData = [1, 2, 3, 4].map(week => {
+        const totalHours = weeklyData[week]?.total || 0;
+        return {
+          period: WEEK_MAP[week] || `W${week}`,
+          total: totalHours
+        };
+      });
+
+      const maxTotalHours = Math.max(...Object.values(weeklyData).map(week => week.total));
+
+      const categoryColors = categoryList.map(category => {
+        const metadataEntry = Object.values(categoryMetadata).find(meta => meta.name === category);
+        return metadataEntry?.color || '#CCCCCC';
+      });
+
+      return {
+        chartData: transformedData,
+        simpleChartData: simpleData,
+        categories: categoryList,
+        colors: categoryColors,
+        maxTotal: maxTotalHours
+      };
+    }
+  }, [data, categoryMetadata, timeframe]);
 
   if (!data || !categoryMetadata || categories.length === 0) {
     return (
@@ -124,14 +218,14 @@ const WeeklyBarchart: React.FC<WeeklyBarchartProps> = ({
       <View style={{ height: height ,width: 300}}>
         <CartesianChart
           data={currentData}
-          xKey="day"
+          xKey="period"
           yKeys={currentYKeys}
           domain={{ y: [0, Math.ceil(maxTotal * 1.2)] }}
           domainPadding={{ left: 15, right: 15 }}
           padding={{ left: 0, top: 0, right: 0, bottom: 0 }}
           xAxis={{
             font: font,
-            tickCount: 7,
+            tickCount: timeframe === 'weekly' ? 7 : 4,
             lineColor: 'transparent',
             labelColor: '#71717a',
             formatXLabel: (value) => String(value)

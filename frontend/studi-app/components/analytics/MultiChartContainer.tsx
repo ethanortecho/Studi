@@ -4,7 +4,6 @@ import DashboardCard from '@/components/insights/DashboardContainer';
 import CustomPieChart from '@/components/analytics/charts/CustomPieChart';
 import Legend from '@/components/analytics/DashboardLegend';
 import WeeklyBarChart from '@/components/analytics/charts/WeeklyBarchart';
-import MonthlyBarChart from '@/components/analytics/charts/MonthlyBarchart';
 import SessionBarchart from './charts/SessionBarchart';
 import { CategoryMetadata, TimelineSession } from '@/types/api';
 import PagedCarousel from '@/components/navigation/PagedCarousel';
@@ -209,17 +208,11 @@ export default function MultiChartContainer({
                                 case 'bar':
                                     return (
                                         <View className="flex-row items-end justify-center h-full" style={{ width: PAGE_WIDTH }}>
-                                            {timeframe === 'weekly' ? (
-                                                <WeeklyBarChart 
-                                                    data={chartData.bar as { [date: string]: { total: number; categories: { [key: string]: number } } }}
-                                                    categoryMetadata={categoryMetadata} 
-                                                />
-                                            ) : (
-                                                <MonthlyBarChart 
-                                                    data={chartData.bar as Array<{ date: string; total_duration: number; category_durations: { [key: string]: number } }>}
-                                                    categoryMetadata={categoryMetadata} 
-                                                />
-                                            )}
+                                            <WeeklyBarChart 
+                                                data={chartData.bar}
+                                                categoryMetadata={categoryMetadata}
+                                                timeframe={timeframe as 'weekly' | 'monthly'}
+                                            />
                                         </View>
                                     );
                                 default:

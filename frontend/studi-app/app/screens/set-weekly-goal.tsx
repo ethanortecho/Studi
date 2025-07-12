@@ -15,6 +15,7 @@ export default function SetWeeklyGoalScreen() {
 
   const [selectedMinutes, setSelectedMinutes] = useState<number | null>(null);
   const [carryOverEnabled, setCarryOverEnabled] = useState(false);
+  const [selectedDays, setSelectedDays] = useState<number[]>([0, 1, 2, 3, 4, 5, 6]); // 0=Mon, 1=Tue, etc. (backend indexing)
   const [saving, setSaving] = useState(false);
 
   // Preselect when editing and once goal data arrives
@@ -22,6 +23,7 @@ export default function SetWeeklyGoalScreen() {
     if (isEdit && goal && selectedMinutes === null) {
       setSelectedMinutes(goal.total_minutes);
       setCarryOverEnabled(goal.carry_over_enabled);
+      setSelectedDays(goal.active_weekdays || [0, 1, 2, 3, 4, 5, 6]);
     }
   }, [isEdit, goal, selectedMinutes]);
 
@@ -30,13 +32,14 @@ export default function SetWeeklyGoalScreen() {
     : 'How much time do you want to study each week?';
 
   async function handleSave() {
-    if (selectedMinutes == null) return;
+    if (selectedMinutes == null || selectedDays.length === 0) return;
     setSaving(true);
 
     try {
       const body = {
         total_minutes: selectedMinutes,
         carry_over_enabled: carryOverEnabled,
+        active_weekdays: selectedDays,
       };
 
       const res = await fetch(getApiUrl('/goals/weekly/'), {
@@ -62,6 +65,20 @@ export default function SetWeeklyGoalScreen() {
       setSaving(false);
     }
   }
+
+  const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S']; // 0=Mon, 1=Tue, etc.
+  const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+  const toggleDay = (dayIndex: number) => {
+    setSelectedDays(prev => {
+      const newDays = prev.includes(dayIndex) 
+        ? prev.filter(d => d !== dayIndex)
+        : [...prev, dayIndex].sort();
+      
+      // Ensure at least one day is selected
+      return newDays.length > 0 ? newDays : prev;
+    });
+  };
 
   function renderOption({ item }: { item: (typeof WEEKLY_GOAL_OPTIONS)[number] }) {
     const isSelected = selectedMinutes === item.minutes;
@@ -94,7 +111,7 @@ export default function SetWeeklyGoalScreen() {
         </View>
 
         {/* Carry-over toggle */}
-        <View className="flex-row items-center justify-between mb-10 px-1">
+        <View className="flex-row items-center justify-between mb-8 px-1">
           <Text className="text-gray-100 text-lg">Carry over overtime</Text>
           <Switch
             value={carryOverEnabled}
@@ -104,11 +121,50 @@ export default function SetWeeklyGoalScreen() {
           />
         </View>
 
+        {/* Study Days Selection */}
+        <View className="mb-8">
+          <Text className="text-gray-100 text-lg font-medium mb-4">Study Days</Text>
+          <Text className="text-gray-400 text-sm mb-4">
+            Choose which days count toward your daily study goal
+          </Text>
+          
+          <View className="flex-row justify-between mb-4">
+            {dayLabels.map((label, index) => {
+              const isSelected = selectedDays.includes(index);
+              
+              return (
+                <Pressable
+                  key={index}
+                  onPress={() => toggleDay(index)}
+                  className={`w-12 h-12 rounded-full items-center justify-center border-2 ${
+                    isSelected 
+                      ? 'bg-purple-600 border-purple-600' 
+                      : 'border-gray-600 bg-gray-900'
+                  }`}
+                >
+                  <Text className={`font-semibold ${
+                    isSelected ? 'text-white' : 'text-gray-400'
+                  }`}>
+                    {label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+          
+          <Text className="text-gray-500 text-xs text-center">
+            {selectedDays.length} day{selectedDays.length !== 1 ? 's' : ''} selected
+            {selectedMinutes && selectedDays.length > 0 && 
+              ` • ${Math.round(selectedMinutes / selectedDays.length)} min/day`
+            }
+          </Text>
+        </View>
+
         {/* Continue button */}
         <Pressable
-          disabled={selectedMinutes == null || saving}
+          disabled={selectedMinutes == null || selectedDays.length === 0 || saving}
           onPress={handleSave}
-          className={`py-4 rounded-lg ${selectedMinutes ? 'bg-purple-600' : 'bg-gray-700'}`}
+          className={`py-4 rounded-lg ${(selectedMinutes && selectedDays.length > 0) ? 'bg-purple-600' : 'bg-gray-700'}`}
         >
           <Text className="text-center text-lg font-semibold text-white">
             {saving ? 'Saving…' : isEdit ? 'Save' : 'Continue'}

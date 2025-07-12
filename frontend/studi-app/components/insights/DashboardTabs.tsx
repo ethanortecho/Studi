@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { Text, View, Pressable } from 'react-native';
 import DashboardContent from './DashboardContent';
-import DailyNavigator from './DailyNavigator';
-import WeeklyNavigator from './WeeklyNavigator';
-import MonthlyNavigator from './MonthlyNavigator';
+import PeriodNavigator from './PeriodNavigator';
 import { getDefaultDate, getWeekStart, navigateWeek, getMonthStart } from '@/utils/dateUtils';
 import { useDashboardData } from '@/hooks/useDashboardData';
 
@@ -15,19 +13,14 @@ export default function DashboardTabs({ onDataChange }: DashboardTabsProps) {
     const [selectedTab, setSelectedTab] = useState('weekly'); // Default to weekly to match your usage
     const today = new Date();
 
-    // Daily view state
-    const [dailyWeekStart, setDailyWeekStart] = useState(getWeekStart(today));
-    const [selectedDailyDate, setSelectedDailyDate] = useState<Date>(today);
-
-    // Weekly view state
+    // Unified date state for all timeframes
+    const [dailyDate, setDailyDate] = useState<Date>(today);
     const [weeklyDate, setWeeklyDate] = useState(getDefaultDate('weekly'));
-
-    // Monthly view state
     const [monthlyDate, setMonthlyDate] = useState(getMonthStart(today));
 
     // Get dashboard data
-    const { daily, weekly, monthly, loading, weekDaily } = useDashboardData({ 
-        dailyDate: selectedDailyDate, 
+    const { daily, weekly, monthly, loading } = useDashboardData({ 
+        dailyDate: dailyDate, 
         weeklyDate,
         monthlyDate 
     });
@@ -43,20 +36,29 @@ export default function DashboardTabs({ onDataChange }: DashboardTabsProps) {
         }
     }, [selectedTab, daily, weekly, monthly, onDataChange]);
 
-    const handleDailyWeekNavigation = (direction: 'prev' | 'next') => {
-        setDailyWeekStart(current => {
-            const newStart = navigateWeek(current, direction);
-            setSelectedDailyDate(newStart); // Behaviour B: reset selection to week start (Sunday)
-            return newStart;
-        });
+    // Get the current date and handler for the selected timeframe
+    const getCurrentDate = () => {
+        switch (selectedTab) {
+            case 'daily': return dailyDate;
+            case 'weekly': return weeklyDate;
+            case 'monthly': return monthlyDate;
+            default: return today;
+        }
     };
 
-    // Keep weeklyDate in sync with current daily week when on daily tab so we have weekly data for dots
-    React.useEffect(() => {
-        if (selectedTab === 'daily') {
-            setWeeklyDate(dailyWeekStart);
+    const handleDateChange = (newDate: Date) => {
+        switch (selectedTab) {
+            case 'daily': 
+                setDailyDate(newDate);
+                break;
+            case 'weekly': 
+                setWeeklyDate(newDate);
+                break;
+            case 'monthly': 
+                setMonthlyDate(newDate);
+                break;
         }
-    }, [selectedTab, dailyWeekStart]);
+    };
 
     return (
         <View className="flex-1 pt-10">
@@ -90,31 +92,17 @@ export default function DashboardTabs({ onDataChange }: DashboardTabsProps) {
                 </View>
             </View>
 
-            {/* Date / Week / Month Navigation */}
-            {selectedTab === 'daily' ? (
-                <DailyNavigator
-                    weekStart={dailyWeekStart}
-                    selectedDay={selectedDailyDate}
-                    onSelect={(date) => setSelectedDailyDate(date)}
-                    onNavigate={handleDailyWeekNavigation}
-                    hasData={weekDaily?.hasData}
-                />
-            ) : selectedTab === 'weekly' ? (
-                <WeeklyNavigator
-                    selectedWeekStart={weeklyDate}
-                    onSelect={(date) => setWeeklyDate(date)}
-                />
-            ) : (
-                <MonthlyNavigator
-                    selectedMonth={monthlyDate}
-                    onSelect={(date) => setMonthlyDate(date)}
-                />
-            )}
+            {/* Unified Period Navigation */}
+            <PeriodNavigator
+                timeframe={selectedTab as 'daily' | 'weekly' | 'monthly'}
+                selectedDate={getCurrentDate()}
+                onSelect={handleDateChange}
+            />
             
             {/* Dashboard Content */}
             <DashboardContent 
                 selectedTab={selectedTab}
-                dailyDate={selectedDailyDate}
+                dailyDate={dailyDate}
                 weeklyDate={weeklyDate}
                 monthlyDate={monthlyDate}
                 daily={daily}

@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import StudySession, CategoryBlock, Categories, Aggregate, WeeklyGoal, DailyGoal
+from .models import DailyAggregate, WeeklyAggregate, MonthlyAggregate
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -181,5 +182,62 @@ class WeeklyGoalSerializer(serializers.ModelSerializer):
             'daily_goals',
         ]
         read_only_fields = ['id', 'accumulated_minutes', 'overtime_bank', 'daily_goals']
+
+
+# New split aggregate serializers
+class DailyAggregateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DailyAggregate
+        fields = [
+            'id',
+            'user',
+            'date',
+            'total_duration',
+            'session_count',
+            'break_count',
+            'category_durations',
+            'timeline_data',
+            'is_final',
+            'last_updated'
+        ]
+        read_only_fields = ['id', 'user', 'last_updated']
+
+
+class WeeklyAggregateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WeeklyAggregate
+        fields = [
+            'id',
+            'user',
+            'week_start',
+            'total_duration',
+            'session_count',
+            'break_count',
+            'category_durations',
+            'daily_breakdown',
+            'session_times',
+            'is_final',
+            'last_updated'
+        ]
+        read_only_fields = ['id', 'user', 'last_updated']
+
+
+class MonthlyAggregateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MonthlyAggregate
+        fields = [
+            'id',
+            'user',
+            'month_start',
+            'total_duration',
+            'session_count',
+            'break_count',
+            'category_durations',
+            'daily_breakdown',
+            'heatmap_data',
+            'is_final',
+            'last_updated'
+        ]
+        read_only_fields = ['id', 'user', 'last_updated']
 
 

@@ -1,7 +1,7 @@
 import Constants from 'expo-constants';
 
 // Simple config for phone testing
-const LOCAL_IP = '0.0.0.0'; // Your Mac's local IP
+const LOCAL_IP = '192.168.86.246'; // Your Mac's local IP
 const PORT = '8000';
 
 // Always use network IP for now (works for both simulator and device)

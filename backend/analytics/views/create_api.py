@@ -9,6 +9,7 @@ from ..serializers import StudySessionSerializer, CategoryBlockSerializer, Aggre
 from rest_framework import serializers
 from django.utils import timezone
 from ..services.aggregate_service import AggregateUpdateService
+from ..services.split_aggregate_service import SplitAggregateUpdateService
 
 
 class CreateStudySession(APIView):
@@ -43,7 +44,9 @@ class EndStudySession(APIView):
                 
                 # Update aggregates immediately after session completion
                 try:
-                    AggregateUpdateService.update_for_session(updated_session)
+                    # Use both services temporarily during transition
+                    AggregateUpdateService.update_for_session(updated_session)  # Keep old service
+                    SplitAggregateUpdateService.update_for_session(updated_session)  # Add new service
                     print(f"Successfully updated aggregates for session {updated_session.id}")
                 except Exception as e:
                     print(f"Failed to update aggregates for session {updated_session.id}: {str(e)}")

@@ -143,7 +143,7 @@ export default function MultiChartContainer({
     const PAGE_WIDTH = Dimensions.get('window').width - 32; // parent adds mx-4 (≈16px each side)
 
     return (
-        <DashboardCard className="bg-background  rounded-[35px] ">
+        <DashboardCard className="bg-surface  rounded-[35px] ">
             {/* Stats Banner */}
             {!noChartAvailable && totalTime && (
                 <View className="flex-row justify-between px-6 pt-6">

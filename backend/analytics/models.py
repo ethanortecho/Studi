@@ -106,6 +106,91 @@ class Aggregate(models.Model):
     last_updated = models.DateTimeField(auto_now=True)  # Track when last updated
 
 
+# New split aggregate models
+class DailyAggregate(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    date = models.DateField()
+    
+    # Basic metrics
+    total_duration = models.IntegerField(default=0)  # seconds
+    session_count = models.IntegerField(default=0)
+    break_count = models.IntegerField(default=0)
+    
+    # Pre-computed JSON data for API responses
+    category_durations = models.JSONField(default=dict)  # {category_name: seconds}
+    timeline_data = models.JSONField(default=list)  # Complete session timeline for API
+    
+    # Metadata
+    is_final = models.BooleanField(default=False)  # True when day is complete
+    last_updated = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ('user', 'date')
+        indexes = [
+            models.Index(fields=['user', 'date']),
+            models.Index(fields=['user', 'date', 'is_final']),
+        ]
+        
+    def __str__(self):
+        return f"{self.user.username} - {self.date}"
+
+
+class WeeklyAggregate(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    week_start = models.DateField()  # Monday of the week
+    
+    # Basic metrics
+    total_duration = models.IntegerField(default=0)  # seconds
+    session_count = models.IntegerField(default=0)
+    break_count = models.IntegerField(default=0)
+    
+    # Pre-computed JSON data for API responses
+    category_durations = models.JSONField(default=dict)  # {category_name: seconds}
+    daily_breakdown = models.JSONField(default=dict)  # {day_code: {total, categories}}
+    session_times = models.JSONField(default=list)  # All session start/end times
+    
+    # Metadata
+    is_final = models.BooleanField(default=False)  # True when week is complete
+    last_updated = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ('user', 'week_start')
+        indexes = [
+            models.Index(fields=['user', 'week_start']),
+        ]
+        
+    def __str__(self):
+        return f"{self.user.username} - week of {self.week_start}"
+
+
+class MonthlyAggregate(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    month_start = models.DateField()  # First day of month
+    
+    # Basic metrics
+    total_duration = models.IntegerField(default=0)  # seconds
+    session_count = models.IntegerField(default=0)
+    break_count = models.IntegerField(default=0)
+    
+    # Pre-computed JSON data for API responses
+    category_durations = models.JSONField(default=dict)  # {category_name: seconds}
+    daily_breakdown = models.JSONField(default=list)  # [{date, total_duration, categories}]
+    heatmap_data = models.JSONField(default=dict)  # {date_str: hours} Ready for heatmap
+    
+    # Metadata
+    is_final = models.BooleanField(default=False)  # True when month is complete
+    last_updated = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ('user', 'month_start')
+        indexes = [
+            models.Index(fields=['user', 'month_start']),
+        ]
+        
+    def __str__(self):
+        return f"{self.user.username} - month of {self.month_start}"
+
+
 class Break(models.Model):
     study_session = models.ForeignKey('StudySession', on_delete = models.CASCADE)
     start_time = models.DateTimeField()

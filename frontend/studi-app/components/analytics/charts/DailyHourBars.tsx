@@ -48,7 +48,8 @@ const DailyHourBars: React.FC<Props> = ({
     if (!timelineData || timelineData.length === 0) return base;
 
     timelineData.forEach((session) => {
-      session.breakdowns.forEach((bd) => {
+      const breakdowns = session.breakdowns || session.category_blocks || [];
+      breakdowns.forEach((bd) => {
         const categoryId = bd.category.toString();
         const meta = categoryMetadata?.[categoryId];
         if (meta?.name === 'Break') return; // skip breaks entirely

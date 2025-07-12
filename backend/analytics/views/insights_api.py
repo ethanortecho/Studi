@@ -5,8 +5,10 @@ from rest_framework import status
 from datetime import timedelta
 from django.utils.dateparse import parse_date
 from ..serializers import StudySessionSerializer, CategoryBlockSerializer, AggregateSerializer
+from ..serializers import DailyAggregateSerializer, WeeklyAggregateSerializer, MonthlyAggregateSerializer
 from ..queries import StudyAnalytics
 from ..models import Aggregate, StudySession, CategoryBlock, Categories, CustomUser
+from ..models import DailyAggregate, WeeklyAggregate, MonthlyAggregate
 from django.utils import timezone
 
 
@@ -70,64 +72,80 @@ class DailyInsights(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        #get aggregate data for specified date (none will exist for current day)
-        daily_aggregate = StudyAnalytics.get_aggregate_data(user, start_date=date, end_date=date, timeframe='daily')
-
-        #retrieve sessions and breakdown for session breakdown bar graph
-        daily_sessions = StudyAnalytics.get_daily_sessions_with_breakdown(user, date)
-        
-        
-        # Get timeline data for sessions
-        timeline_data = []
-        for session in daily_sessions:
-            session_data = {
-                'start_time': session.start_time,
-                'end_time': session.end_time,
-                'breaks': session.break_set.all().values('start_time', 'end_time', 'duration'),
-                'breakdowns': session.categoryblock_set.all().values(
-                    'category', 
-                    'start_time',
-                    'end_time', 
-                    'duration'
-                )
+        # Try to get daily aggregate from new split model first
+        try:
+            daily_aggregate = DailyAggregate.objects.get(user=user, date=date)
+            print(f"Found DailyAggregate for {date}")
+            
+            # Use precomputed data from new model
+            response_data = {
+                'aggregate': {
+                    'total_duration': daily_aggregate.total_duration,
+                    'category_durations': daily_aggregate.category_durations,
+                    'session_count': daily_aggregate.session_count,
+                    'break_count': daily_aggregate.break_count,
+                    'is_final': daily_aggregate.is_final
+                },
+                'timeline_data': daily_aggregate.timeline_data,  # Precomputed!
+                'category_metadata': category_data,
             }
-            timeline_data.append(session_data)
-
-        
-        #if daily aggregate is not found (e.g its the current day) manually calculate and return data
-        if not daily_aggregate:
-            total_duration = sum(session.total_duration for session in daily_sessions)
-            session_count = len(daily_sessions)
             
-            # Calculate category durations
-            category_durations = {}
+        except DailyAggregate.DoesNotExist:
+            print(f"No DailyAggregate found for {date}, falling back to old method")
+            
+            # Fallback to old method if new aggregate doesn't exist
+            daily_aggregate = StudyAnalytics.get_aggregate_data(user, start_date=date, end_date=date, timeframe='daily')
+            daily_sessions = StudyAnalytics.get_daily_sessions_with_breakdown(user, date)
+            
+            # Get timeline data for sessions (old method)
+            timeline_data = []
             for session in daily_sessions:
-                # Get breakdowns for this session
-                breakdowns = session.categoryblock_set.all()
-                for breakdown in breakdowns:
-                    category_name = breakdown.category.name
-                    if category_name not in category_durations:
-                        category_durations[category_name] = breakdown.duration
-                    else:
-                        category_durations[category_name] += breakdown.duration
+                session_data = {
+                    'start_time': session.start_time,
+                    'end_time': session.end_time,
+                    'breaks': session.break_set.all().values('start_time', 'end_time', 'duration'),
+                    'breakdowns': session.categoryblock_set.all().values(
+                        'category', 
+                        'start_time',
+                        'end_time', 
+                        'duration'
+                    )
+                }
+                timeline_data.append(session_data)
+
+            # If daily aggregate is not found, manually calculate and return data
+            if not daily_aggregate:
+                total_duration = sum(session.total_duration for session in daily_sessions)
+                session_count = len(daily_sessions)
+                
+                # Calculate category durations
+                category_durations = {}
+                for session in daily_sessions:
+                    # Get breakdowns for this session
+                    breakdowns = session.categoryblock_set.all()
+                    for breakdown in breakdowns:
+                        category_name = breakdown.category.name
+                        if category_name not in category_durations:
+                            category_durations[category_name] = breakdown.duration
+                        else:
+                            category_durations[category_name] += breakdown.duration
+                
+                # Create a temporary aggregate object
+                daily_aggregate = Aggregate(
+                    user=user,
+                    start_date=date,
+                    end_date=date,
+                    total_duration=total_duration,
+                    category_durations=category_durations,
+                    session_count=session_count,
+                    time_frame='daily'
+                )
             
-            # Create a temporary aggregate object
-            daily_aggregate = Aggregate(
-                user=user,
-                start_date=date,
-                end_date=date,
-                total_duration=total_duration,
-                category_durations=category_durations,
-                session_count=session_count,
-                time_frame='daily'
-            )
-        
-        response_data = {
-            'aggregate': AggregateSerializer(daily_aggregate).data,
-            'timeline_data': timeline_data,
-            'category_metadata' : category_data,
-            
-        }
+            response_data = {
+                'aggregate': AggregateSerializer(daily_aggregate).data,
+                'timeline_data': timeline_data,
+                'category_metadata': category_data,
+            }
 
         return Response(response_data, status=status.HTTP_200_OK)
     
@@ -174,58 +192,72 @@ class WeeklyInsights(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        weekly_aggregate = StudyAnalytics.get_aggregate_data(user, start_date=start_date, end_date=end_date, timeframe='weekly')
-        print(f"Weekly Aggregate Query - Start: {start_date}, End: {end_date}, Timeframe: weekly")
-        print(f"Weekly Aggregate Result: {weekly_aggregate}")
-        if weekly_aggregate:
-            print(f"Found aggregate: {weekly_aggregate.start_date} to {weekly_aggregate.end_date} - {weekly_aggregate.total_duration} seconds")
-        else:
-            print("No weekly aggregate found - checking what exists in DB")
-            from analytics.models import Aggregate
-            all_weekly = Aggregate.objects.filter(user=user, time_frame='weekly')
-            print(f"All weekly aggregates for user: {[(a.start_date, a.end_date, a.total_duration) for a in all_weekly]}")
-        
-        daily_breakdown = StudyAnalytics.get_aggregates_in_range(user, start_date, end_date, timeframe='daily')
-        session_times = StudyAnalytics.get_weekly_session_times(user, start_date, end_date)
-
-      
-       
-
-        # Ensure all days of the week are represented
-        days_of_week = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU']
-        complete_daily_breakdown = {day: {'total': 0} for day in days_of_week}
-
-        # Get all daily aggregates in range
-        daily_aggregates = StudyAnalytics.get_aggregates_in_range(user, start_date, end_date, timeframe='daily')
-
-        for aggregate in daily_aggregates:
-            day_name = aggregate.start_date.strftime('%A')[:2].upper()
-            complete_daily_breakdown[day_name] = {
-                'total': aggregate.total_duration,
-                'categories': aggregate.category_durations
+        # Try to get weekly aggregate from new split model first
+        try:
+            weekly_aggregate = WeeklyAggregate.objects.get(user=user, week_start=start_date)
+            print(f"Found WeeklyAggregate for week starting {start_date}")
+            
+            # Use precomputed data from new model
+            response_data = {
+                'aggregate': {
+                    'total_duration': weekly_aggregate.total_duration,
+                    'category_durations': weekly_aggregate.category_durations,
+                    'session_count': weekly_aggregate.session_count,
+                    'break_count': weekly_aggregate.break_count,
+                    'is_final': weekly_aggregate.is_final
+                },
+                'category_metadata': category_data,
+                'daily_breakdown': weekly_aggregate.daily_breakdown,  # Precomputed!
+                'session_times': weekly_aggregate.session_times,     # Precomputed!
             }
-
-        # Format session times in hours
-        formatted_session_times = []
-        for session in session_times:
-            formatted_session_times.append({
-                'start_time': session['start_time'],
-                'end_time': session['end_time'],
-                'total_duration': session['total_duration']  
-            })
-
-        response_data = {
-            'aggregate': AggregateSerializer(weekly_aggregate).data,
-
             
-                
+        except WeeklyAggregate.DoesNotExist:
+            print(f"No WeeklyAggregate found for week starting {start_date}, falling back to old method")
             
+            # Fallback to old method if new aggregate doesn't exist
+            weekly_aggregate = StudyAnalytics.get_aggregate_data(user, start_date=start_date, end_date=end_date, timeframe='weekly')
+            print(f"Weekly Aggregate Query - Start: {start_date}, End: {end_date}, Timeframe: weekly")
+            print(f"Weekly Aggregate Result: {weekly_aggregate}")
+            if weekly_aggregate:
+                print(f"Found aggregate: {weekly_aggregate.start_date} to {weekly_aggregate.end_date} - {weekly_aggregate.total_duration} seconds")
+            else:
+                print("No weekly aggregate found - checking what exists in DB")
+                from analytics.models import Aggregate
+                all_weekly = Aggregate.objects.filter(user=user, time_frame='weekly')
+                print(f"All weekly aggregates for user: {[(a.start_date, a.end_date, a.total_duration) for a in all_weekly]}")
             
-            'category_metadata' : category_data,
+            daily_breakdown = StudyAnalytics.get_aggregates_in_range(user, start_date, end_date, timeframe='daily')
+            session_times = StudyAnalytics.get_weekly_session_times(user, start_date, end_date)
 
-            'daily_breakdown': complete_daily_breakdown,
-            'session_times': formatted_session_times,
-        }
+            # Ensure all days of the week are represented
+            days_of_week = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU']
+            complete_daily_breakdown = {day: {'total': 0} for day in days_of_week}
+
+            # Get all daily aggregates in range
+            daily_aggregates = StudyAnalytics.get_aggregates_in_range(user, start_date, end_date, timeframe='daily')
+
+            for aggregate in daily_aggregates:
+                day_name = aggregate.start_date.strftime('%A')[:2].upper()
+                complete_daily_breakdown[day_name] = {
+                    'total': aggregate.total_duration,
+                    'categories': aggregate.category_durations
+                }
+
+            # Format session times in hours
+            formatted_session_times = []
+            for session in session_times:
+                formatted_session_times.append({
+                    'start_time': session['start_time'],
+                    'end_time': session['end_time'],
+                    'total_duration': session['total_duration']  
+                })
+
+            response_data = {
+                'aggregate': AggregateSerializer(weekly_aggregate).data,
+                'category_metadata': category_data,
+                'daily_breakdown': complete_daily_breakdown,
+                'session_times': formatted_session_times,
+            }
 
         return Response(response_data, status=status.HTTP_200_OK)
     
@@ -265,48 +297,76 @@ class MonthlyInsights(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # Get monthly aggregate
-        monthly_aggregate = StudyAnalytics.get_aggregate_data(user, start_date, end_date, timeframe='monthly')
-        
-        # Get all daily aggregates within this month
-        daily_aggregates = StudyAnalytics.get_aggregates_in_range(user, start_date, end_date, timeframe='daily')
-        
-        # Format daily data for breakdown
-        daily_breakdown = []
-        for aggregate in daily_aggregates:
-            daily_breakdown.append({
-                'date': aggregate.start_date,
-                'total_duration': round(aggregate.total_duration / 3600, 2),
-                'category_durations': aggregate.category_durations
-            })
+        # Try to get monthly aggregate from new split model first
+        try:
+            monthly_aggregate = MonthlyAggregate.objects.get(user=user, month_start=start_date)
+            print(f"Found MonthlyAggregate for month starting {start_date}")
+            
+            # Use precomputed data from new model
+            total_hours = monthly_aggregate.total_duration / 3600 if monthly_aggregate.total_duration else 0
+            
+            response_data = {
+                'statistics': {
+                    'total_hours': total_hours,
+                    'total_sessions': monthly_aggregate.session_count
+                },
+                'monthly_aggregate': {
+                    'total_duration': monthly_aggregate.total_duration,
+                    'category_durations': monthly_aggregate.category_durations,
+                    'session_count': monthly_aggregate.session_count,
+                    'break_count': monthly_aggregate.break_count,
+                    'is_final': monthly_aggregate.is_final
+                },
+                'daily_breakdown': monthly_aggregate.daily_breakdown,  # Precomputed!
+                'heatmap_data': monthly_aggregate.heatmap_data,       # Precomputed!
+                'category_metadata': category_data
+            }
+            
+        except MonthlyAggregate.DoesNotExist:
+            print(f"No MonthlyAggregate found for month starting {start_date}, falling back to old method")
+            
+            # Fallback to old method if new aggregate doesn't exist
+            monthly_aggregate = StudyAnalytics.get_aggregate_data(user, start_date, end_date, timeframe='monthly')
+            
+            # Get all daily aggregates within this month
+            daily_aggregates = StudyAnalytics.get_aggregates_in_range(user, start_date, end_date, timeframe='daily')
+            
+            # Format daily data for breakdown
+            daily_breakdown = []
+            for aggregate in daily_aggregates:
+                daily_breakdown.append({
+                    'date': aggregate.start_date,
+                    'total_duration': round(aggregate.total_duration / 3600, 2),
+                    'category_durations': aggregate.category_durations
+                })
 
-        # Create heatmap data structure (date-value pairs)
-        heatmap_data = {}
-        current_date = start_date
-        while current_date <= end_date:
-            date_str = current_date.strftime('%Y-%m-%d')
-            heatmap_data[date_str] = 0
-            current_date += timedelta(days=1)
-        
-        # Fill in actual data
-        for aggregate in daily_aggregates:
-            date_str = aggregate.start_date.strftime('%Y-%m-%d')
-            heatmap_data[date_str] = round(aggregate.total_duration / 3600, 2)
+            # Create heatmap data structure (date-value pairs)
+            heatmap_data = {}
+            current_date = start_date
+            while current_date <= end_date:
+                date_str = current_date.strftime('%Y-%m-%d')
+                heatmap_data[date_str] = 0
+                current_date += timedelta(days=1)
+            
+            # Fill in actual data
+            for aggregate in daily_aggregates:
+                date_str = aggregate.start_date.strftime('%Y-%m-%d')
+                heatmap_data[date_str] = round(aggregate.total_duration / 3600, 2)
 
-        # Calculate statistics
-        total_sessions = monthly_aggregate.session_count if monthly_aggregate else 0
-        total_hours = monthly_aggregate.total_duration / 3600 if monthly_aggregate else 0
+            # Calculate statistics
+            total_sessions = monthly_aggregate.session_count if monthly_aggregate else 0
+            total_hours = monthly_aggregate.total_duration / 3600 if monthly_aggregate else 0
 
-        response_data = {
-            'statistics': {
-                'total_hours': total_hours,
-                'total_sessions': total_sessions
-            },
-            'monthly_aggregate': AggregateSerializer(monthly_aggregate).data if monthly_aggregate else None,
-            'daily_breakdown': daily_breakdown,
-            'heatmap_data': heatmap_data,
-            'category_metadata': category_data
-        }
+            response_data = {
+                'statistics': {
+                    'total_hours': total_hours,
+                    'total_sessions': total_sessions
+                },
+                'monthly_aggregate': AggregateSerializer(monthly_aggregate).data if monthly_aggregate else None,
+                'daily_breakdown': daily_breakdown,
+                'heatmap_data': heatmap_data,
+                'category_metadata': category_data
+            }
 
         return Response(response_data, status=status.HTTP_200_OK)
     

@@ -82,7 +82,8 @@ export default function DashboardContent({
         DEBUG_DASHBOARD && console.log(`📊 DashboardContent: ${type} dashboard state:`, {
             isLoading,
             hasData: !!data,
-            isEmpty: data?.isEmpty
+            isEmpty: data?.isEmpty,
+            loadingState: loading
         });
 
         // Show loading skeleton

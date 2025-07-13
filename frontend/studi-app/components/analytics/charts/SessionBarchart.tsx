@@ -55,6 +55,7 @@ interface SessionBarchartProps {
   };
   width?: number;
   rightPadding?: number; // Padding on the right side (in px) for axis and bars
+  isEmpty?: boolean; // When true, component should not render
 }
 
 interface ProcessedSession {
@@ -75,7 +76,13 @@ export default function SessionBarchart({
   categoryMetadata,
   width = 320,
   rightPadding = 16,
+  isEmpty = false,
 }: SessionBarchartProps) {
+  // Don't render if no data available
+  if (isEmpty) {
+    return null;
+  }
+
   // Debug logs removed
 
   // Step 1: Data Processing Layer

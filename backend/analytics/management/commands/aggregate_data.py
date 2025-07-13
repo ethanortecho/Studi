@@ -11,14 +11,14 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         # Get all unique dates from active study sessions only
         dates = StudySession.objects.filter(
-            status__in=['completed', 'active']
+            status='completed'
         ).dates('start_time', 'day')
         
         for date in dates:
             # Get all active sessions for this date
             sessions = StudySession.objects.filter(
                 start_time__date=date,
-                status__in=['completed', 'active']  # Exclude cancelled sessions
+                status='completed'  # Exclude cancelled sessions
             )
             
             if not sessions.exists():
@@ -31,7 +31,7 @@ class Command(BaseCommand):
             category_durations = defaultdict(int)
             for session in sessions:
                 breakdowns = session.categoryblock_set.filter(
-                    study_session__status__in=['completed', 'active']
+                    study_session__status='completed'
                 )
                 for breakdown in breakdowns:
                     category_durations[breakdown.category.name] += breakdown.duration or 0
@@ -63,7 +63,7 @@ class Command(BaseCommand):
             weekly_sessions = StudySession.objects.filter(
                 start_time__date__gte=week_start,
                 start_time__date__lte=week_end,
-                status__in=['completed', 'active']  # Exclude cancelled sessions
+                status='completed'  # Exclude cancelled sessions
             )
             
             if weekly_sessions.exists():
@@ -72,7 +72,7 @@ class Command(BaseCommand):
                 
                 for session in weekly_sessions:
                     breakdowns = session.categoryblock_set.filter(
-                        study_session__status__in=['completed', 'active']
+                        study_session__status='completed'
                     )
                     for breakdown in breakdowns:
                         weekly_categories[breakdown.category.name] += breakdown.duration or 0
@@ -107,7 +107,7 @@ class Command(BaseCommand):
             monthly_sessions = StudySession.objects.filter(
                 start_time__date__gte=month_start,
                 start_time__date__lte=month_end,
-                status__in=['completed', 'active']  # Exclude cancelled sessions
+                status='completed'  # Exclude cancelled sessions
             )
             
             if monthly_sessions.exists():
@@ -116,7 +116,7 @@ class Command(BaseCommand):
                 
                 for session in monthly_sessions:
                     breakdowns = session.categoryblock_set.filter(
-                        study_session__status__in=['completed', 'active']
+                        study_session__status='completed'
                     )
                     for breakdown in breakdowns:
                         monthly_categories[breakdown.category.name] += breakdown.duration or 0

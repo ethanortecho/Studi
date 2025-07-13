@@ -155,7 +155,7 @@ class AggregateUpdateService:
             user=user,
             start_time__date__gte=start_date,
             start_time__date__lte=end_date,
-            status__in=['completed', 'active']
+            status='completed'
         )
         
         if not sessions.exists():
@@ -183,7 +183,7 @@ class AggregateUpdateService:
         category_durations = defaultdict(int)
         category_blocks = CategoryBlock.objects.filter(
             study_session__in=valid_sessions,
-            study_session__status__in=['completed', 'active']
+            study_session__status='completed'
         ).select_related('category')
         
         for block in category_blocks:

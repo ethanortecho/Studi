@@ -15,14 +15,14 @@ class Command(BaseCommand):
         
         # Get all unique users with study sessions (excluding cancelled ones)
         users = StudySession.objects.filter(
-            status__in=['completed', 'active']
+            status='completed'
         ).values_list('user', flat=True).distinct()
         
         for user_id in users:
             # Get all active sessions for this user
             sessions = StudySession.objects.filter(
                 user_id=user_id,
-                status__in=['completed', 'active']  # Exclude cancelled sessions
+                status='completed'  # Exclude cancelled sessions
             ).order_by('start_time')
             
             if not sessions:
@@ -63,7 +63,7 @@ class Command(BaseCommand):
             sessions = StudySession.objects.filter(
                 user_id=user_id,
                 start_time__date=start_date,  # Only get sessions that started on this exact date
-                status__in=['completed', 'active']  # Exclude cancelled sessions
+                status='completed'  # Exclude cancelled sessions
             )
         else:
             # For weekly/monthly, keep the range query but exclude cancelled
@@ -71,7 +71,7 @@ class Command(BaseCommand):
                 user_id=user_id,
                 start_time__date__gte=start_date,
                 end_time__date__lte=end_date,
-                status__in=['completed', 'active']  # Exclude cancelled sessions
+                status='completed'  # Exclude cancelled sessions
             )
         
         print(f"Creating {timeframe} aggregate for {start_date} to {end_date}")
@@ -90,14 +90,14 @@ class Command(BaseCommand):
         # Calculate break count (only from active sessions)
         break_count = Break.objects.filter(
             study_session__in=sessions,
-            study_session__status__in=['completed', 'active']
+            study_session__status='completed'
         ).count()
         
         # Calculate category durations in seconds (only from active sessions)
         category_durations = defaultdict(timedelta)
         breakdowns = CategoryBlock.objects.filter(
             study_session__in=sessions,
-            study_session__status__in=['completed', 'active']
+            study_session__status='completed'
         )
         
         for breakdown in breakdowns:

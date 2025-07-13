@@ -14,6 +14,7 @@ interface CustomPieChartProps {
   showAngularInsets?: boolean;
   angularInsetWidth?: number;
   angularInsetColor?: string;
+  isEmpty?: boolean; // When true, component should not render
 }
 
 export default function CustomPieChart({ 
@@ -27,7 +28,12 @@ export default function CustomPieChart({
   showAngularInsets = true,
   angularInsetWidth = 0,
   angularInsetColor = "white",
+  isEmpty = false,
 }: CustomPieChartProps) {
+  // Don't render if no data available
+  if (isEmpty) {
+    return null;
+  }
   // Workaround for missing TS typings on Victory's animate prop
   const PieChartAny: any = Pie.Chart;
 

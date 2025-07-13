@@ -47,6 +47,7 @@ interface WeeklyBarchartProps {
   timeframe?: 'weekly' | 'monthly';
   width?: number;
   height?: number;
+  isEmpty?: boolean; // When true, component should not render
 }
 
 const WeeklyBarchart: React.FC<WeeklyBarchartProps> = ({ 
@@ -54,8 +55,13 @@ const WeeklyBarchart: React.FC<WeeklyBarchartProps> = ({
   categoryMetadata,
   timeframe = 'weekly',
   width = 500,
-  height = 150
+  height = 150,
+  isEmpty = false
 }) => {
+  // Don't render if no data available
+  if (isEmpty) {
+    return null;
+  }
   const font = useFont(require('@/assets/fonts/Poppins-Regular.ttf'), 12);
 
   const { chartData, simpleChartData, categories, colors, maxTotal } = useMemo(() => {
@@ -205,12 +211,9 @@ const WeeklyBarchart: React.FC<WeeklyBarchartProps> = ({
     }
   }, [data, categoryMetadata, timeframe]);
 
+  // Data validation is now handled by parent isEmpty prop
   if (!data || !categoryMetadata || categories.length === 0) {
-    return (
-      <View>
-        <ThemedText className="text-secondaryText">No data available</ThemedText>
-      </View>
-    );
+    return null;
   }
 
   const currentData = chartData;

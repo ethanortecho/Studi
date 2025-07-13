@@ -67,10 +67,10 @@ export default function useAggregateData(time_frame: string,
 
     useEffect(() => {
         const fetchData = async() => {
-            console.log('🚀 fetchApi: Starting fetch process for:', cacheKey);
+            // console.log('🚀 fetchApi: Starting fetch process for:', cacheKey);
             const overallStart = performance.now();
             
-            // Check cache first - but only for potentially final data
+            // Check cache first
             // Use local date to match how sessions are stored
             const today = new Date();
             const localToday = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
@@ -78,25 +78,49 @@ export default function useAggregateData(time_frame: string,
             const isCurrentDay = (time_frame === 'daily' && start_date === localToday) || 
                                  (time_frame === 'weekly' && start_date <= localToday && (!end_date || end_date >= localToday));
             
-            console.log('📅 fetchApi: Date analysis:', {
-                cacheKey,
-                localToday,
-                isCurrentDay,
-                willUseCache: !isCurrentDay
-            });
+            // console.log('📅 fetchApi: Date analysis:', {
+            //     cacheKey,
+            //     localToday,
+            //     isCurrentDay,
+            //     willUseCache: true
+            // });
             
-            // Only use cache for non-current periods (they should be final/immutable)
-            if (!isCurrentDay && apiCache.has(cacheKey)) {
-                console.log('💾 fetchApi: Cache HIT for:', cacheKey);
-                const cacheRetrievalStart = performance.now();
-                
-                cacheAccessTimes.set(cacheKey, Date.now()); // Update access time
-                setData(apiCache.get(cacheKey));
-                setLoading(false);
-                
-                const cacheRetrievalTime = performance.now() - cacheRetrievalStart;
-                console.log(`⚡ fetchApi: Cache retrieval took ${cacheRetrievalTime.toFixed(2)}ms for ${cacheKey}`);
-                return;
+            // Check cache for all data
+            if (apiCache.has(cacheKey)) {
+                // For current day, check if cache is recent (within 30 seconds for snappy navigation)
+                if (isCurrentDay) {
+                    const cacheTime = cacheAccessTimes.get(cacheKey) || 0;
+                    const cacheAge = Date.now() - cacheTime;
+                    const maxCurrentDayAge = 30 * 1000; // 30 seconds
+                    
+                    if (cacheAge > maxCurrentDayAge) {
+                        console.log(`🕒 fetchApi: Current day cache expired (${(cacheAge/1000).toFixed(1)}s old) for: ${cacheKey}`);
+                        // Let it fall through to fresh fetch
+                    } else {
+                        console.log('💾 fetchApi: Cache HIT (current day, recent) for:', cacheKey);
+                        const cacheRetrievalStart = performance.now();
+                        
+                        cacheAccessTimes.set(cacheKey, Date.now()); // Update access time
+                        setData(apiCache.get(cacheKey));
+                        setLoading(false);
+                        
+                        const cacheRetrievalTime = performance.now() - cacheRetrievalStart;
+                        console.log(`⚡ fetchApi: Cache retrieval took ${cacheRetrievalTime.toFixed(2)}ms for ${cacheKey}`);
+                        return;
+                    }
+                } else {
+                    // Historical data - use cache without time limit
+                    console.log('💾 fetchApi: Cache HIT (historical) for:', cacheKey);
+                    const cacheRetrievalStart = performance.now();
+                    
+                    cacheAccessTimes.set(cacheKey, Date.now()); // Update access time
+                    setData(apiCache.get(cacheKey));
+                    setLoading(false);
+                    
+                    const cacheRetrievalTime = performance.now() - cacheRetrievalStart;
+                    console.log(`⚡ fetchApi: Cache retrieval took ${cacheRetrievalTime.toFixed(2)}ms for ${cacheKey}`);
+                    return;
+                }
             }
 
             console.log(`🔍 fetchApi: Cache MISS for ${cacheKey} (current day: ${isCurrentDay})`);
@@ -150,16 +174,17 @@ export default function useAggregateData(time_frame: string,
                     const jsonParseTime = performance.now() - jsonParseStart;
                     console.log(`📄 fetchApi: JSON parsing took ${jsonParseTime.toFixed(2)}ms for ${cacheKey}`);
                     
-                    // Only cache final/historical data (not current day data)
-                    if (!isCurrentDay && json.aggregate?.is_final !== false) {
-                        const cacheStoreStart = performance.now();
-                        apiCache.set(cacheKey, json);
-                        cacheAccessTimes.set(cacheKey, Date.now());
-                        manageCacheSize(); // Clean up old entries if needed
-                        const cacheStoreTime = performance.now() - cacheStoreStart;
-                        console.log(`💾 fetchApi: Data cached in ${cacheStoreTime.toFixed(2)}ms for ${cacheKey}`);
+                    // Cache all data - current day with short expiry, historical data permanently
+                    const cacheStoreStart = performance.now();
+                    apiCache.set(cacheKey, json);
+                    cacheAccessTimes.set(cacheKey, Date.now());
+                    manageCacheSize(); // Clean up old entries if needed
+                    const cacheStoreTime = performance.now() - cacheStoreStart;
+                    
+                    if (isCurrentDay) {
+                        console.log(`💾 fetchApi: Current day data cached (30s expiry) in ${cacheStoreTime.toFixed(2)}ms for ${cacheKey}`);
                     } else {
-                        console.log('🚫 fetchApi: NOT caching (current/non-final data):', cacheKey);
+                        console.log(`💾 fetchApi: Historical data cached permanently in ${cacheStoreTime.toFixed(2)}ms for ${cacheKey}`);
                     }
                     
                     const totalTime = performance.now() - overallStart;

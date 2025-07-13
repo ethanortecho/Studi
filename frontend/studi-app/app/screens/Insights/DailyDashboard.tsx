@@ -59,16 +59,15 @@ export default function DailyDashboard({
         />
       </View>
       {/* Hourly bars below main charts */}
-      {timelineData && timelineData.length > 0 && (
-        <View className="px-4 pb-4">
-          <DailyHourBars 
-            timelineData={timelineData}
-            categoryMetadata={categoryMetadata || {}}
-            width={300}
-            height={100}
-          />
-        </View>
-      )}
+      <View className="px-4 pb-4">
+        <DailyHourBars 
+          timelineData={timelineData || []}
+          categoryMetadata={categoryMetadata || {}}
+          width={300}
+          height={100}
+          isEmpty={isEmpty}
+        />
+      </View>
       
 
         

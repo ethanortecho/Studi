@@ -67,6 +67,7 @@ export default function MonthlyDashboard({
         <MonthlyHeatmap 
           heatmapData={heatmapData}
           monthDate={monthDate}
+          isEmpty={isEmpty}
         />
       </View>
       

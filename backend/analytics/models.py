@@ -22,8 +22,8 @@ class CustomUser(AbstractUser):
 
 class StudySessionManager(models.Manager):
     def active_sessions(self):
-        """Get only active and completed sessions, excluding cancelled ones"""
-        return self.filter(status__in=['active', 'completed'])
+        """Get only completed sessions, excluding active and cancelled ones"""
+        return self.filter(status='completed')
 
 class StudySession(models.Model):
     TIMER_TYPE_CHOICES = [

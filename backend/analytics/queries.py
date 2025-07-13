@@ -40,7 +40,7 @@ class StudyAnalytics:
             'user': user, 
             'start_date__gte': start_date, 
             'end_date__lte': end_date,
-            'status__in': ['completed', 'active']  # Exclude cancelled sessions
+            'status': 'completed'  # Only include completed sessions
         }
         return StudySession.objects.filter(**filters).aggregate(
             total_duration=Sum('total_duration'),
@@ -53,7 +53,7 @@ class StudyAnalytics:
         return StudySession.objects.filter(
             user=user,
             start_time__date=date,
-            status__in=['completed', 'active']  # Exclude cancelled sessions
+            status='completed'  # Only include completed sessions
         ).prefetch_related('categoryblock_set').order_by('start_time')
     
     @staticmethod
@@ -62,7 +62,7 @@ class StudyAnalytics:
             user=user,
             start_time__date__gte=week_start,
             start_time__date__lte=week_end,
-            status__in=['completed', 'active']  # Exclude cancelled sessions
+            status='completed'  # Only include completed sessions
         ).values('start_time', 'end_time', 'total_duration').order_by('start_time')
 
     @staticmethod
@@ -71,7 +71,7 @@ class StudyAnalytics:
             user=user,
             start_time__gte=start_date,
             end_time__lte=end_date,
-            status__in=['completed', 'active']  # Exclude cancelled sessions
+            status='completed'  # Only include completed sessions
         ).order_by('-total_duration').first()
 
     @staticmethod
@@ -80,7 +80,7 @@ class StudyAnalytics:
         # Build the filter conditionally
         filters = {
             'user': user,
-            'status__in': ['completed', 'active']  # Exclude cancelled sessions
+            'status': 'completed'  # Only include completed sessions
         }
         if start_date:
             filters['start_time__gte'] = start_date
@@ -98,7 +98,7 @@ class StudyAnalytics:
         """Get longest study session from a user within optional date range"""
         filters = {
             'user': user,
-            'status__in': ['completed', 'active']  # Exclude cancelled sessions
+            'status': 'completed'  # Only include completed sessions
         }
         if start_date:
             filters['start_time__gte'] = start_date
@@ -121,7 +121,7 @@ class StudyAnalytics:
 
         return CategoryBlock.objects.filter(
             study_session__user=user,
-            study_session__status__in=['completed', 'active'],  # Exclude cancelled sessions
+            study_session__status='completed',  # Only include completed sessions
             start_time__gte=start_date
         ).values('category__name').annotate(
             total_duration=Sum('duration'),
@@ -133,7 +133,7 @@ class StudyAnalytics:
         """Get average productivity rating and related stats"""
         return StudySession.objects.filter(
             user=user,
-            status__in=['completed', 'active']  # Exclude cancelled sessions
+            status='completed'  # Only include completed sessions
         ).aggregate(
             avg_productivity=Avg('productivity_rating'),
             total_sessions=Count('id')
@@ -144,7 +144,7 @@ class StudyAnalytics:
         """Get user's most recent study sessions"""
         return StudySession.objects.filter(
             user=user,
-            status__in=['completed', 'active']  # Exclude cancelled sessions
+            status='completed'  # Only include completed sessions
         ).order_by('-start_time')[:limit]
 
     @staticmethod
@@ -156,7 +156,7 @@ class StudyAnalytics:
     def get_all_breaks_in_range(user, start_date, end_date):
         return Break.objects.filter(
             study_session__user=user,
-            study_session__status__in=['completed', 'active'],  # Exclude cancelled sessions
+            study_session__status='completed',  # Only include completed sessions
             start_time__date__gte=start_date,
             end_time__date__lte=end_date
         )
@@ -166,7 +166,7 @@ class StudyAnalytics:
         """Get only completed sessions, excluding cancelled ones"""
         filters = {
             'user': user,
-            'status__in': ['completed', 'active']  # Exclude cancelled
+            'status': 'completed'  # Only include completed sessions
         }
         if start_date:
             filters['start_time__gte'] = start_date

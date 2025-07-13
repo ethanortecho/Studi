@@ -72,11 +72,10 @@ export default function WeeklyDashboard({
         
        
         <View className="px-4 pb-4">
-          {sessionTimes && (
-            <StudyDayBars
-              sessionTimes={sessionTimes}
-            />
-          )}
+          <StudyDayBars
+            sessionTimes={sessionTimes || []}
+            isEmpty={isEmpty}
+          />
         </View>
       </View>
       

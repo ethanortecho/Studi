@@ -4,12 +4,18 @@ import { View, Text } from 'react-native';
 interface MonthlyHeatmapProps {
   heatmapData?: { [date: string]: number };
   monthDate: Date;
+  isEmpty?: boolean; // When true, component should not render
 }
 
 const MonthlyHeatmap: React.FC<MonthlyHeatmapProps> = ({ 
   heatmapData = {}, 
-  monthDate 
+  monthDate,
+  isEmpty = false
 }) => {
+  // Don't render if no data available
+  if (isEmpty) {
+    return null;
+  }
   // Get month name and year
   const monthName = monthDate.toLocaleDateString('en-US', { 
     month: 'long', 
@@ -138,7 +144,7 @@ const MonthlyHeatmap: React.FC<MonthlyHeatmapProps> = ({
   };
 
   return (
-    <View className="bg-surface rounded-lg p-4">
+    <View className="bg-background border border-surface rounded-lg p-4">
       {/* Title */}
       <Text className="text-lg font-bold text-primaryText mb-4 text-center">
         {monthName}

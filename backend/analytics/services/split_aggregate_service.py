@@ -70,11 +70,11 @@ class SplitAggregateUpdateService:
         """
         Calculate complete daily aggregate data including timeline
         """
-        # Get all active sessions for this date
+        # Get only completed sessions for this date (exclude ongoing and cancelled)
         sessions = StudySession.objects.filter(
             user=user,
             start_time__date=date,
-            status__in=['completed', 'active']
+            status='completed'
         ).prefetch_related('categoryblock_set__category', 'break_set')
         
         if not sessions.exists():

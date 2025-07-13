@@ -11,6 +11,7 @@ interface SessionTime {
 
 interface StudyDayBarsProps {
   sessionTimes: SessionTime[];
+  isEmpty?: boolean; // When true, component should not render
 }
 
 interface ProcessedDayData {
@@ -18,7 +19,11 @@ interface ProcessedDayData {
   sessions: DaySession[];
 }
 
-const StudyDayBars: React.FC<StudyDayBarsProps> = ({ sessionTimes }) => {
+const StudyDayBars: React.FC<StudyDayBarsProps> = ({ sessionTimes, isEmpty = false }) => {
+  // Don't render if no data available
+  if (isEmpty) {
+    return null;
+  }
   
   const processedData = useMemo(() => {
     // Day labels for the week
@@ -98,7 +103,7 @@ const StudyDayBars: React.FC<StudyDayBarsProps> = ({ sessionTimes }) => {
   const LABEL_COLUMN_WIDTH = 60; // 48 label + 12 margin
   
   return (
-    <DashboardCard className="bg-surface rounded-[35px]">
+    <DashboardCard className="bg-background border border-surface rounded-[35px]">
       <Text className="text-xl font-semibold text-primaryText py-14 pt-10 px-8 text-center">
         Your sessions throughout the day
       </Text>

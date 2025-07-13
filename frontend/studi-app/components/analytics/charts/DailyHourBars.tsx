@@ -12,6 +12,8 @@ interface Props {
   height?: number;
   /** Full chart width. Default 300. */
   width?: number;
+  /** When true, component should not render */
+  isEmpty?: boolean;
 }
 
 /** Baseline / grid colour */
@@ -24,7 +26,12 @@ const DailyHourBars: React.FC<Props> = ({
   categoryMetadata,
   height = 100,
   width = 300,
+  isEmpty = false,
 }) => {
+  // Don't render if no data available
+  if (isEmpty) {
+    return null;
+  }
   /* ------------------------------------------------------------------ */
   /*                           Data Processing                           */
   /* ------------------------------------------------------------------ */
@@ -111,7 +118,7 @@ const DailyHourBars: React.FC<Props> = ({
   const hourLabelPositions = [0, 6, 12, 18];
 
   return (
-    <DashboardCard className="bg-surface rounded-[35px]">
+    <DashboardCard className="bg-background border  border-surface rounded-[35px]">
       {/* Title */}
       <Text className="text-xl font-semibold text-primaryText py-14 pt-10 px-8 text-center">
         Study minutes per hour

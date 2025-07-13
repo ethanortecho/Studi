@@ -28,11 +28,6 @@ export function useDashboardData({ dailyDate, weeklyDate, monthlyDate }: UseDash
     // Format dates for API
     const dailyDateStr = dailyDate ? formatDateForAPI(dailyDate) : formatDateForAPI(new Date());
     const currentWeekStart = weeklyDate || getWeekStart(new Date());
-    // ISO strings for the 7 days in the currently visible week (Sun→Sat)
-    const weekDates = useMemo(() => {
-        return getWeekDays(currentWeekStart).map(d => formatDateForAPI(d));
-    }, [currentWeekStart]);
-
     const weeklyStartStr = formatDateForAPI(currentWeekStart);
     const weeklyEndStr = formatDateForAPI(getWeekEnd(currentWeekStart));
     
@@ -51,9 +46,7 @@ export function useDashboardData({ dailyDate, weeklyDate, monthlyDate }: UseDash
     const { data: weeklyResponse, loading: weeklyLoading } = useAggregateData('weekly', weeklyStartStr, weeklyEndStr);
     const { data: monthlyResponse, loading: monthlyLoading } = useAggregateData('monthly', monthlyStartStr, monthlyEndStr);
 
-    // Prefetch adjacent dates *only if those dates are NOT already in the current weekDates array*.
-    // This prevents redundant hook instances and extra console noise when switching between days
-    // inside the same week.
+    // Prefetch adjacent dates for smoother navigation
     const currentDaily = dailyDate || new Date();
     const currentWeekly = weeklyDate || getWeekStart(new Date());
     
@@ -62,31 +55,48 @@ export function useDashboardData({ dailyDate, weeklyDate, monthlyDate }: UseDash
     const prevWeek = navigateDate(currentWeekly, 'prev', 'weekly');
     const nextWeek = navigateDate(currentWeekly, 'next', 'weekly');
 
-    DEBUG_DASHBOARD && console.log('🚀 useDashboardData: Skipping daily prev/next prefetch — 7 days already loaded');
+    // Prefetch only prev/next days for daily navigation efficiency
+    const prevDayStr = formatDateForAPI(prevDay);
+    const nextDayStr = formatDateForAPI(nextDay);
+    
+    DEBUG_DASHBOARD && console.log('🚀 useDashboardData: Prefetching prev/next days:', { prevDayStr, nextDayStr });
 
-    // 🔄 Fetch all 7 daily responses for the current week (prefetch)
-    const weekDailyResults = weekDates.map(dateStr => {
-        const { data, loading } = useAggregateData('daily', dateStr, undefined);
-        return { dateStr, data, loading };
-    });
+    // 🔄 Prefetch adjacent daily data (prev/next only)
+    const { data: prevDayData, loading: prevDayLoading } = useAggregateData('daily', prevDayStr, undefined);
+    const { data: nextDayData, loading: nextDayLoading } = useAggregateData('daily', nextDayStr, undefined);
 
-    // Derive maps for UI (no state updates — avoids render loop)
+    // Create simplified weekDaily for compatibility (only contains current/prev/next days)
     const weekDaily = useMemo(() => {
         const dataMap: { [iso: string]: DailyInsightsResponse | null } = {};
         const loadingMap: { [iso: string]: boolean } = {};
         const hasDataMap: { [iso: string]: boolean } = {};
 
-        weekDailyResults.forEach(({ dateStr, data, loading }) => {
-            dataMap[dateStr] = data || null;
-            loadingMap[dateStr] = loading;
-            if (data && data.aggregate) {
-                const total = parseInt(data.aggregate.total_duration) || 0;
-                hasDataMap[dateStr] = total > 0;
-            }
-        });
+        // Include current day data
+        dataMap[dailyDateStr] = dailyResponse || null;
+        loadingMap[dailyDateStr] = dailyLoading;
+        if (dailyResponse && dailyResponse.aggregate) {
+            const total = parseInt(dailyResponse.aggregate.total_duration) || 0;
+            hasDataMap[dailyDateStr] = total > 0;
+        }
+
+        // Include prev day data
+        dataMap[prevDayStr] = prevDayData || null;
+        loadingMap[prevDayStr] = prevDayLoading;
+        if (prevDayData && prevDayData.aggregate) {
+            const total = parseInt(prevDayData.aggregate.total_duration) || 0;
+            hasDataMap[prevDayStr] = total > 0;
+        }
+
+        // Include next day data
+        dataMap[nextDayStr] = nextDayData || null;
+        loadingMap[nextDayStr] = nextDayLoading;
+        if (nextDayData && nextDayData.aggregate) {
+            const total = parseInt(nextDayData.aggregate.total_duration) || 0;
+            hasDataMap[nextDayStr] = total > 0;
+        }
 
         return { data: dataMap, loading: loadingMap, hasData: hasDataMap };
-    }, [weekDailyResults]);
+    }, [dailyResponse, dailyLoading, prevDayData, prevDayLoading, nextDayData, nextDayLoading, dailyDateStr, prevDayStr, nextDayStr]);
 
     // Update state when data comes in
     useEffect(() => {
@@ -118,7 +128,7 @@ export function useDashboardData({ dailyDate, weeklyDate, monthlyDate }: UseDash
         if (!dailyData || dailyLoading) return false;
         const totalDuration = parseInt(dailyData.aggregate?.total_duration) || 0;
         const sessionCount = dailyData.aggregate?.session_count || 0;
-        const isEmpty = totalDuration < 60 || (totalDuration === 0 && sessionCount === 0);
+        const isEmpty = totalDuration === 0 && sessionCount === 0;
         
         const end = performance.now();
         DEBUG_DASHBOARD && console.log(`⏱️ useDashboardData: isDailyEmpty calculated in ${(end - start).toFixed(2)}ms, result: ${isEmpty}`);
@@ -132,7 +142,7 @@ export function useDashboardData({ dailyDate, weeklyDate, monthlyDate }: UseDash
         if (!weeklyData || weeklyLoading) return false;
         const totalDuration = parseInt(weeklyData.aggregate?.total_duration) || 0;
         const sessionCount = weeklyData.aggregate?.session_count || 0;
-        const isEmpty = totalDuration < 60 || (totalDuration === 0 && sessionCount === 0);
+        const isEmpty = totalDuration === 0 && sessionCount === 0;
         
         const end = performance.now();
         DEBUG_DASHBOARD && console.log(`⏱️ useDashboardData: isWeeklyEmpty calculated in ${(end - start).toFixed(2)}ms, result: ${isEmpty}`);
@@ -146,7 +156,7 @@ export function useDashboardData({ dailyDate, weeklyDate, monthlyDate }: UseDash
         if (!monthlyData || monthlyLoading) return false;
         const totalDuration = parseInt(monthlyData.monthly_aggregate?.total_duration) || 0;
         const sessionCount = monthlyData.monthly_aggregate?.session_count || 0;
-        const isEmpty = totalDuration < 60 || (totalDuration === 0 && sessionCount === 0);
+        const isEmpty = totalDuration === 0 && sessionCount === 0;
         
         const end = performance.now();
         DEBUG_DASHBOARD && console.log(`⏱️ useDashboardData: isMonthlyEmpty calculated in ${(end - start).toFixed(2)}ms, result: ${isEmpty}`);
@@ -363,7 +373,7 @@ export function useDashboardData({ dailyDate, weeklyDate, monthlyDate }: UseDash
         weekly: processedWeeklyData,
         monthly: processedMonthlyData,
         loading: {
-            daily: dailyLoading || anyWeekDailyLoading,
+            daily: dailyLoading, // Remove anyWeekDailyLoading to fix skeleton display
             weekly: weeklyLoading,
             monthly: monthlyLoading
         },

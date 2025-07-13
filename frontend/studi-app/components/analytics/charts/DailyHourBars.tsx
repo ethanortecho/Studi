@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { View, Text } from 'react-native';
 import { TimelineSession, CategoryMetadata } from '@/types/api';
 import DashboardCard from '@/components/insights/DashboardContainer';
+import Legend from '@/components/analytics/DashboardLegend';
 
 interface Props {
   /** Raw session timeline data for a single day */
@@ -14,6 +15,8 @@ interface Props {
   width?: number;
   /** When true, component should not render */
   isEmpty?: boolean;
+  /** Category durations for legend display */
+  categoryDurations?: { [key: string]: number };
 }
 
 /** Baseline / grid colour */
@@ -27,6 +30,7 @@ const DailyHourBars: React.FC<Props> = ({
   height = 100,
   width = 300,
   isEmpty = false,
+  categoryDurations,
 }) => {
   // Don't render if no data available
   if (isEmpty) {
@@ -230,6 +234,16 @@ const DailyHourBars: React.FC<Props> = ({
             </View>
           </View>
         </View>
+        
+        {/* Legend */}
+        {categoryDurations && categoryMetadata && (
+          <View className="flex-row items-center justify-center pt-8 px-4">
+            <Legend 
+              category_durations={categoryDurations} 
+              category_metadata={categoryMetadata} 
+            />
+          </View>
+        )}
       </View>
     </DashboardCard>
   );

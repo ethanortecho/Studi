@@ -86,10 +86,10 @@ class SplitAggregateUpdateService:
                 'timeline_data': []
             }
         
-        # Filter sessions with valid durations
+        # Filter sessions with valid durations  
         valid_sessions = [s for s in sessions if s.total_duration and s.total_duration > 0]
         
-        # Calculate basic metrics
+        # Calculate basic metrics (already in seconds)
         total_duration = sum(s.total_duration for s in valid_sessions)
         session_count = len(valid_sessions)
         
@@ -98,7 +98,7 @@ class SplitAggregateUpdateService:
             study_session__in=valid_sessions
         ).count()
         
-        # Calculate category durations
+        # Calculate category durations (already in seconds)
         category_durations = defaultdict(int)
         for session in valid_sessions:
             for block in session.categoryblock_set.all():

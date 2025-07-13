@@ -134,29 +134,43 @@ class Command(BaseCommand):
                     user=user,
                     start_time=start_time,
                     end_time=end_time,
-                    total_duration=duration,
-                    productivity_rating=random.choice(['Low', 'Medium', 'High'])
+                    total_duration=int(duration.total_seconds()),  # Convert to integer seconds
+                    status='completed',  # Ensure all mock sessions are completed
+                    productivity_rating=random.choice([1, 2, 3, 4, 5])  # Use numeric ratings 1-5
                 )
 
                 # Create breakdowns for the session
                 current_time = start_time
-                remaining_minutes = duration_minutes
+                remaining_duration = duration  # Use timedelta for precision
                 
                 # Determine number of breakdowns based on session length
-                max_breakdowns = min(4, remaining_minutes // 15)
+                max_breakdowns = min(4, duration_minutes // 15)
                 if max_breakdowns < 1:
                     max_breakdowns = 1
                 num_breakdowns = random.randint(1, max_breakdowns)
                 
-                # Distribute time across breakdowns
+                # Distribute time across breakdowns with exact precision
+                breakdown_durations = []
+                total_minutes_allocated = 0
+                
+                # Generate breakdown durations ensuring they sum to exactly session duration
                 for i in range(num_breakdowns):
                     if i == num_breakdowns - 1:
-                        breakdown_minutes = remaining_minutes
+                        # Last breakdown gets exactly the remaining time
+                        breakdown_minutes = duration_minutes - total_minutes_allocated
                     else:
-                        min_remaining = 15 * (num_breakdowns - i - 1)
-                        max_possible = remaining_minutes - min_remaining
-                        breakdown_minutes = random.randint(15, max(16, max_possible))
+                        # Calculate min/max for this breakdown
+                        min_remaining = 15 * (num_breakdowns - i - 1)  # Reserve 15min per remaining breakdown
+                        max_remaining = duration_minutes - total_minutes_allocated
+                        max_for_this = max_remaining - min_remaining
+                        
+                        breakdown_minutes = random.randint(15, max(15, max_for_this))
+                        total_minutes_allocated += breakdown_minutes
                     
+                    breakdown_durations.append(breakdown_minutes)
+                
+                # Create CategoryBlocks with exact durations
+                for breakdown_minutes in breakdown_durations:
                     breakdown_duration = timedelta(minutes=breakdown_minutes)
                     
                     CategoryBlock.objects.create(
@@ -164,11 +178,10 @@ class Command(BaseCommand):
                         category=random.choice(category_objects),
                         start_time=current_time,
                         end_time=current_time + breakdown_duration,
-                        duration=breakdown_duration
+                        duration=int(breakdown_duration.total_seconds())  # Convert to integer seconds
                     )
 
                     current_time += breakdown_duration
-                    remaining_minutes -= breakdown_minutes
 
         self.stdout.write(
             self.style.SUCCESS(

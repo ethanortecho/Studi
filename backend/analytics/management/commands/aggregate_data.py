@@ -24,7 +24,7 @@ class Command(BaseCommand):
             if not sessions.exists():
                 continue
                 
-            # Calculate total duration by summing seconds
+            # Calculate total duration by summing integer seconds
             total_duration = sum(session.total_duration or 0 for session in sessions)
             
             # Calculate category durations (only from active sessions)

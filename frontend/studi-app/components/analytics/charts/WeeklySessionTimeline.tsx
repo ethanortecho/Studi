@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, Dimensions } from 'react-native';
 import DayTimeline, { DaySession, TimeWindow } from '../DayTimeline';
 import DashboardCard from '@/components/insights/DashboardContainer';
 
@@ -96,11 +96,12 @@ const StudyDayBars: React.FC<StudyDayBarsProps> = ({ sessionTimes, isEmpty = fal
   
   const { processedDays, timeWindow } = processedData;
   
-  /** Fixed timeline width used across header and day rows */
-  const TIMELINE_WIDTH = 250;
-
-  /** Label column width (must match DayTimeline) */
-  const LABEL_COLUMN_WIDTH = 60; // 48 label + 12 margin
+  // Calculate responsive sizing based on screen width
+  const { width: screenWidth } = Dimensions.get('window');
+  const containerPadding = 80; // 40px padding on each side (px-10)
+  const labelColumnWidth = 60; // Width for day labels (Mon, Tue, etc.)
+  const availableWidth = screenWidth - containerPadding - labelColumnWidth;
+  const timelineWidth = Math.min(availableWidth, 250); // Cap at 300px for larger screens
   
   return (
     <DashboardCard className="bg-background border border-surface rounded-[35px]">
@@ -114,10 +115,10 @@ const StudyDayBars: React.FC<StudyDayBarsProps> = ({ sessionTimes, isEmpty = fal
         <View
           style={{
             marginBottom: 24,
-            marginLeft: LABEL_COLUMN_WIDTH, // align with day timelines
+            marginLeft: labelColumnWidth, // align with day timelines
           }}
         >
-          <View style={{ position: 'relative', width: TIMELINE_WIDTH }}>
+          <View style={{ position: 'relative', width: timelineWidth }}>
             {/* Baseline */}
             <View
               style={{
@@ -181,7 +182,7 @@ const StudyDayBars: React.FC<StudyDayBarsProps> = ({ sessionTimes, isEmpty = fal
               dayLabel={day.day}
               sessions={day.sessions}
               timeWindow={timeWindow}
-              timelineWidth={TIMELINE_WIDTH}
+              timelineWidth={timelineWidth}
             />
           ))}
         </View>

@@ -66,6 +66,7 @@ export default function DailyDashboard({
           width={300}
           height={100}
           isEmpty={isEmpty}
+          categoryDurations={categoryDurations}
         />
       </View>
       

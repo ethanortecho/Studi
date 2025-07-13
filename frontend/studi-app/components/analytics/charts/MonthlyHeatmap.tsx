@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, Dimensions } from 'react-native';
 
 interface MonthlyHeatmapProps {
   heatmapData?: { [date: string]: number };
@@ -69,6 +69,15 @@ const MonthlyHeatmap: React.FC<MonthlyHeatmapProps> = ({
 
   const { calendar, weeksNeeded } = getCalendarData();
 
+  // Calculate responsive sizing based on screen width
+  const { width: screenWidth } = Dimensions.get('window');
+  const containerPadding = 32; // 16px padding on each side (p-4)
+  const weekdayLabelWidth = 48; // Width for Mon/Tue/Wed labels
+  const availableWidth = screenWidth - containerPadding - weekdayLabelWidth;
+  const cellSize = Math.floor(availableWidth / weeksNeeded); // Divide by number of weeks
+  const maxCellSize = 40; // Cap maximum size for larger screens
+  const finalCellSize = Math.min(cellSize, maxCellSize);
+
   // Format date for heatmap data lookup
   const formatDateKey = (dayNumber: number) => {
     const year = monthDate.getFullYear();
@@ -101,7 +110,7 @@ const MonthlyHeatmap: React.FC<MonthlyHeatmapProps> = ({
         {weekdays.map((day, dayIndex) => (
           <View key={day} className="flex-row mb-1">
             {/* Weekday label */}
-            <View className="w-12 justify-center">
+            <View style={{ width: weekdayLabelWidth }} className="justify-center">
               <Text className="text-xs text-secondaryText">{day}</Text>
             </View>
             
@@ -113,20 +122,21 @@ const MonthlyHeatmap: React.FC<MonthlyHeatmapProps> = ({
               const backgroundColor = dayNumber ? getColorIntensity(studyHours) : 'transparent';
               
               return (
-                <View key={weekIndex} className="px-7" style={{ width: 40 }}>
+                <View key={weekIndex} style={{ width: finalCellSize, paddingHorizontal: 2 }}>
                   <View 
                     className={`rounded-md items-center justify-center ${dayNumber ? 'border border-gray-700' : ''}`}
                     style={{ 
-                      width: 40,
-                      height: 40,
+                      width: finalCellSize - 4, // Account for padding
+                      height: finalCellSize - 4,
                       backgroundColor: backgroundColor
                     }}
                     accessibilityLabel={dayNumber ? `${dayNumber} ${monthName.split(' ')[0]}, ${studyHours.toFixed(1)} hours studied` : 'Empty day'}
                   >
                     {dayNumber && (
                       <Text 
-                        className="text-xs font-medium" 
+                        className="font-medium" 
                         style={{ 
+                          fontSize: finalCellSize > 35 ? 12 : 10, // Responsive font size
                           color: studyHours > 1.5 ? 'white' : studyHours > 0 ? '#374151' : 'rgba(107, 114, 128, 0.6)' // Dynamic text color based on intensity
                         }}
                       >
@@ -156,14 +166,21 @@ const MonthlyHeatmap: React.FC<MonthlyHeatmapProps> = ({
       {/* Legend */}
       <View className="flex-row items-center justify-center mt-4 gap-2">
         <Text className="text-xs text-secondaryText font-medium">Less</Text>
-        {[0, 0.75, 1.5, 2.25, 3].map((hours, index) => (
-          <View
-            key={index}
-            className="w-3 h-3 rounded-sm border border-gray-700"
-            style={{ backgroundColor: getColorIntensity(hours) }}
-            accessibilityLabel={`${hours} hours intensity level`}
-          />
-        ))}
+        {[0, 0.75, 1.5, 2.25, 3].map((hours, index) => {
+          const legendCellSize = Math.min(finalCellSize * 0.4, 12); // Scale with calendar but cap at 12px
+          return (
+            <View
+              key={index}
+              className="rounded-sm border border-gray-700"
+              style={{ 
+                width: legendCellSize, 
+                height: legendCellSize,
+                backgroundColor: getColorIntensity(hours) 
+              }}
+              accessibilityLabel={`${hours} hours intensity level`}
+            />
+          );
+        })}
         <Text className="text-xs text-secondaryText font-medium">More</Text>
       </View>
       

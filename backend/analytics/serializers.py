@@ -66,6 +66,11 @@ class StudySessionSerializer(serializers.ModelSerializer):
     def complete_session(self, instance, validated_data):
         instance.end_time = validated_data.get('end_time')
         instance.status = validated_data.get('status', 'completed')
+        
+        # Update productivity rating if provided
+        if 'productivity_rating' in validated_data:
+            instance.productivity_rating = validated_data.get('productivity_rating')
+            
         instance.save()
         return instance
 

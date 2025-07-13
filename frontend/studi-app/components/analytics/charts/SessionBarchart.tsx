@@ -90,7 +90,9 @@ export default function SessionBarchart({
 
     // Calculate session durations in minutes
     const durationStart = performance.now();
-    const sessionDurations = timelineData.map(session => {
+    // Filter out ongoing sessions (end_time is null) before calculating durations
+    const completedSessions = timelineData.filter(session => session.end_time !== null);
+    const sessionDurations = completedSessions.map(session => {
       const start = new Date(session.start_time).getTime();
       const end = new Date(session.end_time).getTime();
       return (end - start) / (1000 * 60); // Convert to minutes
@@ -169,11 +171,12 @@ export default function SessionBarchart({
 
     // Step 3: Process each session
     const sessionProcessingStart = performance.now();
-    const processedSessions: ProcessedSession[] = timelineData.map((session, index) => {
+    const processedSessions: ProcessedSession[] = completedSessions.map((session, index) => {
       const sessionDuration = sessionDurations[index];
       
       // Process segments within this session
-      const segments = session.breakdowns.map(breakdown => {
+      const breakdowns = session.breakdowns || session.category_blocks || [];
+      const segments = breakdowns.map(breakdown => {
         const categoryId = breakdown.category.toString();
         const categoryInfo = categoryMetadata[categoryId];
         const segmentDurationMinutes = breakdown.duration / 60; // Convert seconds to minutes

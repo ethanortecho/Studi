@@ -1,6 +1,7 @@
-import { useState, useEffect, createContext, ReactNode } from "react";
+import { useState, useEffect, createContext, ReactNode, useCallback } from "react";
+import { AppState } from 'react-native';
 import { fetchCategories, Category, fetchBreakCategory } from '@/utils/studySession';
-import { createStudySession, endStudySession, createCategoryBlock, endCategoryBlock, cancelStudySession } from '../utils/studySession';
+import { createStudySession, endStudySession, createCategoryBlock, endCategoryBlock, cancelStudySession, updateSessionRating } from '../utils/studySession';
 import SessionStatsModal from '@/components/modals/SessionStatsModal';
 
 
@@ -16,6 +17,7 @@ interface StudySessionContextType {
   sessionStatsModal: {
     isVisible: boolean;
     sessionDuration: number; // in minutes
+    completedSessionId?: string; // For updating rating after session is completed
   };
   startSession: () => Promise<{ id: number }>;
   stopSession: () => Promise<void>;
@@ -63,11 +65,16 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
   const [breakCategory, setBreakCategory] = useState<Category | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
+  
+  // Background session management
+  const [backgroundStartTime, setBackgroundStartTime] = useState<Date | null>(null);
+  const [sessionPausedDueToBackground, setSessionPausedDueToBackground] = useState(false);
 
   // Session stats modal state
   const [sessionStatsModal, setSessionStatsModal] = useState({
     isVisible: false,
     sessionDuration: 0,
+    completedSessionId: undefined,
   });
 
   // Computed property: session is paused if we have a paused category ID
@@ -90,6 +97,84 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
           .catch(error => console.error('Error fetching break category:', error));
   }, []);
 
+  // Handle app state changes with smart background session management
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: string) => {
+      console.log('Hook: App state changed to:', nextAppState);
+      
+      if (nextAppState === 'background' || nextAppState === 'inactive') {
+        // App going to background
+        if (sessionId && !sessionPausedDueToBackground) {
+          console.log('Hook: App going to background with active session, starting background timer');
+          setBackgroundStartTime(new Date());
+        }
+      } else if (nextAppState === 'active') {
+        // App coming back to foreground
+        if (backgroundStartTime && sessionId) {
+          const backgroundDuration = new Date().getTime() - backgroundStartTime.getTime();
+          const backgroundMinutes = backgroundDuration / (1000 * 60);
+          
+          console.log(`Hook: App returning to foreground after ${backgroundMinutes.toFixed(1)} minutes`);
+          
+          if (backgroundMinutes > 30 && !sessionPausedDueToBackground) {
+            // Auto-pause session due to extended background time
+            console.log('Hook: Auto-pausing session due to extended background time (>30 min)');
+            setSessionPausedDueToBackground(true);
+            // Pause the current category block but don't end the session
+            if (currentCategoryBlockId && currentCategoryId) {
+              pauseSession().catch(error => {
+                console.error('Hook: Failed to auto-pause session:', error);
+              });
+            }
+          }
+        }
+        
+        // Clear background time when returning to active
+        setBackgroundStartTime(null);
+      }
+    };
+
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    
+    return () => {
+      subscription?.remove();
+    };
+  }, [sessionId, backgroundStartTime, sessionPausedDueToBackground, currentCategoryBlockId, currentCategoryId, pauseSession]);
+
+  // Cleanup hanging sessions on app startup
+  useEffect(() => {
+    const checkForHangingSessions = async () => {
+      try {
+        console.log('Hook: Checking for hanging sessions on app startup...');
+        
+        // Call backend endpoint to check for and cleanup hanging sessions
+        const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000'}/analytics/cleanup-hanging-sessions/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Basic ${btoa('ethanortecho:EthanVer2010!')}`
+          },
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          if (result.cleaned_sessions > 0) {
+            console.log(`Hook: Cleaned up ${result.cleaned_sessions} hanging session(s) on startup`);
+          }
+        } else {
+          console.warn('Hook: Failed to check for hanging sessions:', response.status);
+        }
+      } catch (error) {
+        console.error('Hook: Error checking for hanging sessions:', error);
+        // Don't throw - this shouldn't break app startup
+      }
+    };
+    
+    // Run hanging session check on app startup (only once)
+    checkForHangingSessions();
+  }, []); // Empty dependency array - only run once on mount
+
   const startSession = async () => {
     console.log("Hook: startSession called");
     try {
@@ -105,16 +190,21 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const stopSession = async () => {
+  const stopSession = useCallback(async () => {
     console.log("Hook: stopSession called, sessionId:", sessionId);
     if (sessionId && sessionStartTime) {
       try {
         const sessionEndTime = new Date();
-        const res = await endStudySession(String(sessionId), sessionEndTime);
         
         // Calculate total session duration (including breaks)
         const durationMs = sessionEndTime.getTime() - sessionStartTime.getTime();
         const durationMinutes = Math.round(durationMs / (1000 * 60));
+        
+        // Store session ID before resetting
+        const currentSessionId = String(sessionId);
+        
+        // End session immediately (without rating) to ensure data is saved
+        const res = await endStudySession(currentSessionId, sessionEndTime);
         
         // Reset session state
         setSessionId(null);
@@ -123,10 +213,15 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
         setPausedCategoryId(null);
         setSessionStartTime(null);
         
-        // Show session stats modal
+        // Reset background tracking state
+        setBackgroundStartTime(null);
+        setSessionPausedDueToBackground(false);
+        
+        // Show session stats modal for rating
         setSessionStatsModal({
           isVisible: true,
           sessionDuration: durationMinutes,
+          completedSessionId: currentSessionId, // Store completed session ID for rating update
         });
         
         return res;
@@ -135,9 +230,9 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
         throw error;
       }
     }
-  };
+  }, [sessionId, sessionStartTime]);
 
-  const pauseSession = async () => {
+  const pauseSession = useCallback(async () => {
     console.log(`Hook: pauseSession called, currentCategory: ${getCategoryNameById(currentCategoryId)} (ID: ${currentCategoryId})`);
     if (!breakCategory) {
       console.error("Hook: breakCategory not available");
@@ -162,7 +257,7 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
         throw error;
       }
     }
-  };
+  }, [currentCategoryBlockId, currentCategoryId, breakCategory, sessionId]);
 
   const resumeSession = async () => {
     console.log(`Hook: resumeSession called, pausedCategory: ${getCategoryNameById(pausedCategoryId)} (ID: ${pausedCategoryId})`);
@@ -174,6 +269,13 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
         setCurrentCategoryBlockId(res.id);
         setCurrentCategoryId(pausedCategoryId);
         setPausedCategoryId(null);
+        
+        // Clear background pause state if resuming after background auto-pause
+        if (sessionPausedDueToBackground) {
+          setSessionPausedDueToBackground(false);
+          console.log("Hook: Cleared background pause state on manual resume");
+        }
+        
         console.log("Hook: resumeSession completed, switched back to study category");
         return res;
       } catch (error) {
@@ -240,13 +342,18 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
     console.log("Hook: cancelSession called, sessionId:", sessionId);
     if (sessionId) {
       try {
-        const res = await cancelStudySession(String(sessionId));
+        const cancelTime = new Date(); // Use local time when cancelling
+        const res = await cancelStudySession(String(sessionId), cancelTime);
         // Reset all session state
         setSessionId(null);
         setCurrentCategoryBlockId(null);
         setCurrentCategoryId(null);
         setPausedCategoryId(null);
         setSessionStartTime(null);
+        
+        // Reset background tracking state
+        setBackgroundStartTime(null);
+        setSessionPausedDueToBackground(false);
         console.log("Hook: cancelSession completed");
         return res;
       } catch (error) {
@@ -263,10 +370,29 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const handleRatingSubmit = async (rating: number) => {
+    console.log("Hook: handleRatingSubmit called with rating:", rating);
+    
+    const { completedSessionId } = sessionStatsModal;
+    if (!completedSessionId) {
+      throw new Error("No completed session ID found");
+    }
+    
+    try {
+      const res = await updateSessionRating(completedSessionId, rating);
+      console.log("Hook: Session rating updated successfully:", rating);
+      return res;
+    } catch (error) {
+      console.error("Hook: Failed to update session rating:", error);
+      throw error;
+    }
+  };
+
   const hideSessionStats = () => {
     setSessionStatsModal({
       isVisible: false,
       sessionDuration: 0,
+      completedSessionId: undefined,
     });
   };
 
@@ -304,6 +430,7 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
         visible={sessionStatsModal.isVisible}
         sessionDuration={sessionStatsModal.sessionDuration}
         onDismiss={hideSessionStats}
+        onRatingSubmit={handleRatingSubmit}
       />
     </StudySessionContext.Provider>
   );

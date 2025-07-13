@@ -121,12 +121,22 @@ export const createStudySession = async (startTime: Date) => {
     return data;
   };
   
-  export const endStudySession = async (sessionId: string, endTime: Date) => {
-    console.log("API: endStudySession called with", sessionId, endTime);
+  export const endStudySession = async (sessionId: string, endTime: Date, productivityRating?: number) => {
+    console.log("API: endStudySession called with", sessionId, endTime, productivityRating);
     
     // Preserve local calendar date by adjusting for timezone offset
     const localEndTime = new Date(endTime.getTime() - (endTime.getTimezoneOffset() * 60000));
     console.log("API: Adjusted end time for timezone:", localEndTime);
+    
+    const requestBody: any = {
+      end_time: localEndTime,
+      status: "completed"
+    };
+    
+    // Add productivity rating if provided (1-5)
+    if (productivityRating !== undefined && productivityRating >= 1 && productivityRating <= 5) {
+      requestBody.productivity_rating = productivityRating.toString();
+    }
     
     const res = await fetch(`${API_BASE_URL}/end-session/${sessionId}/`, {
       method: "PUT",
@@ -134,9 +144,23 @@ export const createStudySession = async (startTime: Date) => {
         'Content-Type': 'application/json',
         'Authorization': AUTH_HEADER
       },
-      body: JSON.stringify({ 
-        end_time: localEndTime,
-        status: "completed"
+      body: JSON.stringify(requestBody),
+    });
+    const data = await res.json();
+    return data;
+  };
+
+  export const updateSessionRating = async (sessionId: string, productivityRating: number) => {
+    console.log("API: updateSessionRating called with", sessionId, productivityRating);
+    
+    const res = await fetch(`${API_BASE_URL}/end-session/${sessionId}/`, {
+      method: "PUT",
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': AUTH_HEADER
+      },
+      body: JSON.stringify({
+        productivity_rating: productivityRating.toString()
       }),
     });
     const data = await res.json();
@@ -183,15 +207,24 @@ export const createStudySession = async (startTime: Date) => {
     return data;
   };
 
-export const cancelStudySession = async (sessionId: string) => {
-  console.log("API: cancelStudySession called with", sessionId);
+export const cancelStudySession = async (sessionId: string, endTime?: Date) => {
+  console.log("API: cancelStudySession called with", sessionId, endTime);
+  
+  const requestBody: any = {};
+  
+  // If endTime provided, adjust for timezone like in endStudySession
+  if (endTime) {
+    const localEndTime = new Date(endTime.getTime() - (endTime.getTimezoneOffset() * 60000));
+    requestBody.end_time = localEndTime;
+  }
+  
   const res = await fetch(`${API_BASE_URL}/cancel-session/${sessionId}/`, {
     method: "PUT",
     headers: { 
       'Content-Type': 'application/json',
       'Authorization': AUTH_HEADER
     },
-    body: JSON.stringify({}), // Empty body for cancel
+    body: JSON.stringify(requestBody),
   });
   
   if (!res.ok) {

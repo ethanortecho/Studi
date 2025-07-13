@@ -28,7 +28,8 @@ class StudySessionManager(models.Manager):
 class StudySession(models.Model):
     TIMER_TYPE_CHOICES = [
         ("pomodoro", "Pomodoro"),
-        ("custom", "Custom")
+        ("stopwatch", "Stopwatch"),
+        ("countdown", "Countdown"),
     ]
     STATUS_CHOICES = [
         ("active", "Active"),
@@ -37,6 +38,13 @@ class StudySession(models.Model):
         ("paused", "Paused"),
         ("interrupted", "Interrupted")
     ]
+    PRODUCTIVITY_RATING_CHOICES = [
+        ("productive", "Productive"),
+        ("neutral", "Neutral"),
+        ("distracting", "Distracting"),
+    ]
+
+
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField(null=True, blank=True)

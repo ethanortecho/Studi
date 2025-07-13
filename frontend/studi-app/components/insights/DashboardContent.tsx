@@ -100,7 +100,7 @@ export default function DashboardContent({
                     categoryDurations={daily.categoryDurations}
                     categoryMetadata={daily.categoryMetadata}
                     pieChartData={daily.pieChartData}
-                    timelineData={daily.timelineData}
+                    timelineData={daily.timelineData || []}
                     rawData={daily.rawData}
                     loading={false}
                     percentGoal={daily.percentGoal}

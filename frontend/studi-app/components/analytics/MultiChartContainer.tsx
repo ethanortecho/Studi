@@ -199,7 +199,7 @@ export default function MultiChartContainer({
                                     return (
                                         <View className="px-2 h-full justify-center" style={{ width: PAGE_WIDTH }}>
                                             <SessionBarchart 
-                                                timelineData={chartData.sessions.timelineData!} 
+                                                timelineData={chartData.sessions.timelineData || []} 
                                                 categoryMetadata={chartData.sessions.categoryMetadata} 
                                                 width={320}
                                             />

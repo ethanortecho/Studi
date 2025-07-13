@@ -69,16 +69,22 @@ class CancelStudySession(APIView):
             
             # Mark session as cancelled and set end time
             session.status = "cancelled"
-            session.end_time = timezone.now()
+            
+            # Use provided end_time if available, otherwise use server time
+            if 'end_time' in request.data:
+                session.end_time = request.data['end_time']
+            else:
+                session.end_time = timezone.now()
+            
             session.save()
             
-            # Also end any open category blocks
+            # Also end any open category blocks with the same end time
             open_blocks = CategoryBlock.objects.filter(
                 study_session=session,
                 end_time__isnull=True
             )
             for block in open_blocks:
-                block.end_time = timezone.now()
+                block.end_time = session.end_time
                 block.save()
             
             return Response({
@@ -163,6 +169,59 @@ class CreateSubject(APIView):
         user = request.user
         # TODO: Implement subject creation
         return Response({"message": "Not yet implemented"}, status=status.HTTP_501_NOT_IMPLEMENTED)
+
+
+class CleanupHangingSessions(APIView):
+    def post(self, request):
+        """
+        Cleanup hanging sessions that were never properly ended.
+        Detects sessions with null end_time or sessions older than 24 hours.
+        """
+        try:
+            user = request.user
+            cleaned_count = 0
+            
+            # Find hanging sessions for this user
+            # Sessions are considered hanging if:
+            # 1. end_time is null (never ended)
+            # 2. start_time is older than 24 hours ago (reasonable timeframe)
+            cutoff_time = timezone.now() - timedelta(hours=24)
+            
+            hanging_sessions = StudySession.objects.filter(
+                user=user,
+                end_time__isnull=True,
+                start_time__lt=cutoff_time
+            )
+            
+            for session in hanging_sessions:
+                # End the session with a timestamp slightly after the cutoff
+                # to indicate it was auto-ended due to hanging
+                session.end_time = session.start_time + timedelta(hours=24)
+                session.status = "cancelled"  # Mark as cancelled since it wasn't properly completed
+                session.save()
+                
+                # Also end any open category blocks for this session
+                open_blocks = CategoryBlock.objects.filter(
+                    study_session=session,
+                    end_time__isnull=True
+                )
+                for block in open_blocks:
+                    block.end_time = session.end_time
+                    block.save()
+                
+                cleaned_count += 1
+                print(f"Cleaned hanging session {session.id} started at {session.start_time}")
+            
+            return Response({
+                "message": f"Cleaned up {cleaned_count} hanging session(s)",
+                "cleaned_sessions": cleaned_count
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            print(f"Error in CleanupHangingSessions: {str(e)}")
+            return Response({
+                "error": f"Failed to cleanup hanging sessions: {str(e)}"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 

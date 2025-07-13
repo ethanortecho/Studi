@@ -108,13 +108,14 @@ const WeeklyBarchart: React.FC<WeeklyBarchartProps> = ({
         };
       });
 
-      const maxTotalHours = Math.max(...sortedDays.map(day => {
+      const dayTotals = sortedDays.map(day => {
         const totalSeconds = weeklyData[day]?.total || 0;
         return Math.round(totalSeconds / 3600 * 100) / 100;
-      }));
+      }).filter(total => total > 0);
+      const maxTotalHours = dayTotals.length > 0 ? Math.max(...dayTotals) : 0;
 
       const categoryColors = categoryList.map(category => {
-        const metadataEntry = Object.values(categoryMetadata).find(meta => meta.name === category);
+        const metadataEntry = categoryMetadata ? Object.values(categoryMetadata).find(meta => meta.name === category) : null;
         return metadataEntry?.color || '#CCCCCC';
       });
 
@@ -138,7 +139,7 @@ const WeeklyBarchart: React.FC<WeeklyBarchartProps> = ({
       };
 
       // Sort data by date and group into weeks
-      const sortedData = [...monthlyData].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      const sortedData = monthlyData ? [...monthlyData].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) : [];
 
       sortedData.forEach((dayData, index) => {
         const weekNumber = Math.min(Math.floor(index / 7) + 1, 4);
@@ -186,10 +187,11 @@ const WeeklyBarchart: React.FC<WeeklyBarchartProps> = ({
         };
       });
 
-      const maxTotalHours = Math.max(...Object.values(weeklyData).map(week => week.total));
+      const weeklyTotals = Object.values(weeklyData).map(week => week.total).filter(total => total > 0);
+      const maxTotalHours = weeklyTotals.length > 0 ? Math.max(...weeklyTotals) : 0;
 
       const categoryColors = categoryList.map(category => {
-        const metadataEntry = Object.values(categoryMetadata).find(meta => meta.name === category);
+        const metadataEntry = categoryMetadata ? Object.values(categoryMetadata).find(meta => meta.name === category) : null;
         return metadataEntry?.color || '#CCCCCC';
       });
 

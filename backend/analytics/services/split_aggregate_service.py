@@ -188,8 +188,18 @@ class SplitAggregateUpdateService:
             for category, duration in daily.category_durations.items():
                 category_durations[category] += duration
         
-        # Build daily breakdown
+        # Build daily breakdown - ensure all weekdays are included
         daily_breakdown = {}
+        
+        # Initialize all weekdays with zero values
+        all_weekdays = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU']
+        for day_code in all_weekdays:
+            daily_breakdown[day_code] = {
+                'total': 0,
+                'categories': {}
+            }
+        
+        # Fill in actual data for days that have aggregates
         for daily in daily_aggregates:
             day_code = daily.date.strftime('%A')[:2].upper()
             daily_breakdown[day_code] = {
@@ -197,15 +207,17 @@ class SplitAggregateUpdateService:
                 'categories': daily.category_durations
             }
         
-        # Build session times from daily timeline data
+        # Build session times from daily timeline data - filter out hanging sessions
         session_times = []
         for daily in daily_aggregates:
             for session_data in daily.timeline_data:
-                session_times.append({
-                    'start_time': session_data['start_time'],
-                    'end_time': session_data['end_time'],
-                    'total_duration': session_data['total_duration']
-                })
+                # Only include sessions with valid end_time
+                if session_data.get('end_time') is not None:
+                    session_times.append({
+                        'start_time': session_data['start_time'],
+                        'end_time': session_data['end_time'],
+                        'total_duration': session_data['total_duration']
+                    })
         
         # Determine if week is final
         is_final = not is_current_period(week_start, 'weekly')

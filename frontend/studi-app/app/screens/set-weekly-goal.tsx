@@ -52,12 +52,16 @@ export default function SetWeeklyGoalScreen() {
         const text = await res.text();
         throw new Error(text);
       }
-      await refetch(); // refresh guard state
-      if (isEdit && router.canGoBack()) {
-        router.back();
-      } else {
-        router.replace('/' as any);
-      }
+      await refetch(); // refresh guard state - wait for this to complete
+      
+      // Add a small delay to ensure the layout re-renders with the new goal state
+      setTimeout(() => {
+        if (isEdit && router.canGoBack()) {
+          router.back();
+        } else {
+          router.replace('/' as any);
+        }
+      }, 100);
     } catch (error) {
       console.error('Failed to save weekly goal', error);
       // TODO: show user-facing error toast

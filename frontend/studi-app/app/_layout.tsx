@@ -50,14 +50,23 @@ export default function RootLayout() {
   // Guard: redirect to goal-setting screen if none exists
   const { missing: goalMissing, loading: goalLoading } = useWeeklyGoal();
   const pathname = usePathname();
+  const [hasRedirected, setHasRedirected] = useState(false);
 
   useEffect(() => {
     // Avoid redirect loop: if we are already on the goal screen, do not replace again
     const onGoalScreen = pathname.startsWith('/screens/set-weekly-goal');
-    if (!goalLoading && goalMissing && !onGoalScreen) {
+    
+    // Only redirect once and when we're certain a goal is missing
+    if (!goalLoading && goalMissing && !onGoalScreen && !hasRedirected) {
+      setHasRedirected(true);
       router.replace('/screens/set-weekly-goal' as any);
     }
-  }, [goalMissing, goalLoading, pathname]);
+    
+    // Reset redirect flag when user navigates away from goal screen and goal exists
+    if (!goalMissing && onGoalScreen && hasRedirected) {
+      setHasRedirected(false);
+    }
+  }, [goalMissing, goalLoading, pathname, hasRedirected]);
 
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({

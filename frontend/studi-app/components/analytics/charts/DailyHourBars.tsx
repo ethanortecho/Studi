@@ -50,6 +50,12 @@ const DailyHourBars: React.FC<Props> = ({
   };
 
   const hoursData: HourData[] = useMemo(() => {
+    // Create a map of category names to their metadata (same as pie chart)
+    const categoryNameToMeta = Object.entries(categoryMetadata).reduce((acc, [id, meta]: [string, any]) => {
+      acc[meta.name] = meta;
+      return acc;
+    }, {} as { [key: string]: { color: string; name: string } });
+
     // init 24 empty hours
     const base: HourData[] = Array.from({ length: 24 }, () => ({
       totalMinutes: 0,
@@ -61,8 +67,8 @@ const DailyHourBars: React.FC<Props> = ({
     timelineData.forEach((session) => {
       const breakdowns = session.breakdowns || session.category_blocks || [];
       breakdowns.forEach((bd) => {
-        const categoryId = bd.category.toString();
-        const meta = categoryMetadata?.[categoryId];
+        const categoryName = bd.category; // bd.category is already the category name
+        const meta = categoryNameToMeta[categoryName];
         if (meta?.name === 'Break') return; // skip breaks entirely
 
         const start = new Date(bd.start_time);
@@ -82,12 +88,12 @@ const DailyHourBars: React.FC<Props> = ({
 
           // Find or push segment for that category in this hour
           const hour = base[hourIdx];
-          let seg = hour.segments.find((s) => s.categoryId === categoryId);
+          let seg = hour.segments.find((s) => s.categoryId === categoryName);
           if (!seg) {
             seg = {
-              categoryId,
+              categoryId: categoryName,
               minutes: 0,
-              color: meta?.color || '#5A4FCF', // fallback accent
+              color: meta?.color || '#E5E7EB', // fallback to light gray
             };
             hour.segments.push(seg);
           }

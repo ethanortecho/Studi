@@ -87,6 +87,12 @@ export default function SessionBarchart({
 
   // Step 1: Data Processing Layer
   const processSessionData = (): { sessions: ProcessedSession[], axisDurationMinutes: number, timeMarkers: number[] } => {
+    // Create a map of category names to their metadata (same as pie chart)
+    const categoryNameToMeta = Object.entries(categoryMetadata).reduce((acc, [id, meta]: [string, any]) => {
+      acc[meta.name] = meta;
+      return acc;
+    }, {} as { [key: string]: { color: string; name: string } });
+
     // Debug logs removed
     const start = performance.now();
     
@@ -184,8 +190,8 @@ export default function SessionBarchart({
       // Process segments within this session
       const breakdowns = session.breakdowns || session.category_blocks || [];
       const segments = breakdowns.map(breakdown => {
-        const categoryId = breakdown.category.toString();
-        const categoryInfo = categoryMetadata[categoryId];
+        const categoryName = breakdown.category; // breakdown.category is already the category name
+        const categoryInfo = categoryNameToMeta[categoryName];
         const segmentDurationMinutes = breakdown.duration / 60; // Convert seconds to minutes
         
         // Override color for Break category to be very light grey
@@ -195,7 +201,7 @@ export default function SessionBarchart({
         }
         
         return {
-          categoryId,
+          categoryId: categoryName,
           categoryName: categoryInfo?.name || 'Unknown',
           color,
           durationMinutes: segmentDurationMinutes,

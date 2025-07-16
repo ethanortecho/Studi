@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db.models import Q
 from datetime import timedelta
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -183,21 +184,24 @@ class CleanupHangingSessions(APIView):
             
             # Find hanging sessions for this user
             # Sessions are considered hanging if:
-            # 1. end_time is null (never ended)
-            # 2. start_time is older than 24 hours ago (reasonable timeframe)
-            cutoff_time = timezone.now() - timedelta(hours=24)
+            # 1. end_time is null (never ended) OR status is still 'active'
+            # 2. start_time is older than 1 hour ago (more aggressive for crash recovery)
+            cutoff_time = timezone.now() - timedelta(hours=1)
             
             hanging_sessions = StudySession.objects.filter(
                 user=user,
-                end_time__isnull=True,
                 start_time__lt=cutoff_time
+            ).filter(
+                Q(end_time__isnull=True) | Q(status='active')
             )
             
             for session in hanging_sessions:
-                # End the session with a timestamp slightly after the cutoff
+                # End the session with a reasonable duration (1 hour max)
                 # to indicate it was auto-ended due to hanging
-                session.end_time = session.start_time + timedelta(hours=24)
-                session.status = "cancelled"  # Mark as cancelled since it wasn't properly completed
+                if not session.end_time:
+                    session.end_time = session.start_time + timedelta(hours=1)
+                if session.status == 'active':
+                    session.status = "cancelled"  # Mark as cancelled since it wasn't properly completed
                 session.save()
                 
                 # Also end any open category blocks for this session
@@ -212,9 +216,32 @@ class CleanupHangingSessions(APIView):
                 cleaned_count += 1
                 print(f"Cleaned hanging session {session.id} started at {session.start_time}")
             
+            # Also clean up any orphaned category blocks (blocks with null end_time 
+            # but belonging to completed sessions)
+            orphaned_blocks = CategoryBlock.objects.filter(
+                study_session__user=user,
+                study_session__status='completed',
+                end_time__isnull=True,
+                start_time__lt=cutoff_time
+            )
+            
+            orphaned_count = 0
+            for block in orphaned_blocks:
+                # Set block end_time to session end_time or start_time + 1 hour as fallback
+                if block.study_session.end_time:
+                    block.end_time = block.study_session.end_time
+                else:
+                    block.end_time = block.start_time + timedelta(hours=1)
+                block.save()
+                orphaned_count += 1
+                print(f"Cleaned orphaned category block {block.id} in session {block.study_session.id}")
+            
+            total_cleaned = cleaned_count + orphaned_count
             return Response({
-                "message": f"Cleaned up {cleaned_count} hanging session(s)",
-                "cleaned_sessions": cleaned_count
+                "message": f"Cleaned up {cleaned_count} hanging session(s) and {orphaned_count} orphaned category block(s)",
+                "cleaned_sessions": cleaned_count,
+                "cleaned_blocks": orphaned_count,
+                "total_cleaned": total_cleaned
             }, status=status.HTTP_200_OK)
             
         except Exception as e:

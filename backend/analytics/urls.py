@@ -1,6 +1,6 @@
 from django.urls import path
 from .views.insights_api import DailyInsights, WeeklyInsights, MonthlyInsights
-from .views.create_api import CreateStudySession, EndStudySession, CreateSubject, CreateCategoryBlock, EndCategoryBlock, CancelStudySession, CleanupHangingSessions
+from .views.create_api import CreateStudySession, EndStudySession, CreateSubject, CreateCategoryBlock, EndCategoryBlock, CancelStudySession, CleanupHangingSessions, UpdateSessionRating
 from .views.category_api import CategoryList, CategoryDetail, BreakCategory
 from .views.goal_api import WeeklyGoalView
 
@@ -19,4 +19,5 @@ urlpatterns = [
     path('cancel-session/<int:id>/', CancelStudySession.as_view(), name='cancel-session'),
     path('goals/weekly/', WeeklyGoalView.as_view(), name='weekly-goal'),
     path('cleanup-hanging-sessions/', CleanupHangingSessions.as_view(), name='cleanup-hanging-sessions'),
+    path('update-session-rating/<int:id>/', UpdateSessionRating.as_view(), name='update-session-rating'),
 ] 

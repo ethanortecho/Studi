@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from ..models import StudySession, CategoryBlock
-from ..serializers import StudySessionSerializer, CategoryBlockSerializer, AggregateSerializer
+from ..serializers import StudySessionSerializer, CategoryBlockSerializer
 from rest_framework import serializers
 from django.utils import timezone
 from ..services.aggregate_service import AggregateUpdateService
@@ -222,6 +222,53 @@ class CleanupHangingSessions(APIView):
             return Response({
                 "error": f"Failed to cleanup hanging sessions: {str(e)}"
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class UpdateSessionRating(APIView):
+    def put(self, request, id):
+        """
+        Update the productivity rating for a completed study session.
+        Separate endpoint to avoid conflicts with session ending logic.
+        """
+        try:
+            session = StudySession.objects.get(id=id, user=request.user)
+            
+            # Validate that session is completed
+            if session.status != 'completed':
+                return Response({
+                    "error": "Can only update rating for completed sessions"
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Validate productivity rating
+            productivity_rating = request.data.get('productivity_rating')
+            if not productivity_rating:
+                return Response({
+                    "error": "productivity_rating is required"
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            try:
+                rating_value = int(productivity_rating)
+                if rating_value < 1 or rating_value > 5:
+                    raise ValueError()
+            except (ValueError, TypeError):
+                return Response({
+                    "error": "productivity_rating must be an integer between 1 and 5"
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Update only the productivity rating
+            session.productivity_rating = str(rating_value)
+            session.save()
+            
+            return Response({
+                "message": "Session rating updated successfully",
+                "session_id": session.id,
+                "productivity_rating": session.productivity_rating
+            }, status=status.HTTP_200_OK)
+            
+        except StudySession.DoesNotExist:
+            return Response({"error": "Study session not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 

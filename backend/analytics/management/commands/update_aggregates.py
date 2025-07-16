@@ -23,6 +23,17 @@ class Command(BaseCommand):
             action='store_true',
             help='Only update monthly aggregates'
         )
+        parser.add_argument(
+            '--daily-only',
+            action='store_true',
+            help='Only update daily aggregates'
+        )
+        parser.add_argument(
+            '--user',
+            type=str,
+            default='ethanortecho',
+            help='Username to update aggregates for'
+        )
 
     def handle(self, *args, **options):
         # Determine the date to update
@@ -38,10 +49,36 @@ class Command(BaseCommand):
             # Default to yesterday (since daily aggregates are created when sessions complete)
             update_date = timezone.now().date() - timedelta(days=1)
 
-        self.stdout.write(f"Updating aggregates for date: {update_date}")
+        # Get the user
+        from analytics.models import CustomUser
+        try:
+            user = CustomUser.objects.get(username=options['user'])
+        except CustomUser.DoesNotExist:
+            self.stderr.write(
+                self.style.ERROR(f"User '{options['user']}' not found.")
+            )
+            return
+
+        self.stdout.write(f"Updating aggregates for user {user.username} on date: {update_date}")
+
+        # Update daily aggregates
+        if not options['weekly_only'] and not options['monthly_only']:
+            self.stdout.write("Updating daily aggregates...")
+            try:
+                SplitAggregateUpdateService._update_daily_aggregate(
+                    user=user,
+                    date=update_date
+                )
+                self.stdout.write(
+                    self.style.SUCCESS("✅ Daily aggregates updated successfully")
+                )
+            except Exception as e:
+                self.stderr.write(
+                    self.style.ERROR(f"❌ Error updating daily aggregates: {str(e)}")
+                )
 
         # Update weekly aggregates
-        if not options['monthly_only']:
+        if not options['monthly_only'] and not options['daily_only']:
             self.stdout.write("Updating weekly aggregates...")
             try:
                 SplitAggregateUpdateService.update_weekly_aggregates_for_date(update_date)

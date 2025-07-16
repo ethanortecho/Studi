@@ -74,7 +74,8 @@ class SplitAggregateUpdateService:
         sessions = StudySession.objects.filter(
             user=user,
             start_time__date=date,
-            status='completed'
+            status='completed',
+            end_time__isnull=False  # Defensive: exclude any hanging sessions
         ).prefetch_related('categoryblock_set__category', 'break_set')
         
         if not sessions.exists():

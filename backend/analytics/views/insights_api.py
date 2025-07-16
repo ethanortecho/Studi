@@ -4,10 +4,10 @@ from rest_framework.response import Response
 from rest_framework import status
 from datetime import timedelta
 from django.utils.dateparse import parse_date
-from ..serializers import StudySessionSerializer, CategoryBlockSerializer, AggregateSerializer
+from ..serializers import StudySessionSerializer, CategoryBlockSerializer
 from ..serializers import DailyAggregateSerializer, WeeklyAggregateSerializer, MonthlyAggregateSerializer
 from ..queries import StudyAnalytics
-from ..models import Aggregate, StudySession, CategoryBlock, Categories, CustomUser
+from ..models import StudySession, CategoryBlock, Categories, CustomUser
 from ..models import DailyAggregate, WeeklyAggregate, MonthlyAggregate
 from django.utils import timezone
 
@@ -219,12 +219,11 @@ class WeeklyInsights(APIView):
             print(f"Weekly Aggregate Query - Start: {start_date}, End: {end_date}, Timeframe: weekly")
             print(f"Weekly Aggregate Result: {weekly_aggregate}")
             if weekly_aggregate:
-                print(f"Found aggregate: {weekly_aggregate.start_date} to {weekly_aggregate.end_date} - {weekly_aggregate.total_duration} seconds")
+                print(f"Found weekly aggregate: {weekly_aggregate.week_start} - {weekly_aggregate.total_duration} seconds")
             else:
                 print("No weekly aggregate found - checking what exists in DB")
-                from analytics.models import Aggregate
-                all_weekly = Aggregate.objects.filter(user=user, time_frame='weekly')
-                print(f"All weekly aggregates for user: {[(a.start_date, a.end_date, a.total_duration) for a in all_weekly]}")
+                all_weekly = WeeklyAggregate.objects.filter(user=user)
+                print(f"All weekly aggregates for user: {[(a.week_start, a.total_duration) for a in all_weekly]}")
             
             daily_breakdown = StudyAnalytics.get_aggregates_in_range(user, start_date, end_date, timeframe='daily')
             session_times = StudyAnalytics.get_weekly_session_times(user, start_date, end_date)

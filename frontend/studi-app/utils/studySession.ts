@@ -153,17 +153,24 @@ export const createStudySession = async (startTime: Date) => {
   export const updateSessionRating = async (sessionId: string, productivityRating: number) => {
     console.log("API: updateSessionRating called with", sessionId, productivityRating);
     
-    const res = await fetch(`${API_BASE_URL}/end-session/${sessionId}/`, {
+    const res = await fetch(`${API_BASE_URL}/update-session-rating/${sessionId}/`, {
       method: "PUT",
       headers: { 
         'Content-Type': 'application/json',
         'Authorization': AUTH_HEADER
       },
       body: JSON.stringify({
-        productivity_rating: productivityRating.toString()
+        productivity_rating: productivityRating
       }),
     });
+    
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.error || errorData.message || 'Failed to update session rating');
+    }
+    
     const data = await res.json();
+    console.log("API: updateSessionRating response:", data);
     return data;
   };
   

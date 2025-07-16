@@ -1,36 +1,62 @@
 from django.db.models import Sum, Avg, Count
 from django.utils import timezone
 from datetime import timedelta
-from .models import StudySession, CategoryBlock, Categories, Aggregate, Break
+from .models import StudySession, CategoryBlock, Categories, Break
+from .models import DailyAggregate, WeeklyAggregate, MonthlyAggregate
 
 class StudyAnalytics:
 
     @staticmethod
     def get_aggregate_data(user, start_date, end_date, timeframe):
         """retrieves an aggregate object for a user within a date range and timeframe"""
-        filters = {'user': user,
-                   'time_frame': timeframe,
-                   'start_date': start_date,
-                   'end_date': end_date,
-                   }
-        print(f"Filters: {filters}")
-       
-        return Aggregate.objects.filter(**filters).first()
+        print(f"Getting {timeframe} aggregate for user {user.username} from {start_date} to {end_date}")
+        
+        if timeframe == 'daily':
+            # For daily, start_date and end_date should be the same
+            return DailyAggregate.objects.filter(user=user, date=start_date).first()
+        elif timeframe == 'weekly':
+            return WeeklyAggregate.objects.filter(user=user, week_start=start_date).first()
+        elif timeframe == 'monthly':
+            return MonthlyAggregate.objects.filter(user=user, month_start=start_date).first()
+        else:
+            print(f"Unknown timeframe: {timeframe}")
+            return None
     
     @staticmethod
     def get_aggregates_in_range(user, start_date, end_date, timeframe):
         """retrieves all aggregate objects for a user within a date range for a specific timeframe"""
-        query = Aggregate.objects.filter(
-            user=user,
-            time_frame=timeframe,
-            start_date__gte=start_date,
-            end_date__lte=end_date
-        ).order_by('start_date')
+        print(f"Getting {timeframe} aggregates for user {user.username} from {start_date} to {end_date}")
         
-        print(f"Daily aggregates query: {query.query}")
-        print(f"Found aggregates: {query.count()}")
+        if timeframe == 'daily':
+            query = DailyAggregate.objects.filter(
+                user=user,
+                date__gte=start_date,
+                date__lte=end_date
+            ).order_by('date')
+        elif timeframe == 'weekly':
+            query = WeeklyAggregate.objects.filter(
+                user=user,
+                week_start__gte=start_date,
+                week_start__lte=end_date
+            ).order_by('week_start')
+        elif timeframe == 'monthly':
+            query = MonthlyAggregate.objects.filter(
+                user=user,
+                month_start__gte=start_date,
+                month_start__lte=end_date
+            ).order_by('month_start')
+        else:
+            print(f"Unknown timeframe: {timeframe}")
+            return None
+        
+        print(f"Found {query.count()} {timeframe} aggregates")
         for agg in query:
-            print(f"  {agg.start_date}: {agg.total_duration}")
+            if timeframe == 'daily':
+                print(f"  {agg.date}: {agg.total_duration}s")
+            elif timeframe == 'weekly':
+                print(f"  {agg.week_start}: {agg.total_duration}s")
+            elif timeframe == 'monthly':
+                print(f"  {agg.month_start}: {agg.total_duration}s")
         
         return query
 

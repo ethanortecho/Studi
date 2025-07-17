@@ -130,19 +130,20 @@ class DailyInsights(APIView):
                         else:
                             category_durations[category_name] += breakdown.duration
                 
-                # Create a temporary aggregate object
-                daily_aggregate = Aggregate(
+                # Create a temporary daily aggregate object
+                daily_aggregate = DailyAggregate(
                     user=user,
-                    start_date=date,
-                    end_date=date,
+                    date=date,
                     total_duration=total_duration,
                     category_durations=category_durations,
                     session_count=session_count,
-                    time_frame='daily'
+                    break_count=0,  # Not calculated in fallback
+                    timeline_data=[],  # Not calculated in fallback
+                    is_final=False
                 )
             
             response_data = {
-                'aggregate': AggregateSerializer(daily_aggregate).data,
+                'aggregate': DailyAggregateSerializer(daily_aggregate).data,
                 'timeline_data': timeline_data,
                 'category_metadata': category_data,
             }

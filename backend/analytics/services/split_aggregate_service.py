@@ -6,6 +6,7 @@ from collections import defaultdict
 from ..models import StudySession, CategoryBlock, Break
 from ..models import DailyAggregate, WeeklyAggregate, MonthlyAggregate
 from .date_utils import get_week_boundaries, get_month_boundaries, is_current_period
+from .goal_progress_service import GoalProgressService
 
 
 class SplitAggregateUpdateService:
@@ -16,8 +17,7 @@ class SplitAggregateUpdateService:
     @staticmethod
     def update_for_session(session):
         """
-        Update daily aggregate for a session change (real-time)
-        Weekly/Monthly updates are handled by scheduled tasks
+        Update all aggregates for a session change (real-time)
         
         Args:
             session: StudySession instance
@@ -26,15 +26,30 @@ class SplitAggregateUpdateService:
             user = session.user
             session_date = session.start_time.date()
             
-            print(f"Updating daily aggregate for session {session.id} on {session_date}")
+            print(f"Updating all aggregates for session {session.id} on {session_date}")
             
-            # Only update daily aggregate in real-time
+            # Update daily aggregate
             SplitAggregateUpdateService._update_daily_aggregate(user, session_date)
             
-            print(f"Successfully updated daily aggregate for session {session.id}")
+            # Update weekly aggregate
+            week_start, week_end = get_week_boundaries(session_date)
+            SplitAggregateUpdateService._update_weekly_aggregate(user, week_start, week_end)
+            
+            # Update monthly aggregate
+            month_start, month_end = get_month_boundaries(session_date)
+            SplitAggregateUpdateService._update_monthly_aggregate(user, month_start, month_end)
+            
+            # Update goal progress
+            try:
+                GoalProgressService.update_for_session(session)
+                print(f"Updated goal progress for session {session.id}")
+            except Exception as e:
+                print(f"Failed to update goal progress: {str(e)}")
+            
+            print(f"Successfully updated all aggregates for session {session.id}")
             
         except Exception as e:
-            print(f"Error updating daily aggregate for session {session.id}: {str(e)}")
+            print(f"Error updating aggregates for session {session.id}: {str(e)}")
             raise
     
     @staticmethod

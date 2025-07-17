@@ -29,6 +29,8 @@ interface StudySessionContextType {
   // Session stats modal functions
   showSessionStats: (durationMinutes: number) => void;
   hideSessionStats: () => void;
+  // Category management functions
+  refreshCategories: () => Promise<void>;
   // Utility functions
   getCurrentCategoryColor: () => string;
 }
@@ -54,6 +56,7 @@ export const StudySessionContext = createContext<StudySessionContextType>({
   cancelSession: () => Promise.resolve(),
   showSessionStats: () => {},
   hideSessionStats: () => {},
+  refreshCategories: () => Promise.resolve(),
   getCurrentCategoryColor: () => '#E5E7EB', // Default gray color
 });
 
@@ -87,14 +90,21 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
     return cat ? cat.name : 'Unknown';
   };
 
+  const refreshCategories = async () => {
+    try {
+      const [categoriesData, breakCategoryData] = await Promise.all([
+        fetchCategories(),
+        fetchBreakCategory()
+      ]);
+      setCategories(categoriesData);
+      setBreakCategory(breakCategoryData);
+    } catch (error) {
+      console.error('Error refreshing categories:', error);
+    }
+  };
+
   useEffect(() => {
-      fetchCategories()
-          .then(setCategories)
-          .catch(error => console.error('Error fetching categories:', error));
-      
-      fetchBreakCategory()
-          .then(setBreakCategory)
-          .catch(error => console.error('Error fetching break category:', error));
+    refreshCategories();
   }, []);
 
   // Handle app state changes with smart background session management
@@ -423,6 +433,7 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
       cancelSession,
       showSessionStats,
       hideSessionStats,
+      refreshCategories,
       getCurrentCategoryColor,
     }}>
       {children}

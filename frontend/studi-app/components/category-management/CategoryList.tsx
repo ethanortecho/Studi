@@ -1,23 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Category, fetchCategories } from '@/utils/studySession';
+import { Category } from '@/utils/studySession';
+import { StudySessionContext } from '@/context/StudySessionContext';
 import EditCategoryModal from './EditCategoryModal';
 import AddCategoryModal from './AddCategoryModal';
 
 export default function CategoryList() {
-    const [categories, setCategories] = useState<Category[]>([]);
+    const { categories, refreshCategories } = useContext(StudySessionContext);
     const [editModalVisible, setEditModalVisible] = useState(false);
     const [addModalVisible, setAddModalVisible] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-    
-    const loadCategories = () => {
-        fetchCategories().then(setCategories);
-    };
-
-    useEffect(() => {
-        loadCategories();
-    }, []);
 
     const handleCategoryPress = (category: Category) => {
         setSelectedCategory(category);
@@ -79,7 +72,7 @@ export default function CategoryList() {
             <AddCategoryModal
                 visible={addModalVisible}
                 onClose={() => setAddModalVisible(false)}
-                onCategoryAdded={loadCategories}
+                onCategoryAdded={refreshCategories}
                 usedColors={usedColors}
             />
 
@@ -88,7 +81,7 @@ export default function CategoryList() {
                     visible={editModalVisible}
                     onClose={() => setEditModalVisible(false)}
                     category={selectedCategory}
-                    onCategoryUpdated={loadCategories}
+                    onCategoryUpdated={refreshCategories}
                     usedColors={usedColors}
                 />
             )}

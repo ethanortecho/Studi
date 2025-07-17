@@ -1,7 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useContext } from 'react';
 import { View, Text, Dimensions } from 'react-native';
 import DayTimeline, { DaySession, TimeWindow } from '../DayTimeline';
 import DashboardCard from '@/components/insights/DashboardContainer';
+import { StudySessionContext } from '@/context/StudySessionContext';
+import { convertUTCToUserTimezone } from '@/utils/timezoneUtils';
 
 interface SessionTime {
   start_time: string;
@@ -20,6 +22,8 @@ interface ProcessedDayData {
 }
 
 const StudyDayBars: React.FC<StudyDayBarsProps> = ({ sessionTimes, isEmpty = false }) => {
+  const { userTimezone } = useContext(StudySessionContext);
+  
   // Don't render if no data available
   if (isEmpty) {
     return null;
@@ -36,8 +40,9 @@ const StudyDayBars: React.FC<StudyDayBarsProps> = ({ sessionTimes, isEmpty = fal
     let latestHour = 24; // Default end (12am next day)
     
     sessionTimes.forEach(session => {
-      const startDate = new Date(session.start_time);
-      const endDate = new Date(session.end_time);
+      // Convert UTC session times to user's local timezone for display
+      const startDate = convertUTCToUserTimezone(session.start_time, userTimezone);
+      const endDate = convertUTCToUserTimezone(session.end_time, userTimezone);
       
       const dayOfWeek = dayMappings[startDate.getDay() === 0 ? 6 : startDate.getDay() - 1]; // Convert to our format
       
@@ -92,7 +97,7 @@ const StudyDayBars: React.FC<StudyDayBarsProps> = ({ sessionTimes, isEmpty = fal
     }));
     
     return { processedDays, timeWindow };
-  }, [sessionTimes]);
+  }, [sessionTimes, userTimezone]);
   
   const { processedDays, timeWindow } = processedData;
   

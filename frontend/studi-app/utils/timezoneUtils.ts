@@ -5,16 +5,16 @@ const TIMEZONE_STORAGE_KEY = 'user_timezone';
 export interface TimezoneInfo {
   timezone: string;
   offset: number; // UTC offset in minutes
-  name: string; // Human readable name
+  displayName: string;
 }
 
 /**
- * Detect user's timezone using browser/device APIs
+ * Detect user's timezone using native browser/device APIs
  * Returns IANA timezone identifier (e.g., "America/New_York")
  */
 export const detectUserTimezone = (): string => {
   try {
-    // Use Intl API to get timezone - works on all modern platforms
+    // Use Intl API - works on iOS, Android, Web
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     console.log('🕒 Detected timezone:', timezone);
     return timezone;
@@ -31,14 +31,13 @@ export const getTimezoneInfo = (timezone?: string): TimezoneInfo => {
   const tz = timezone || detectUserTimezone();
   
   try {
-    // Get current UTC offset
     const now = new Date();
-    const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
-    const tzTime = new Date(utcTime + (getTimezoneOffset(tz) * 60000));
-    const offset = -now.getTimezoneOffset(); // Convert to minutes ahead of UTC
     
-    // Get human readable name
-    const name = new Intl.DateTimeFormat('en', {
+    // Get UTC offset in minutes
+    const offset = -now.getTimezoneOffset();
+    
+    // Get display name (e.g., "Eastern Standard Time")
+    const displayName = new Intl.DateTimeFormat('en', {
       timeZone: tz,
       timeZoneName: 'long'
     }).formatToParts(now).find(part => part.type === 'timeZoneName')?.value || tz;
@@ -46,30 +45,15 @@ export const getTimezoneInfo = (timezone?: string): TimezoneInfo => {
     return {
       timezone: tz,
       offset,
-      name
+      displayName
     };
   } catch (error) {
     console.warn('⚠️ Failed to get timezone info:', error);
     return {
       timezone: 'UTC',
       offset: 0,
-      name: 'Coordinated Universal Time'
+      displayName: 'Coordinated Universal Time'
     };
-  }
-};
-
-/**
- * Get timezone offset in minutes for a specific timezone
- */
-export const getTimezoneOffset = (timezone: string): number => {
-  try {
-    const now = new Date();
-    const utc = new Date(now.toLocaleString('en-US', { timeZone: 'UTC' }));
-    const local = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
-    return (local.getTime() - utc.getTime()) / (1000 * 60);
-  } catch (error) {
-    console.warn('⚠️ Failed to get timezone offset:', error);
-    return 0;
   }
 };
 
@@ -131,39 +115,55 @@ export const initializeTimezone = async (): Promise<string> => {
 };
 
 /**
- * Check if a timezone string is valid
+ * Convert UTC datetime string to user's local timezone
+ * Returns a Date object that behaves as if it's in the user's timezone
  */
-export const isValidTimezone = (timezone: string): boolean => {
-  try {
-    Intl.DateTimeFormat(undefined, { timeZone: timezone });
-    return true;
-  } catch (error) {
-    return false;
-  }
-};
-
-/**
- * Convert UTC date string to user's timezone
- * Returns ISO string in user timezone
- */
-export const convertUTCToUserTimezone = (utcDateString: string, userTimezone: string): string => {
+export const convertUTCToUserTimezone = (utcDateString: string, userTimezone: string): Date => {
   try {
     const utcDate = new Date(utcDateString);
     
-    // Create date in user timezone
-    const userDate = new Date(utcDate.toLocaleString('en-US', { timeZone: userTimezone }));
+    // Create a date formatter for the target timezone
+    const formatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: userTimezone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
     
-    return userDate.toISOString();
+    // Format the UTC date in the target timezone
+    const parts = formatter.formatToParts(utcDate);
+    const partsObj = parts.reduce((acc, part) => {
+      acc[part.type] = part.value;
+      return acc;
+    }, {} as { [key: string]: string });
+    
+    // Create a new date using the local time components
+    // This creates a date that represents the local time
+    const localDate = new Date(
+      parseInt(partsObj.year),
+      parseInt(partsObj.month) - 1, // Month is 0-indexed
+      parseInt(partsObj.day),
+      parseInt(partsObj.hour),
+      parseInt(partsObj.minute),
+      parseInt(partsObj.second)
+    );
+    
+    return localDate;
   } catch (error) {
     console.warn('⚠️ Failed to convert timezone:', error);
-    return utcDateString;
+    return new Date(utcDateString);
   }
 };
 
 /**
- * Format time in user's timezone for display
+ * Format UTC time for display in user's timezone
+ * This is the main function for converting API times to display times
  */
-export const formatTimeInTimezone = (
+export const formatTimeInUserTimezone = (
   utcDateString: string, 
   userTimezone: string, 
   options: Intl.DateTimeFormatOptions = {}
@@ -181,6 +181,86 @@ export const formatTimeInTimezone = (
     return date.toLocaleString('en-US', defaultOptions);
   } catch (error) {
     console.warn('⚠️ Failed to format time in timezone:', error);
-    return new Date(utcDateString).toLocaleString();
+    // Fallback to basic formatting
+    return new Date(utcDateString).toLocaleTimeString();
   }
+};
+
+/**
+ * Format full datetime in user's timezone
+ */
+export const formatDateTimeInUserTimezone = (
+  utcDateString: string, 
+  userTimezone: string
+): string => {
+  return formatTimeInUserTimezone(utcDateString, userTimezone, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
+
+/**
+ * Get time in user's timezone for chart axes
+ * Returns time suitable for chart labels (HH:MM format)
+ */
+export const getChartTimeLabel = (utcDateString: string, userTimezone: string): string => {
+  return formatTimeInUserTimezone(utcDateString, userTimezone, {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false // 24-hour format for charts
+  });
+};
+
+/**
+ * Check if timezone is valid
+ */
+export const isValidTimezone = (timezone: string): boolean => {
+  try {
+    Intl.DateTimeFormat(undefined, { timeZone: timezone });
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
+/**
+ * Get offset between UTC and user timezone in minutes
+ * Positive values mean ahead of UTC, negative means behind
+ */
+export const getTimezoneOffsetMinutes = (timezone: string, date?: Date): number => {
+  try {
+    const testDate = date || new Date();
+    
+    // Get UTC time in milliseconds
+    const utcTime = testDate.getTime();
+    
+    // Get local time in the specified timezone
+    const localTime = new Date(testDate.toLocaleString('en-US', { timeZone: timezone })).getTime();
+    
+    // Calculate offset in minutes
+    return Math.round((localTime - utcTime) / (1000 * 60));
+  } catch (error) {
+    console.warn('⚠️ Failed to get timezone offset:', error);
+    return 0;
+  }
+};
+
+/**
+ * Convert timeline data from UTC to user timezone
+ * Specifically for chart data that contains time arrays
+ */
+export const convertTimelineDataToUserTimezone = <T extends { start_time: string; end_time?: string }>(
+  data: T[],
+  userTimezone: string
+): T[] => {
+  return data.map(item => ({
+    ...item,
+    start_time: convertUTCToUserTimezone(item.start_time, userTimezone).toISOString(),
+    ...(item.end_time && {
+      end_time: convertUTCToUserTimezone(item.end_time, userTimezone).toISOString()
+    })
+  }));
 };

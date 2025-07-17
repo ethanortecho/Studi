@@ -1,8 +1,10 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useContext } from 'react';
 import { View, Text } from 'react-native';
 import { TimelineSession, CategoryMetadata } from '@/types/api';
 import DashboardCard from '@/components/insights/DashboardContainer';
 import Legend from '@/components/analytics/DashboardLegend';
+import { StudySessionContext } from '@/context/StudySessionContext';
+import { convertUTCToUserTimezone } from '@/utils/timezoneUtils';
 
 interface Props {
   /** Raw session timeline data for a single day */
@@ -32,6 +34,8 @@ const DailyHourBars: React.FC<Props> = ({
   isEmpty = false,
   categoryDurations,
 }) => {
+  const { userTimezone } = useContext(StudySessionContext);
+  
   // Don't render if no data available
   if (isEmpty) {
     return null;
@@ -71,8 +75,9 @@ const DailyHourBars: React.FC<Props> = ({
         const meta = categoryNameToMeta[categoryName];
         if (meta?.name === 'Break') return; // skip breaks entirely
 
-        const start = new Date(bd.start_time);
-        const end = new Date(bd.end_time);
+        // Convert UTC times to user's local timezone for proper hour display
+        const start = convertUTCToUserTimezone(bd.start_time, userTimezone);
+        const end = convertUTCToUserTimezone(bd.end_time, userTimezone);
         let current = new Date(start);
 
         while (current < end) {
@@ -114,7 +119,7 @@ const DailyHourBars: React.FC<Props> = ({
         minutes: Math.round(s.minutes),
       })),
     }));
-  }, [timelineData, categoryMetadata]);
+  }, [timelineData, categoryMetadata, userTimezone]);
 
   /* ------------------------------------------------------------------ */
   /*                               Layout                                */

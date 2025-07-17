@@ -3,6 +3,7 @@ import { AppState } from 'react-native';
 import { fetchCategories, Category, fetchBreakCategory } from '@/utils/studySession';
 import { createStudySession, endStudySession, createCategoryBlock, endCategoryBlock, cancelStudySession, updateSessionRating } from '../utils/studySession';
 import SessionStatsModal from '@/components/modals/SessionStatsModal';
+import { initializeTimezone, detectUserTimezone } from '@/utils/timezoneUtils';
 
 
 interface StudySessionContextType {
@@ -13,6 +14,8 @@ interface StudySessionContextType {
   breakCategory: Category | null; 
   categories: Category[];
   isSessionPaused: boolean;
+  // Timezone support
+  userTimezone: string;
   // Session stats modal state
   sessionStatsModal: {
     isVisible: boolean;
@@ -43,6 +46,7 @@ export const StudySessionContext = createContext<StudySessionContextType>({
   breakCategory: null,
   categories: [],
   isSessionPaused: false,
+  userTimezone: 'UTC', // Default fallback
   sessionStatsModal: {
     isVisible: false,
     sessionDuration: 0,
@@ -68,6 +72,9 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
   const [breakCategory, setBreakCategory] = useState<Category | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
+  
+  // Timezone state
+  const [userTimezone, setUserTimezone] = useState<string>('UTC');
   
   // Background session management
   const [backgroundStartTime, setBackgroundStartTime] = useState<Date | null>(null);
@@ -105,6 +112,16 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     refreshCategories();
+    
+    // Initialize timezone detection
+    initializeTimezone().then(timezone => {
+      console.log('🕒 Initialized user timezone:', timezone);
+      setUserTimezone(timezone);
+    }).catch(error => {
+      console.warn('⚠️ Failed to initialize timezone:', error);
+      const fallback = detectUserTimezone();
+      setUserTimezone(fallback);
+    });
   }, []);
 
   // Handle app state changes with smart background session management
@@ -423,6 +440,7 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
       breakCategory,
       categories,
       isSessionPaused,
+      userTimezone,
       sessionStatsModal,
       startSession,
       stopSession,

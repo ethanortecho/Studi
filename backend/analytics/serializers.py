@@ -1,6 +1,7 @@
 from rest_framework import serializers
-from .models import StudySession, CategoryBlock, Categories, WeeklyGoal, DailyGoal
+from .models import StudySession, CategoryBlock, Categories, WeeklyGoal, DailyGoal, CustomUser
 from .models import DailyAggregate, WeeklyAggregate, MonthlyAggregate
+import pytz
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -227,5 +228,27 @@ class MonthlyAggregateSerializer(serializers.ModelSerializer):
             'last_updated'
         ]
         read_only_fields = ['id', 'user', 'last_updated']
+
+
+class CustomUserSerializer(serializers.ModelSerializer):
+    """Serializer for CustomUser model with timezone validation"""
+    
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'username', 'email', 'timezone', 'date_joined']
+        read_only_fields = ['id', 'username', 'email', 'date_joined']
+    
+    def validate_timezone(self, value):
+        """Validate that the timezone is a valid IANA timezone identifier"""
+        if not value:
+            return 'UTC'  # Default fallback
+        
+        try:
+            pytz.timezone(value)
+            return value
+        except pytz.exceptions.UnknownTimeZoneError:
+            raise serializers.ValidationError(
+                f"'{value}' is not a valid timezone. Use IANA format like 'America/New_York' or 'Europe/London'"
+            )
 
 

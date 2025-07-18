@@ -4,6 +4,7 @@ import { fetchCategories, Category, fetchBreakCategory } from '@/utils/studySess
 import { createStudySession, endStudySession, createCategoryBlock, endCategoryBlock, cancelStudySession, updateSessionRating } from '../utils/studySession';
 import SessionStatsModal from '@/components/modals/SessionStatsModal';
 import { detectUserTimezone } from '@/utils/timezoneUtils';
+import { clearDashboardCache } from '@/utils/fetchApi';
 
 
 interface StudySessionContextType {
@@ -233,6 +234,10 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
         // End session immediately (without rating) to ensure data is saved
         const res = await endStudySession(currentSessionId, sessionEndTime);
         
+        // Clear dashboard cache to ensure fresh data after session completion
+        console.log('🔄 Session ended, clearing dashboard cache...');
+        clearDashboardCache();
+        
         // Reset session state
         setSessionId(null);
         setCurrentCategoryBlockId(null);
@@ -371,6 +376,11 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
       try {
         const cancelTime = new Date(); // Use local time when cancelling
         const res = await cancelStudySession(String(sessionId), cancelTime);
+        
+        // Clear dashboard cache to ensure fresh data after session cancellation
+        console.log('❌ Session cancelled, clearing dashboard cache...');
+        clearDashboardCache();
+        
         // Reset all session state
         setSessionId(null);
         setCurrentCategoryBlockId(null);

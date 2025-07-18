@@ -250,3 +250,74 @@ export default function useAggregateData(time_frame: string,
         
     return { data, loading, error };
 }
+
+/**
+ * Clear dashboard cache entries for current day/week/month
+ * Used when session ends to ensure fresh data is fetched
+ */
+export function clearDashboardCache() {
+    const today = new Date();
+    const localToday = new Date(today.getTime() - (today.getTimezoneOffset() * 60000))
+        .toISOString().split('T')[0];
+    
+    console.log('🧹 Clearing dashboard cache for current period...');
+    
+    // Clear daily cache for today
+    const dailyKey = `daily-${localToday}`;
+    if (apiCache.has(dailyKey)) {
+        apiCache.delete(dailyKey);
+        cacheAccessTimes.delete(dailyKey);
+        console.log(`  ✅ Cleared daily cache: ${dailyKey}`);
+    }
+    
+    // Clear weekly cache - find current week cache entry
+    // Weekly cache key format: weekly-{week_start}-{week_end}
+    for (const [key, value] of apiCache.entries()) {
+        if (key.startsWith('weekly-')) {
+            const parts = key.split('-');
+            if (parts.length >= 3) {
+                const weekStart = parts[1];
+                const weekEnd = parts[2];
+                
+                // Check if today falls within this week range
+                if (weekStart <= localToday && localToday <= weekEnd) {
+                    apiCache.delete(key);
+                    cacheAccessTimes.delete(key);
+                    console.log(`  ✅ Cleared weekly cache: ${key}`);
+                }
+            }
+        }
+    }
+    
+    // Clear monthly cache - find current month cache entry
+    // Monthly cache key format: monthly-{month_start}-{month_end}
+    for (const [key, value] of apiCache.entries()) {
+        if (key.startsWith('monthly-')) {
+            const parts = key.split('-');
+            if (parts.length >= 3) {
+                const monthStart = parts[1];
+                const monthEnd = parts[2];
+                
+                // Check if today falls within this month range
+                if (monthStart <= localToday && localToday <= monthEnd) {
+                    apiCache.delete(key);
+                    cacheAccessTimes.delete(key);
+                    console.log(`  ✅ Cleared monthly cache: ${key}`);
+                }
+            }
+        }
+    }
+    
+    console.log('🎉 Dashboard cache clearing completed');
+}
+
+/**
+ * Clear all API cache entries (nuclear option)
+ */
+export function clearAllCache() {
+    console.log('💥 Clearing ALL API cache...');
+    apiCache.clear();
+    cacheAccessTimes.clear();
+    ongoingRequests.clear();
+    console.log('✅ All cache cleared');
+}

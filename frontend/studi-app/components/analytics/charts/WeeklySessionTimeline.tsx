@@ -36,8 +36,8 @@ const StudyDayBars: React.FC<StudyDayBarsProps> = ({ sessionTimes, isEmpty = fal
     
     // Parse sessions by day
     const sessionsByDay: { [key: string]: DaySession[] } = {};
-    let earliestHour = 6; // Default start
-    let latestHour = 24; // Default end (12am next day)
+    let earliestHour = 6; // Default start at 6am
+    let latestHour = 24; // Default end at 12am (midnight)
     
     sessionTimes.forEach(session => {
       // Get start and end components in user's timezone
@@ -55,9 +55,11 @@ const StudyDayBars: React.FC<StudyDayBarsProps> = ({ sessionTimes, isEmpty = fal
       const startMinute = startComponents.minute;
       const endMinute = endComponents.minute;
       
-      // Track earliest and latest for edge case detection
+      // Track earliest and latest hours for minimal extension
       earliestHour = Math.min(earliestHour, startHour);
-      latestHour = Math.max(latestHour, endHour === 0 ? 24 : endHour); // Handle midnight as 24
+      // Handle sessions that end after midnight (next day)
+      const normalizedEndHour = endHour === 0 ? 24 : endHour;
+      latestHour = Math.max(latestHour, normalizedEndHour);
       
       if (!sessionsByDay[dayOfWeek]) {
         sessionsByDay[dayOfWeek] = [];
@@ -65,44 +67,64 @@ const StudyDayBars: React.FC<StudyDayBarsProps> = ({ sessionTimes, isEmpty = fal
       
       sessionsByDay[dayOfWeek].push({
         startHour,
-        endHour: endHour === 0 ? 24 : endHour, // Handle midnight
+        endHour: normalizedEndHour, // Use the same normalization logic
         startMinute,
         endMinute
       });
     });
     
-    // Determine time window based on actual session data
-    let timeWindow: TimeWindow;
-    
-    // Calculate dynamic window based on actual data
-    const windowStart = Math.max(0, Math.min(6, earliestHour - 1)); // At least 1 hour before earliest, but not before midnight
-    const windowEnd = Math.min(24, Math.max(24, latestHour + 1)); // At least 1 hour after latest, but not after midnight next day
-    
-    // Special case: if we have very early morning sessions (before 6am), extend to show full day
-    const needsFullDay = earliestHour < 6 || latestHour >= 23;
-    
-    if (needsFullDay) {
-      // Show full 24-hour timeline
-      timeWindow = {
-        startHour: 0,
-        endHour: 24,
-        totalHours: 24,
-        timeLabels: ['12am', '3am', '6am', '9am', '12pm', '3pm', '6pm', '9pm', '12am']
-      };
-    } else {
-      // Use dynamic window that includes all sessions with padding
-      const finalStart = Math.min(6, earliestHour); // Start at 6am or earlier if needed
-      const finalEnd = Math.max(24, latestHour === 0 ? 24 : latestHour); // End at 12am or later if needed
+    // Fixed 6am-12am timeline with minimal extension
+    const timeWindow: TimeWindow = (() => {
+      // Default window: 6am to 12am (midnight)
+      let startHour = 6;
+      let endHour = 24;
       
-      timeWindow = {
-        startHour: finalStart,
-        endHour: finalEnd,
-        totalHours: finalEnd - finalStart,
-        timeLabels: finalStart === 0 ? 
-          ['12am', '3am', '6am', '9am', '12pm', '3pm', '6pm', '9pm', '12am'] :
-          ['6am', '9am', '12pm', '3pm', '6pm', '9pm', '12am']
+      // Minimal extension: only extend if sessions exist outside default range
+      if (earliestHour < 6) {
+        startHour = earliestHour;
+      }
+      if (latestHour > 24) {
+        endHour = latestHour;
+      }
+      
+      const totalHours = endHour - startHour;
+      
+      // Generate appropriate time labels based on the window
+      let timeLabels: string[];
+      if (startHour <= 3 && endHour >= 21) {
+        // Wide window spanning most of day
+        timeLabels = ['12am', '3am', '6am', '9am', '12pm', '3pm', '6pm', '9pm'];
+      } else if (startHour === 6 && endHour === 24) {
+        // Default window
+        timeLabels = ['6am', '9am', '12pm', '3pm', '6pm', '9pm', '12am'];
+      } else {
+        // Custom window - generate labels dynamically
+        const labelHours = [];
+        for (let h = startHour; h <= endHour; h += 3) {
+          if (h <= endHour) {
+            labelHours.push(h);
+          }
+        }
+        // Ensure we include the end hour if it's not already included
+        if (labelHours[labelHours.length - 1] !== endHour) {
+          labelHours.push(endHour);
+        }
+        
+        timeLabels = labelHours.map(h => {
+          if (h === 0 || h === 24) return '12am';
+          if (h < 12) return `${h}am`;
+          if (h === 12) return '12pm';
+          return `${h - 12}pm`;
+        });
+      }
+      
+      return {
+        startHour,
+        endHour,
+        totalHours,
+        timeLabels
       };
-    }
+    })();
     
     // Create processed data for each day
     const processedDays: ProcessedDayData[] = dayMappings.map((dayCode, index) => ({
@@ -158,11 +180,30 @@ const StudyDayBars: React.FC<StudyDayBarsProps> = ({ sessionTimes, isEmpty = fal
                 justifyContent: 'space-between',
               }}
             >
-              {['6am', '12pm', '6pm'].map((label) => (
-                <Text key={label} style={{ fontSize: 12, color: '#6C6C6C' }}>
-                  {label}
-                </Text>
-              ))}
+              {(() => {
+                // For default 6am-12am window, show meaningful labels
+                if (timeWindow.startHour === 6 && timeWindow.endHour === 24) {
+                  return ['6am', '12pm', '9pm'].map((label) => (
+                    <Text key={label} style={{ fontSize: 12, color: '#6C6C6C' }}>
+                      {label}
+                    </Text>
+                  ));
+                }
+                
+                // For other windows, show start, middle, and end
+                const labels = timeWindow.timeLabels;
+                const displayLabels = [
+                  labels[0], // start
+                  labels[Math.floor(labels.length / 2)], // middle
+                  labels[labels.length - 1] // end
+                ];
+                
+                return displayLabels.map((label) => (
+                  <Text key={label} style={{ fontSize: 12, color: '#6C6C6C' }}>
+                    {label}
+                  </Text>
+                ));
+              })()}
             </View>
 
             {/* Sun & Moon icons above timeline */}

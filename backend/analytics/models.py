@@ -19,6 +19,13 @@ class CustomUser(AbstractUser):
         help_text='Specific permissions for this user.',
         verbose_name='user permissions',
     )
+    
+    # User's timezone for aggregation and display
+    timezone = models.CharField(
+        max_length=50,
+        default='UTC',
+        help_text='User timezone (e.g., America/New_York, Europe/London)'
+    )
 
 class StudySessionManager(models.Manager):
     def active_sessions(self):

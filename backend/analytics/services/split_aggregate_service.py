@@ -84,11 +84,37 @@ class SplitAggregateUpdateService:
     def _calculate_daily_aggregate_data(user, date):
         """
         Calculate complete daily aggregate data including timeline
+        Uses timezone-aware filtering to ensure sessions are grouped by user's perceived date
         """
-        # Get only completed sessions for this date (exclude ongoing and cancelled)
+        from django.utils import timezone as django_timezone
+        import pytz
+        from datetime import datetime, time
+        
+        # Get user's timezone
+        user_timezone_str = getattr(user, 'timezone', 'UTC')
+        try:
+            user_tz = pytz.timezone(user_timezone_str)
+        except pytz.exceptions.UnknownTimeZoneError:
+            user_tz = pytz.UTC
+            print(f"⚠️ Invalid timezone '{user_timezone_str}' for user {user.username}, falling back to UTC")
+        
+        # Create start and end boundaries for the date in user's timezone
+        date_start_local = datetime.combine(date, time.min)  # Start of day in user timezone
+        date_end_local = datetime.combine(date, time.max)    # End of day in user timezone
+        
+        # Convert to UTC for database query (keep timezone-aware)
+        date_start_utc = user_tz.localize(date_start_local).astimezone(pytz.UTC)
+        date_end_utc = user_tz.localize(date_end_local).astimezone(pytz.UTC)
+        
+        print(f"🕒 Filtering sessions for {user.username} on {date} ({user_timezone_str})")
+        print(f"   Local range: {date_start_local} to {date_end_local}")
+        print(f"   UTC range: {date_start_utc} to {date_end_utc}")
+        
+        # Get only completed sessions within the user's timezone date boundaries
         sessions = StudySession.objects.filter(
             user=user,
-            start_time__date=date,
+            start_time__gte=date_start_utc,
+            start_time__lte=date_end_utc,
             status='completed',
             end_time__isnull=False  # Defensive: exclude any hanging sessions
         ).prefetch_related('categoryblock_set__category', 'break_set')

@@ -3,6 +3,7 @@ from .views.insights_api import DailyInsights, WeeklyInsights, MonthlyInsights
 from .views.create_api import CreateStudySession, EndStudySession, CreateSubject, CreateCategoryBlock, EndCategoryBlock, CancelStudySession, CleanupHangingSessions, UpdateSessionRating
 from .views.category_api import CategoryList, CategoryDetail, BreakCategory
 from .views.goal_api import WeeklyGoalView
+from .views.user_api import UserProfileView, UserTimezoneView
 
 urlpatterns = [
     path('insights/daily/', DailyInsights.as_view(), name='daily-insights'),
@@ -20,4 +21,6 @@ urlpatterns = [
     path('goals/weekly/', WeeklyGoalView.as_view(), name='weekly-goal'),
     path('cleanup-hanging-sessions/', CleanupHangingSessions.as_view(), name='cleanup-hanging-sessions'),
     path('update-session-rating/<int:id>/', UpdateSessionRating.as_view(), name='update-session-rating'),
+    path('user/profile/', UserProfileView.as_view(), name='user-profile'),
+    path('user/timezone/', UserTimezoneView.as_view(), name='user-timezone'),
 ] 

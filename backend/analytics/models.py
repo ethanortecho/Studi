@@ -96,25 +96,7 @@ class CategoryBlock(models.Model):
         super().save(*args, **kwargs)
 
 
-class Aggregate(models.Model):
-    TIMEFRAME_CHOICES = [
-        ('daily', 'Daily'),
-        ('weekly', 'Weekly'),
-        ('monthly', 'Monthly'),
-    ]
-    user = models.ForeignKey('CustomUser', on_delete=models.CASCADE)
-    start_date = models.DateField()
-    end_date = models.DateField()
-    total_duration = models.IntegerField(default=0)  # Store duration in seconds
-    category_durations = models.JSONField(default=dict)  # Store durations in seconds
-    session_count = models.IntegerField(default=0)
-    break_count = models.IntegerField(default=0)
-    time_frame = models.CharField(max_length=10, choices=TIMEFRAME_CHOICES)
-    is_final = models.BooleanField(default=False)  # True when period is complete
-    last_updated = models.DateTimeField(auto_now=True)  # Track when last updated
-
-
-# New split aggregate models
+# Split aggregate models
 class DailyAggregate(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     date = models.DateField()

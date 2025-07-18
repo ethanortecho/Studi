@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import StudySession, CategoryBlock, Categories, Aggregate, WeeklyGoal, DailyGoal
+from .models import StudySession, CategoryBlock, Categories, WeeklyGoal, DailyGoal
 from .models import DailyAggregate, WeeklyAggregate, MonthlyAggregate
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -139,23 +139,6 @@ class CategoryBlockSerializer(serializers.ModelSerializer):
 
 
         
-
-class AggregateSerializer(serializers.ModelSerializer):
-    total_duration = serializers.SerializerMethodField()
-    category_durations = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Aggregate
-        fields = '__all__'
-
-
-
-    def get_total_duration(self, obj):
-        return str(obj.total_duration)
-
-    def get_category_durations(self, obj):
-        return obj.category_durations
-
 
 
 class DailyGoalSerializer(serializers.ModelSerializer):

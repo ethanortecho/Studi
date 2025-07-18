@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import CustomUser, StudySession, Categories, CategoryBlock, Aggregate, UserGoals, DailyAggregate, WeeklyAggregate, MonthlyAggregate, WeeklyGoal, DailyGoal
+from .models import CustomUser, StudySession, Categories, CategoryBlock, UserGoals, DailyAggregate, WeeklyAggregate, MonthlyAggregate, WeeklyGoal, DailyGoal
 from django.utils.timezone import localtime
 
 @admin.register(StudySession)
@@ -45,12 +45,6 @@ class CategoryBlockAdmin(admin.ModelAdmin):
 class CustomUserAdmin(admin.ModelAdmin):
     list_display = ('username', 'email', 'date_joined')
     search_fields = ('username', 'email')
-
-@admin.register(Aggregate)
-class AggregateAdmin(admin.ModelAdmin):
-    list_display = ('user', 'time_frame', 'start_date', 'end_date', 'total_duration', 'session_count', 'break_count')
-    list_filter = ('time_frame', 'user')
-    search_fields = ('user__username',)
 
 @admin.register(UserGoals)
 class UserGoalsAdmin(admin.ModelAdmin):

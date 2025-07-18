@@ -253,7 +253,7 @@ class WeeklyInsights(APIView):
                 })
 
             response_data = {
-                'aggregate': AggregateSerializer(weekly_aggregate).data,
+                'aggregate': WeeklyAggregateSerializer(weekly_aggregate).data,
                 'category_metadata': category_data,
                 'daily_breakdown': complete_daily_breakdown,
                 'session_times': formatted_session_times,
@@ -362,7 +362,7 @@ class MonthlyInsights(APIView):
                     'total_hours': total_hours,
                     'total_sessions': total_sessions
                 },
-                'monthly_aggregate': AggregateSerializer(monthly_aggregate).data if monthly_aggregate else None,
+                'monthly_aggregate': MonthlyAggregateSerializer(monthly_aggregate).data if monthly_aggregate else None,
                 'daily_breakdown': daily_breakdown,
                 'heatmap_data': heatmap_data,
                 'category_metadata': category_data

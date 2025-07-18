@@ -16,7 +16,17 @@ export const detectUserTimezone = (): string => {
   try {
     // Use Intl API - works on iOS, Android, Web
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    console.log('🕒 Detected timezone:', timezone);
+    
+    // 🐛 TIMEZONE DEBUG: Enhanced detection logging
+    const now = new Date();
+    const offsetMinutes = -now.getTimezoneOffset();
+    const offsetHours = offsetMinutes / 60;
+    console.log('🕒 TIMEZONE DEBUG - Browser Detection:');
+    console.log('  🌍 Detected timezone:', timezone);
+    console.log('  📍 Browser offset (minutes):', offsetMinutes, '(', offsetHours > 0 ? '+' : '', offsetHours, 'hours )');
+    console.log('  🕐 Current time:', now.toString());
+    console.log('  🌐 Current UTC time:', now.toISOString());
+    
     return timezone;
   } catch (error) {
     console.warn('⚠️ Failed to detect timezone, falling back to UTC:', error);
@@ -120,7 +130,13 @@ export const initializeTimezone = async (): Promise<string> => {
  */
 export const convertUTCToUserTimezone = (utcDateString: string, userTimezone: string): Date => {
   try {
+    console.log('🔍 TIMEZONE DEBUG - CONVERSION PROCESS:');
+    console.log('  📥 Raw input:', utcDateString);
+    console.log('  🎯 Target timezone:', userTimezone);
+    
     const utcDate = new Date(utcDateString);
+    console.log('  📅 Step 1 - Parsed as Date:', utcDate.toISOString());
+    console.log('  🕐 Step 1 - UTC hour from Date.getHours():', utcDate.getHours());
     
     // Create a date formatter for the target timezone
     const formatter = new Intl.DateTimeFormat('en-CA', {
@@ -135,14 +151,23 @@ export const convertUTCToUserTimezone = (utcDateString: string, userTimezone: st
     });
     
     // Format the UTC date in the target timezone
+    const formatted = formatter.format(utcDate);
+    console.log('  🔧 Step 2 - Formatted in target timezone:', formatted);
+    
     const parts = formatter.formatToParts(utcDate);
     const partsObj = parts.reduce((acc, part) => {
       acc[part.type] = part.value;
       return acc;
     }, {} as { [key: string]: string });
+    console.log('  📊 Step 2 - Target timezone components:', {
+      hour: partsObj.hour,
+      minute: partsObj.minute,
+      day: partsObj.day,
+      month: partsObj.month,
+      year: partsObj.year
+    });
     
-    // Create a new date using the local time components
-    // This creates a date that represents the local time
+    // ⚠️ THIS IS THE PROBLEMATIC STEP - Creating Date with browser timezone components
     const localDate = new Date(
       parseInt(partsObj.year),
       parseInt(partsObj.month) - 1, // Month is 0-indexed
@@ -151,6 +176,13 @@ export const convertUTCToUserTimezone = (utcDateString: string, userTimezone: st
       parseInt(partsObj.minute),
       parseInt(partsObj.second)
     );
+    
+    console.log('  ⚠️ Step 3 - Date() constructor treated components as BROWSER timezone');
+    console.log('  📤 Result getHours():', localDate.getHours());
+    console.log('  📍 Browser timezone offset:', -new Date().getTimezoneOffset() / 60, 'hours from UTC');
+    console.log('  🔥 OFFSET DISCREPANCY:', utcDate.getHours() - localDate.getHours(), 'hours');
+    console.log('  🔚 Final object:', localDate.toString());
+    console.log('  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
     
     return localDate;
   } catch (error) {

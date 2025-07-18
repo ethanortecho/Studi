@@ -102,10 +102,7 @@ export const fetchBreakCategory = async (): Promise<Category> => {
 
 export const createStudySession = async (startTime: Date) => {
     console.log("API: createStudySession called with", startTime);
-    
-    // Preserve local calendar date by adjusting for timezone offset
-    const localStartTime = new Date(startTime.getTime() - (startTime.getTimezoneOffset() * 60000));
-    console.log("API: Adjusted start time for timezone:", localStartTime);
+    console.log("API: Sending UTC time to server:", startTime.toISOString());
     
     const res = await fetch(`${API_BASE_URL}/create-session/`, {
       method: "POST",
@@ -113,7 +110,7 @@ export const createStudySession = async (startTime: Date) => {
         'Content-Type': 'application/json',
         'Authorization': AUTH_HEADER
       },
-      body: JSON.stringify({ start_time: localStartTime }),
+      body: JSON.stringify({ start_time: startTime }),
     });
     console.log("API: createStudySession response status:", res.status);
     const data = await res.json();
@@ -123,13 +120,10 @@ export const createStudySession = async (startTime: Date) => {
   
   export const endStudySession = async (sessionId: string, endTime: Date, productivityRating?: number) => {
     console.log("API: endStudySession called with", sessionId, endTime, productivityRating);
-    
-    // Preserve local calendar date by adjusting for timezone offset
-    const localEndTime = new Date(endTime.getTime() - (endTime.getTimezoneOffset() * 60000));
-    console.log("API: Adjusted end time for timezone:", localEndTime);
+    console.log("API: Sending UTC end time to server:", endTime.toISOString());
     
     const requestBody: any = {
-      end_time: localEndTime,
+      end_time: endTime,
       status: "completed"
     };
     
@@ -175,11 +169,8 @@ export const createStudySession = async (startTime: Date) => {
   };
   
   export const createCategoryBlock = async (sessionId: string, categoryId: string, startTime: Date) => {
-    console.log("API: createCategoryBlock called with", categoryId, );
-    
-    // Preserve local calendar date by adjusting for timezone offset
-    const localStartTime = new Date(startTime.getTime() - (startTime.getTimezoneOffset() * 60000));
-    console.log("API: Adjusted category block start time for timezone:", localStartTime);
+    console.log("API: createCategoryBlock called with", categoryId, startTime);
+    console.log("API: Sending UTC category block start time to server:", startTime.toISOString());
     
     const res = await fetch(`${API_BASE_URL}/create-category-block/`, {
       method: "POST",
@@ -187,9 +178,9 @@ export const createStudySession = async (startTime: Date) => {
         'Content-Type': 'application/json',
         'Authorization': AUTH_HEADER
       },
-      body: JSON.stringify({ study_session: sessionId, category: categoryId, start_time: localStartTime }),
+      body: JSON.stringify({ study_session: sessionId, category: categoryId, start_time: startTime }),
     });
-    console.log("API: createCategoryBlock body:", JSON.stringify({ study_session: sessionId, category: categoryId, start_time: localStartTime }));
+    console.log("API: createCategoryBlock body:", JSON.stringify({ study_session: sessionId, category: categoryId, start_time: startTime }));
     console.log("API: createCategoryBlock response status:", res.status);
     const data = await res.json();
     return data;
@@ -197,10 +188,7 @@ export const createStudySession = async (startTime: Date) => {
   
   export const endCategoryBlock = async (categoryBlockId: string, endTime: Date) => {
     console.log("API: endCategoryBlock called with", categoryBlockId, endTime);
-    
-    // Preserve local calendar date by adjusting for timezone offset
-    const localEndTime = new Date(endTime.getTime() - (endTime.getTimezoneOffset() * 60000));
-    console.log("API: Adjusted category block end time for timezone:", localEndTime);
+    console.log("API: Sending UTC category block end time to server:", endTime.toISOString());
     
     const res = await fetch(`${API_BASE_URL}/end-category-block/${categoryBlockId}/`, {
       method: "PUT",
@@ -208,7 +196,7 @@ export const createStudySession = async (startTime: Date) => {
         'Content-Type': 'application/json',
         'Authorization': AUTH_HEADER
       },
-      body: JSON.stringify({ end_time: localEndTime }),
+      body: JSON.stringify({ end_time: endTime }),
     });
     const data = await res.json();
     return data;
@@ -219,10 +207,10 @@ export const cancelStudySession = async (sessionId: string, endTime?: Date) => {
   
   const requestBody: any = {};
   
-  // If endTime provided, adjust for timezone like in endStudySession
+  // If endTime provided, send as UTC
   if (endTime) {
-    const localEndTime = new Date(endTime.getTime() - (endTime.getTimezoneOffset() * 60000));
-    requestBody.end_time = localEndTime;
+    console.log("API: Sending UTC cancel time to server:", endTime.toISOString());
+    requestBody.end_time = endTime;
   }
   
   const res = await fetch(`${API_BASE_URL}/cancel-session/${sessionId}/`, {

@@ -174,6 +174,35 @@ export default function useAggregateData(time_frame: string,
                     const jsonParseTime = performance.now() - jsonParseStart;
                     console.log(`📄 fetchApi: JSON parsing took ${jsonParseTime.toFixed(2)}ms for ${cacheKey}`);
                     
+                    // 🐛 TIMEZONE DEBUG: Log raw UTC times from server
+                    console.log('🕒 TIMEZONE DEBUG - Raw API Response Times:');
+                    if (json?.timeline_data) {
+                        json.timeline_data.slice(0, 3).forEach((session: any, i: number) => {
+                            console.log(`  📊 Session ${i + 1}:`, {
+                                session_start: session.start_time,
+                                session_end: session.end_time,
+                                breakdowns: session.breakdowns?.slice(0, 2).map((bd: any) => ({
+                                    category: bd.category,
+                                    start: bd.start_time, 
+                                    end: bd.end_time
+                                })) || session.category_blocks?.slice(0, 2).map((bd: any) => ({
+                                    category: bd.category,
+                                    start: bd.start_time,
+                                    end: bd.end_time
+                                })) || []
+                            });
+                        });
+                    }
+                    if (json?.session_times) {
+                        json.session_times.slice(0, 3).forEach((session: any, i: number) => {
+                            console.log(`  ⏱️ Session Time ${i + 1}:`, {
+                                start: session.start_time,
+                                end: session.end_time,
+                                duration: session.total_duration
+                            });
+                        });
+                    }
+                    
                     // Cache all data - current day with short expiry, historical data permanently
                     const cacheStoreStart = performance.now();
                     apiCache.set(cacheKey, json);

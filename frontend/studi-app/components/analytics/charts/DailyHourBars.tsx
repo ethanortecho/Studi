@@ -78,6 +78,14 @@ const DailyHourBars: React.FC<Props> = ({
         // Convert UTC times to user's local timezone for proper hour display
         const start = convertUTCToUserTimezone(bd.start_time, userTimezone);
         const end = convertUTCToUserTimezone(bd.end_time, userTimezone);
+        
+        // 🐛 TIMEZONE DEBUG: Chart display times
+        if (bd === breakdowns[0]) { // Only log first breakdown to avoid spam
+          console.log('📊 CHART DEBUG - DailyHourBars:');
+          console.log('  📥 Raw UTC times:', bd.start_time, '→', bd.end_time);
+          console.log('  📤 Converted times:', start.toISOString(), '→', end.toISOString());
+          console.log('  🕐 Display hours:', start.getHours(), '→', end.getHours());
+        }
         let current = new Date(start);
 
         while (current < end) {
@@ -129,8 +137,8 @@ const DailyHourBars: React.FC<Props> = ({
   const computedWidth = width ?? DEFAULT_BAR_WIDTH * 24 + BAR_GAP * 23;
   const barWidth = (computedWidth - BAR_GAP * 23) / 24; // 23 gaps between 24 bars
 
-  const hourLabels = ['12am', '6am', '12pm', '6pm'];
-  const hourLabelPositions = [0, 6, 12, 18];
+  const hourLabels = ['12am', '6am', '12pm', '6pm', '12am'];
+  const hourLabelPositions = [0, 6, 12, 18, 24];
 
   return (
     <DashboardCard className="bg-background border  border-surface rounded-[35px]">
@@ -144,7 +152,7 @@ const DailyHourBars: React.FC<Props> = ({
         <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
           {/* Bars + grid */}
           <View style={{ width: computedWidth, position: 'relative' }}>
-            {/* Grid lines */}
+            {/* Horizontal grid lines */}
             <View
               style={{
                 position: 'absolute',
@@ -178,6 +186,26 @@ const DailyHourBars: React.FC<Props> = ({
                 opacity: 0.6,
               }}
             />
+
+            {/* Vertical grid lines at time markers */}
+            {hourLabelPositions.map((hourPosition, index) => {
+              const xPosition = (hourPosition / 24) * computedWidth;
+              return (
+                <View
+                  key={`vertical-grid-${index}`}
+                  style={{
+                    position: 'absolute',
+                    left: xPosition,
+                    top: 0,
+                    bottom: 0,
+                    width: 1,
+                    backgroundColor: GRID_COLOUR,
+                    opacity: 0.4,
+                    borderStyle: 'dashed',
+                  }}
+                />
+              );
+            })}
 
             {/* Bars */}
             <View
@@ -234,9 +262,9 @@ const DailyHourBars: React.FC<Props> = ({
                 justifyContent: 'space-between',
               }}
             >
-              {hourLabels.map((label) => (
+              {hourLabels.map((label, index) => (
                 <Text
-                  key={label}
+                  key={`${label}-${index}`}
                   style={{ fontSize: 10, color: '#6C6C6C' }}
                 >
                   {label}

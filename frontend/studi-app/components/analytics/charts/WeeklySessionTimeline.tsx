@@ -44,6 +44,15 @@ const StudyDayBars: React.FC<StudyDayBarsProps> = ({ sessionTimes, isEmpty = fal
       const startDate = convertUTCToUserTimezone(session.start_time, userTimezone);
       const endDate = convertUTCToUserTimezone(session.end_time, userTimezone);
       
+      // 🐛 TIMEZONE DEBUG: Chart display times  
+      if (session === sessionTimes[0]) { // Only log first session to avoid spam
+        console.log('📊 CHART DEBUG - WeeklySessionTimeline:');
+        console.log('  📥 Raw UTC times:', session.start_time, '→', session.end_time);
+        console.log('  📤 Converted times:', startDate.toISOString(), '→', endDate.toISOString());
+        console.log('  🕐 Display hours:', startDate.getHours(), '→', endDate.getHours());
+        console.log('  📅 Day of week:', dayMappings[startDate.getDay() === 0 ? 6 : startDate.getDay() - 1]);
+      }
+      
       const dayOfWeek = dayMappings[startDate.getDay() === 0 ? 6 : startDate.getDay() - 1]; // Convert to our format
       
       const startHour = startDate.getHours();
@@ -67,26 +76,36 @@ const StudyDayBars: React.FC<StudyDayBarsProps> = ({ sessionTimes, isEmpty = fal
       });
     });
     
-    // Determine time window based on edge cases
+    // Determine time window based on actual session data
     let timeWindow: TimeWindow;
-    if (earliestHour < 6 || latestHour > 24) {
-      // Edge case detected - extend window
-      const windowStart = Math.min(0, earliestHour);
-      const windowEnd = Math.max(24, latestHour);
+    
+    // Calculate dynamic window based on actual data
+    const windowStart = Math.max(0, Math.min(6, earliestHour - 1)); // At least 1 hour before earliest, but not before midnight
+    const windowEnd = Math.min(24, Math.max(24, latestHour + 1)); // At least 1 hour after latest, but not after midnight next day
+    
+    // Special case: if we have very early morning sessions (before 6am), extend to show full day
+    const needsFullDay = earliestHour < 6 || latestHour >= 23;
+    
+    if (needsFullDay) {
+      // Show full 24-hour timeline
       timeWindow = {
-        startHour: windowStart,
-        endHour: windowEnd,
-        totalHours: windowEnd - windowStart,
-        timeLabels: windowStart === 0 ? ['12am', '3am', '6am', '9am', '12pm', '3pm', '6pm', '9pm', '12am'] 
-                                      : ['6am', '9am', '12pm', '3pm', '6pm', '9pm', '12am']
+        startHour: 0,
+        endHour: 24,
+        totalHours: 24,
+        timeLabels: ['12am', '3am', '6am', '9am', '12pm', '3pm', '6pm', '9pm', '12am']
       };
     } else {
-      // Default window: 6am - 12am
+      // Use dynamic window that includes all sessions with padding
+      const finalStart = Math.min(6, earliestHour); // Start at 6am or earlier if needed
+      const finalEnd = Math.max(24, latestHour === 0 ? 24 : latestHour); // End at 12am or later if needed
+      
       timeWindow = {
-        startHour: 6,
-        endHour: 24,
-        totalHours: 18,
-        timeLabels: ['6am', '9am', '12pm', '3pm', '6pm', '9pm', '12am']
+        startHour: finalStart,
+        endHour: finalEnd,
+        totalHours: finalEnd - finalStart,
+        timeLabels: finalStart === 0 ? 
+          ['12am', '3am', '6am', '9am', '12pm', '3pm', '6pm', '9pm', '12am'] :
+          ['6am', '9am', '12pm', '3pm', '6pm', '9pm', '12am']
       };
     }
     

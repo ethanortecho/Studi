@@ -1,12 +1,4 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const TIMEZONE_STORAGE_KEY = 'user_timezone';
-
-export interface TimezoneInfo {
-  timezone: string;
-  offset: number; // UTC offset in minutes
-  displayName: string;
-}
+// Simplified timezone utilities - no storage needed, browser handles detection
 
 /**
  * Detect user's timezone using native browser/device APIs
@@ -14,20 +6,7 @@ export interface TimezoneInfo {
  */
 export const detectUserTimezone = (): string => {
   try {
-    // Use Intl API - works on iOS, Android, Web
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    
-    // 🐛 TIMEZONE DEBUG: Enhanced detection logging
-    const now = new Date();
-    const offsetMinutes = -now.getTimezoneOffset();
-    const offsetHours = offsetMinutes / 60;
-    console.log('🕒 TIMEZONE DEBUG - Browser Detection:');
-    console.log('  🌍 Detected timezone:', timezone);
-    console.log('  📍 Browser offset (minutes):', offsetMinutes, '(', offsetHours > 0 ? '+' : '', offsetHours, 'hours )');
-    console.log('  🕐 Current time:', now.toString());
-    console.log('  🌐 Current UTC time:', now.toISOString());
-    
-    return timezone;
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
   } catch (error) {
     console.warn('⚠️ Failed to detect timezone, falling back to UTC:', error);
     return 'UTC';
@@ -35,110 +14,30 @@ export const detectUserTimezone = (): string => {
 };
 
 /**
- * Get detailed timezone information
+ * Get hour in user's timezone from UTC string (for charts)
+ * Simplified version that just extracts the hour for chart display
  */
-export const getTimezoneInfo = (timezone?: string): TimezoneInfo => {
-  const tz = timezone || detectUserTimezone();
-  
+export const getLocalHour = (utcDateString: string, userTimezone: string): number => {
   try {
-    const now = new Date();
-    
-    // Get UTC offset in minutes
-    const offset = -now.getTimezoneOffset();
-    
-    // Get display name (e.g., "Eastern Standard Time")
-    const displayName = new Intl.DateTimeFormat('en', {
-      timeZone: tz,
-      timeZoneName: 'long'
-    }).formatToParts(now).find(part => part.type === 'timeZoneName')?.value || tz;
-    
-    return {
-      timezone: tz,
-      offset,
-      displayName
-    };
+    const date = new Date(utcDateString);
+    const hourString = date.toLocaleString('en-US', { 
+      timeZone: userTimezone, 
+      hour: 'numeric', 
+      hour12: false 
+    });
+    return parseInt(hourString);
   } catch (error) {
-    console.warn('⚠️ Failed to get timezone info:', error);
-    return {
-      timezone: 'UTC',
-      offset: 0,
-      displayName: 'Coordinated Universal Time'
-    };
+    console.warn('⚠️ Failed to get local hour:', error);
+    return new Date(utcDateString).getHours();
   }
 };
 
 /**
- * Store user timezone in AsyncStorage
+ * Get Date components in user's timezone (for charts that need day/month/year)
  */
-export const storeUserTimezone = async (timezone: string): Promise<void> => {
+export const getLocalDateComponents = (utcDateString: string, userTimezone: string) => {
   try {
-    await AsyncStorage.setItem(TIMEZONE_STORAGE_KEY, timezone);
-    console.log('💾 Stored user timezone:', timezone);
-  } catch (error) {
-    console.warn('⚠️ Failed to store timezone:', error);
-  }
-};
-
-/**
- * Get stored user timezone from AsyncStorage
- */
-export const getStoredTimezone = async (): Promise<string | null> => {
-  try {
-    const timezone = await AsyncStorage.getItem(TIMEZONE_STORAGE_KEY);
-    if (timezone) {
-      console.log('🔍 Retrieved stored timezone:', timezone);
-    }
-    return timezone;
-  } catch (error) {
-    console.warn('⚠️ Failed to retrieve stored timezone:', error);
-    return null;
-  }
-};
-
-/**
- * Initialize timezone detection and storage
- * Call this on app startup
- */
-export const initializeTimezone = async (): Promise<string> => {
-  try {
-    // First check if we have a stored timezone
-    const storedTimezone = await getStoredTimezone();
-    
-    // Always detect current timezone
-    const detectedTimezone = detectUserTimezone();
-    
-    // If stored timezone is different from detected, update it
-    if (!storedTimezone || storedTimezone !== detectedTimezone) {
-      await storeUserTimezone(detectedTimezone);
-      console.log('🔄 Updated timezone from', storedTimezone, 'to', detectedTimezone);
-      return detectedTimezone;
-    }
-    
-    console.log('✅ Using stored timezone:', storedTimezone);
-    return storedTimezone;
-  } catch (error) {
-    console.warn('⚠️ Timezone initialization failed, using detected timezone:', error);
-    const fallback = detectUserTimezone();
-    await storeUserTimezone(fallback);
-    return fallback;
-  }
-};
-
-/**
- * Convert UTC datetime string to user's local timezone
- * Returns a Date object that behaves as if it's in the user's timezone
- */
-export const convertUTCToUserTimezone = (utcDateString: string, userTimezone: string): Date => {
-  try {
-    console.log('🔍 TIMEZONE DEBUG - CONVERSION PROCESS:');
-    console.log('  📥 Raw input:', utcDateString);
-    console.log('  🎯 Target timezone:', userTimezone);
-    
-    const utcDate = new Date(utcDateString);
-    console.log('  📅 Step 1 - Parsed as Date:', utcDate.toISOString());
-    console.log('  🕐 Step 1 - UTC hour from Date.getHours():', utcDate.getHours());
-    
-    // Create a date formatter for the target timezone
+    const date = new Date(utcDateString);
     const formatter = new Intl.DateTimeFormat('en-CA', {
       timeZone: userTimezone,
       year: 'numeric',
@@ -146,43 +45,53 @@ export const convertUTCToUserTimezone = (utcDateString: string, userTimezone: st
       day: '2-digit',
       hour: '2-digit',
       minute: '2-digit',
-      second: '2-digit',
       hour12: false
     });
     
-    // Format the UTC date in the target timezone
-    const formatted = formatter.format(utcDate);
-    console.log('  🔧 Step 2 - Formatted in target timezone:', formatted);
-    
-    const parts = formatter.formatToParts(utcDate);
+    const parts = formatter.formatToParts(date);
     const partsObj = parts.reduce((acc, part) => {
-      acc[part.type] = part.value;
+      acc[part.type] = parseInt(part.value);
       return acc;
-    }, {} as { [key: string]: string });
-    console.log('  📊 Step 2 - Target timezone components:', {
-      hour: partsObj.hour,
-      minute: partsObj.minute,
+    }, {} as any);
+    
+    return {
+      year: partsObj.year,
+      month: partsObj.month - 1, // JS months are 0-indexed
       day: partsObj.day,
-      month: partsObj.month,
-      year: partsObj.year
-    });
+      hour: partsObj.hour,
+      minute: partsObj.minute
+    };
+  } catch (error) {
+    console.warn('⚠️ Failed to get local date components:', error);
+    const fallback = new Date(utcDateString);
+    return {
+      year: fallback.getFullYear(),
+      month: fallback.getMonth(),
+      day: fallback.getDate(),
+      hour: fallback.getHours(),
+      minute: fallback.getMinutes()
+    };
+  }
+};
+
+/**
+ * Convert UTC datetime string to user's local timezone
+ * Simplified version that creates a Date object with local timezone hour/minute for chart usage
+ * ONLY USE FOR CHARTS - for display formatting use formatTimeInUserTimezone instead
+ */
+export const convertUTCToUserTimezone = (utcDateString: string, userTimezone: string): Date => {
+  try {
+    const components = getLocalDateComponents(utcDateString, userTimezone);
     
-    // ⚠️ THIS IS THE PROBLEMATIC STEP - Creating Date with browser timezone components
+    // Create a Date object using the local timezone components
+    // This is specifically for charts that need .getHours()/.getMinutes() to work correctly
     const localDate = new Date(
-      parseInt(partsObj.year),
-      parseInt(partsObj.month) - 1, // Month is 0-indexed
-      parseInt(partsObj.day),
-      parseInt(partsObj.hour),
-      parseInt(partsObj.minute),
-      parseInt(partsObj.second)
+      components.year,
+      components.month,
+      components.day,
+      components.hour,
+      components.minute
     );
-    
-    console.log('  ⚠️ Step 3 - Date() constructor treated components as BROWSER timezone');
-    console.log('  📤 Result getHours():', localDate.getHours());
-    console.log('  📍 Browser timezone offset:', -new Date().getTimezoneOffset() / 60, 'hours from UTC');
-    console.log('  🔥 OFFSET DISCREPANCY:', utcDate.getHours() - localDate.getHours(), 'hours');
-    console.log('  🔚 Final object:', localDate.toString());
-    console.log('  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
     
     return localDate;
   } catch (error) {
@@ -256,43 +165,4 @@ export const isValidTimezone = (timezone: string): boolean => {
   } catch (error) {
     return false;
   }
-};
-
-/**
- * Get offset between UTC and user timezone in minutes
- * Positive values mean ahead of UTC, negative means behind
- */
-export const getTimezoneOffsetMinutes = (timezone: string, date?: Date): number => {
-  try {
-    const testDate = date || new Date();
-    
-    // Get UTC time in milliseconds
-    const utcTime = testDate.getTime();
-    
-    // Get local time in the specified timezone
-    const localTime = new Date(testDate.toLocaleString('en-US', { timeZone: timezone })).getTime();
-    
-    // Calculate offset in minutes
-    return Math.round((localTime - utcTime) / (1000 * 60));
-  } catch (error) {
-    console.warn('⚠️ Failed to get timezone offset:', error);
-    return 0;
-  }
-};
-
-/**
- * Convert timeline data from UTC to user timezone
- * Specifically for chart data that contains time arrays
- */
-export const convertTimelineDataToUserTimezone = <T extends { start_time: string; end_time?: string }>(
-  data: T[],
-  userTimezone: string
-): T[] => {
-  return data.map(item => ({
-    ...item,
-    start_time: convertUTCToUserTimezone(item.start_time, userTimezone).toISOString(),
-    ...(item.end_time && {
-      end_time: convertUTCToUserTimezone(item.end_time, userTimezone).toISOString()
-    })
-  }));
 };

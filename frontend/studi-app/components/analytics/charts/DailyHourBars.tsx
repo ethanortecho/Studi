@@ -4,7 +4,7 @@ import { TimelineSession, CategoryMetadata } from '@/types/api';
 import DashboardCard from '@/components/insights/DashboardContainer';
 import Legend from '@/components/analytics/DashboardLegend';
 import { StudySessionContext } from '@/context/StudySessionContext';
-import { convertUTCToUserTimezone } from '@/utils/timezoneUtils';
+import { getLocalHour, getLocalDateComponents } from '@/utils/timezoneUtils';
 
 interface Props {
   /** Raw session timeline data for a single day */
@@ -75,17 +75,14 @@ const DailyHourBars: React.FC<Props> = ({
         const meta = categoryNameToMeta[categoryName];
         if (meta?.name === 'Break') return; // skip breaks entirely
 
-        // Convert UTC times to user's local timezone for proper hour display
-        const start = convertUTCToUserTimezone(bd.start_time, userTimezone);
-        const end = convertUTCToUserTimezone(bd.end_time, userTimezone);
+        // Get start and end components in user's timezone
+        const startComponents = getLocalDateComponents(bd.start_time, userTimezone);
+        const endComponents = getLocalDateComponents(bd.end_time, userTimezone);
         
-        // 🐛 TIMEZONE DEBUG: Chart display times
-        if (bd === breakdowns[0]) { // Only log first breakdown to avoid spam
-          console.log('📊 CHART DEBUG - DailyHourBars:');
-          console.log('  📥 Raw UTC times:', bd.start_time, '→', bd.end_time);
-          console.log('  📤 Converted times:', start.toISOString(), '→', end.toISOString());
-          console.log('  🕐 Display hours:', start.getHours(), '→', end.getHours());
-        }
+        // Create Date objects for calculation (these represent local time)
+        const start = new Date(startComponents.year, startComponents.month, startComponents.day, startComponents.hour, startComponents.minute);
+        const end = new Date(endComponents.year, endComponents.month, endComponents.day, endComponents.hour, endComponents.minute);
+        
         let current = new Date(start);
 
         while (current < end) {

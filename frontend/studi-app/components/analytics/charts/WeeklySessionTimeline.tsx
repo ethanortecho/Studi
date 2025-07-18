@@ -3,7 +3,7 @@ import { View, Text, Dimensions } from 'react-native';
 import DayTimeline, { DaySession, TimeWindow } from '../DayTimeline';
 import DashboardCard from '@/components/insights/DashboardContainer';
 import { StudySessionContext } from '@/context/StudySessionContext';
-import { convertUTCToUserTimezone } from '@/utils/timezoneUtils';
+import { getLocalDateComponents } from '@/utils/timezoneUtils';
 
 interface SessionTime {
   start_time: string;
@@ -40,25 +40,20 @@ const StudyDayBars: React.FC<StudyDayBarsProps> = ({ sessionTimes, isEmpty = fal
     let latestHour = 24; // Default end (12am next day)
     
     sessionTimes.forEach(session => {
-      // Convert UTC session times to user's local timezone for display
-      const startDate = convertUTCToUserTimezone(session.start_time, userTimezone);
-      const endDate = convertUTCToUserTimezone(session.end_time, userTimezone);
+      // Get start and end components in user's timezone
+      const startComponents = getLocalDateComponents(session.start_time, userTimezone);
+      const endComponents = getLocalDateComponents(session.end_time, userTimezone);
       
-      // 🐛 TIMEZONE DEBUG: Chart display times  
-      if (session === sessionTimes[0]) { // Only log first session to avoid spam
-        console.log('📊 CHART DEBUG - WeeklySessionTimeline:');
-        console.log('  📥 Raw UTC times:', session.start_time, '→', session.end_time);
-        console.log('  📤 Converted times:', startDate.toISOString(), '→', endDate.toISOString());
-        console.log('  🕐 Display hours:', startDate.getHours(), '→', endDate.getHours());
-        console.log('  📅 Day of week:', dayMappings[startDate.getDay() === 0 ? 6 : startDate.getDay() - 1]);
-      }
+      // Create Date objects for day calculation
+      const startDate = new Date(startComponents.year, startComponents.month, startComponents.day);
+      const endDate = new Date(endComponents.year, endComponents.month, endComponents.day);
       
       const dayOfWeek = dayMappings[startDate.getDay() === 0 ? 6 : startDate.getDay() - 1]; // Convert to our format
       
-      const startHour = startDate.getHours();
-      const endHour = endDate.getHours();
-      const startMinute = startDate.getMinutes();
-      const endMinute = endDate.getMinutes();
+      const startHour = startComponents.hour;
+      const endHour = endComponents.hour;
+      const startMinute = startComponents.minute;
+      const endMinute = endComponents.minute;
       
       // Track earliest and latest for edge case detection
       earliestHour = Math.min(earliestHour, startHour);

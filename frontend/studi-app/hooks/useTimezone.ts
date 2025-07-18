@@ -4,8 +4,7 @@ import {
   formatTimeInUserTimezone, 
   formatDateTimeInUserTimezone, 
   getChartTimeLabel,
-  convertUTCToUserTimezone,
-  convertTimelineDataToUserTimezone
+  convertUTCToUserTimezone
 } from '@/utils/timezoneUtils';
 
 /**
@@ -54,13 +53,6 @@ export const useTimezone = () => {
     convertToUserTime: (utcDateString: string) => 
       convertUTCToUserTimezone(utcDateString, userTimezone),
 
-    /**
-     * Convert array of timeline data to user's timezone
-     * @param data - Array of objects with start_time and optional end_time
-     * @returns Array with times converted to user's timezone
-     */
-    convertTimelineData: <T extends { start_time: string; end_time?: string }>(data: T[]) =>
-      convertTimelineDataToUserTimezone(data, userTimezone),
 
     /**
      * Format session duration display

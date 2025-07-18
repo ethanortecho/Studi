@@ -3,7 +3,7 @@ import { AppState } from 'react-native';
 import { fetchCategories, Category, fetchBreakCategory } from '@/utils/studySession';
 import { createStudySession, endStudySession, createCategoryBlock, endCategoryBlock, cancelStudySession, updateSessionRating } from '../utils/studySession';
 import SessionStatsModal from '@/components/modals/SessionStatsModal';
-import { initializeTimezone, detectUserTimezone } from '@/utils/timezoneUtils';
+import { detectUserTimezone } from '@/utils/timezoneUtils';
 
 
 interface StudySessionContextType {
@@ -114,14 +114,14 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
     refreshCategories();
     
     // Initialize timezone detection
-    initializeTimezone().then(timezone => {
-      console.log('🕒 Initialized user timezone:', timezone);
+    try {
+      const timezone = detectUserTimezone();
+      console.log('🕒 Detected user timezone:', timezone);
       setUserTimezone(timezone);
-    }).catch(error => {
-      console.warn('⚠️ Failed to initialize timezone:', error);
-      const fallback = detectUserTimezone();
-      setUserTimezone(fallback);
-    });
+    } catch (error) {
+      console.warn('⚠️ Failed to detect timezone:', error);
+      setUserTimezone('UTC');
+    }
   }, []);
 
   // Handle app state changes with smart background session management

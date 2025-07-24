@@ -39,16 +39,32 @@ const StudyDayBars: React.FC<StudyDayBarsProps> = ({ sessionTimes, isEmpty = fal
     let earliestHour = 6; // Default start at 6am
     let latestHour = 24; // Default end at 12am (midnight)
     
-    sessionTimes.forEach(session => {
+    console.log('🔍 TIMELINE DEBUG: Processing sessions for timeline...');
+    console.log('📅 User timezone:', userTimezone);
+    console.log('📊 Total sessions to process:', sessionTimes.length);
+    
+    sessionTimes.forEach((session, index) => {
+      console.log(`\n📍 Session ${index + 1}:`);
+      console.log('  Raw times:', { start: session.start_time, end: session.end_time, duration: session.total_duration });
+      
       // Get start and end components in user's timezone
       const startComponents = getLocalDateComponents(session.start_time, userTimezone);
       const endComponents = getLocalDateComponents(session.end_time, userTimezone);
+      
+      console.log('  Start components:', startComponents);
+      console.log('  End components:', endComponents);
       
       // Create Date objects for day calculation
       const startDate = new Date(startComponents.year, startComponents.month, startComponents.day);
       const endDate = new Date(endComponents.year, endComponents.month, endComponents.day);
       
       const dayOfWeek = dayMappings[startDate.getDay() === 0 ? 6 : startDate.getDay() - 1]; // Convert to our format
+      
+      console.log('  Day mapping:', {
+        startDateGetDay: startDate.getDay(),
+        calculatedIndex: startDate.getDay() === 0 ? 6 : startDate.getDay() - 1,
+        dayOfWeek: dayOfWeek
+      });
       
       const startHour = startComponents.hour;
       const endHour = endComponents.hour;
@@ -57,9 +73,20 @@ const StudyDayBars: React.FC<StudyDayBarsProps> = ({ sessionTimes, isEmpty = fal
       
       // Track earliest and latest hours for minimal extension
       earliestHour = Math.min(earliestHour, startHour);
-      // Handle sessions that end after midnight (next day)
-      const normalizedEndHour = endHour === 0 ? 24 : endHour;
+      
+      // Handle sessions that end at midnight (hour 0)  
+      // Only convert to 24 if the session actually spans to the next day
+      // If start and end are both at hour 0 on the same day, keep it as 0
+      const sessionSpansToNextDay = (startHour !== 0 && endHour === 0) || 
+                                   (startDate.getTime() !== endDate.getTime() && endHour === 0);
+      const normalizedEndHour = sessionSpansToNextDay ? 24 : endHour;
       latestHour = Math.max(latestHour, normalizedEndHour);
+      
+      console.log('  Processed time:', {
+        startHour, startMinute,
+        endHour, normalizedEndHour, endMinute,
+        assignedToDay: dayOfWeek
+      });
       
       if (!sessionsByDay[dayOfWeek]) {
         sessionsByDay[dayOfWeek] = [];
@@ -67,10 +94,17 @@ const StudyDayBars: React.FC<StudyDayBarsProps> = ({ sessionTimes, isEmpty = fal
       
       sessionsByDay[dayOfWeek].push({
         startHour,
-        endHour: normalizedEndHour, // Use the same normalization logic
+        endHour: normalizedEndHour,
         startMinute,
         endMinute
       });
+    });
+    
+    console.log('\n📋 FINAL SESSIONS BY DAY:');
+    Object.entries(sessionsByDay).forEach(([day, sessions]) => {
+      console.log(`  ${day}:`, sessions.map(s => 
+        `${s.startHour}:${s.startMinute.toString().padStart(2, '0')}-${s.endHour}:${s.endMinute.toString().padStart(2, '0')}`
+      ));
     });
     
     // Fixed 6am-12am timeline with minimal extension
@@ -181,25 +215,26 @@ const StudyDayBars: React.FC<StudyDayBarsProps> = ({ sessionTimes, isEmpty = fal
               }}
             >
               {(() => {
-                // For default 6am-12am window, show meaningful labels
-                if (timeWindow.startHour === 6 && timeWindow.endHour === 24) {
-                  return ['6am', '12pm', '9pm'].map((label) => (
-                    <Text key={label} style={{ fontSize: 12, color: '#6C6C6C' }}>
-                      {label}
-                    </Text>
-                  ));
-                }
+                // Always show meaningful labels based on the actual time window
+                const formatHour = (hour: number) => {
+                  if (hour === 0 || hour === 24) return '12am';
+                  if (hour < 12) return `${hour}am`;
+                  if (hour === 12) return '12pm';
+                  return `${hour - 12}pm`;
+                };
                 
-                // For other windows, show start, middle, and end
-                const labels = timeWindow.timeLabels;
-                const displayLabels = [
-                  labels[0], // start
-                  labels[Math.floor(labels.length / 2)], // middle
-                  labels[labels.length - 1] // end
-                ];
+                const startLabel = formatHour(timeWindow.startHour);
+                const middleHour = Math.floor((timeWindow.startHour + timeWindow.endHour) / 2);
+                const middleLabel = formatHour(middleHour);
+                const endLabel = formatHour(timeWindow.endHour);
                 
-                return displayLabels.map((label) => (
-                  <Text key={label} style={{ fontSize: 12, color: '#6C6C6C' }}>
+                // Use unique keys to avoid duplicate key warnings
+                return [
+                  { label: startLabel, key: `start-${timeWindow.startHour}` },
+                  { label: middleLabel, key: `middle-${middleHour}` },
+                  { label: endLabel, key: `end-${timeWindow.endHour}` }
+                ].map(({ label, key }) => (
+                  <Text key={key} style={{ fontSize: 12, color: '#6C6C6C' }}>
                     {label}
                   </Text>
                 ));

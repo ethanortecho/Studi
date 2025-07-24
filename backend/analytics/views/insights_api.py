@@ -237,7 +237,7 @@ class WeeklyInsights(APIView):
             daily_aggregates = StudyAnalytics.get_aggregates_in_range(user, start_date, end_date, timeframe='daily')
 
             for aggregate in daily_aggregates:
-                day_name = aggregate.start_date.strftime('%A')[:2].upper()
+                day_name = aggregate.date.strftime('%A')[:2].upper()
                 complete_daily_breakdown[day_name] = {
                     'total': aggregate.total_duration,
                     'categories': aggregate.category_durations

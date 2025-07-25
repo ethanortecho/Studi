@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, ScrollView, Text } from 'react-native';
-import DebugDataViewer from '@/components/analytics/DebugDataViewer';
 import MultiChartContainer from '@/components/analytics/MultiChartContainer';
 import MonthlyHeatmap from '@/components/analytics/charts/MonthlyHeatmap';
 import { CategoryMetadata } from '@/types/api';
@@ -71,15 +70,6 @@ export default function MonthlyDashboard({
         />
       </View>
       
-      {/* Debug Data Viewer */}
-      <View className="mb-5 px-4">
-        {rawData && (
-          <DebugDataViewer 
-            data={rawData} 
-            label="Monthly Dashboard Raw Data" 
-          />
-        )}
-      </View>
     </ScrollView>
   );
 }

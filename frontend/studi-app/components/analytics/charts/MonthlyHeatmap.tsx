@@ -105,7 +105,7 @@ const MonthlyHeatmap: React.FC<MonthlyHeatmapProps> = ({
   // Render calendar grid
   const renderCalendarGrid = () => {
     return (
-      <View className="flex-1">
+      <View className="flex-1 items-center">
         {/* Calendar grid */}
         {weekdays.map((day, dayIndex) => (
           <View key={day} className="flex-row mb-1">

@@ -5,7 +5,6 @@ import TotalHours from '@/components/analytics/TotalHoursContainer';
 import Legend from '@/components/analytics/DashboardLegend';
 import WeeklyBarchartContainer from '@/components/analytics/WeeklyBarchartContainer';
 import StudyDayBars from '@/components/analytics/charts/WeeklySessionTimeline';
-import DebugDataViewer from '@/components/analytics/DebugDataViewer';
 import DashboardCard from '@/components/insights/DashboardContainer';
 import MultiChartContainer from '@/components/analytics/MultiChartContainer';
 import { CategoryMetadata } from '@/types/api';
@@ -79,15 +78,6 @@ export default function WeeklyDashboard({
         </View>
       </View>
       
-      {/* Debug Data Viewer (outside off-white container) */}
-      <View className="mb-5 px-4">
-        {rawData && (
-          <DebugDataViewer 
-            data={rawData} 
-            label="Weekly Dashboard Raw Data" 
-          />
-        )}
-      </View>
     </ScrollView>
   );
 }

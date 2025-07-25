@@ -2,7 +2,6 @@ import React from 'react';
 import { ScrollView, View, Text } from 'react-native';
 import TotalHours from '@/components/analytics/TotalHoursContainer';
 import Legend from '@/components/analytics/DashboardLegend';
-import DebugDataViewer from '@/components/analytics/DebugDataViewer';
 import DashboardCard from '@/components/insights/DashboardContainer';
 import SubjectBreakdown from '@/components/analytics/layout/SubjectBreakdown';
 import SessionBarchart from '@/components/analytics/charts/SessionBarchart';
@@ -73,15 +72,6 @@ export default function DailyDashboard({
 
         
       
-      {/* Debug Data Viewer (outside off-white container) */}
-      <View className="mb-5 px-4">
-        {rawData && (
-          <DebugDataViewer 
-            data={rawData} 
-            label="Daily Dashboard Raw Data" 
-          />
-        )}
-      </View>
     </ScrollView>
   );
 }

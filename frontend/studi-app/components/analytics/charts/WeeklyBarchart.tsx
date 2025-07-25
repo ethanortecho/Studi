@@ -251,7 +251,7 @@ const WeeklyBarchart: React.FC<WeeklyBarchartProps> = ({
                 points={pointsArray}
                 colors={colors}
                 animate={{ type: "timing", duration: 300 }}
-                innerPadding={0.4}
+                innerPadding={ timeframe === 'weekly' ? 0.4 : 0.5}
                 barOptions={({ isBottom, isTop }) => ({
                   roundedCorners: isTop
                     ? { topLeft: 4, topRight: 4 }

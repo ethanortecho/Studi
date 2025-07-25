@@ -226,7 +226,7 @@ const WeeklyBarchart: React.FC<WeeklyBarchartProps> = ({
           xKey="period"
           yKeys={currentYKeys}
           domain={{ y: [0, Math.ceil(maxTotal * 1.2)] }}
-          domainPadding={{ left: 15, right: 15 }}
+          domainPadding={{ left: timeframe === 'weekly' ? 15 : 45, right: timeframe === 'weekly' ? 15 : 45 }}
           padding={{ left: 0, top: 0, right: 0, bottom: 0 }}
           xAxis={{
             font: font,

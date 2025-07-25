@@ -3,7 +3,6 @@ import { ScrollView, View, Text } from 'react-native';
 import TotalHours from '@/components/analytics/TotalHoursContainer';
 import Legend from '@/components/analytics/DashboardLegend';
 import DashboardCard from '@/components/insights/DashboardContainer';
-import SubjectBreakdown from '@/components/analytics/layout/SubjectBreakdown';
 import SessionBarchart from '@/components/analytics/charts/SessionBarchart';
 import { CategoryMetadata, TimelineSession } from '@/types/api';
 import MultiChartContainer from '@/components/analytics/MultiChartContainer';

@@ -1,3 +1,4 @@
+import DashboardCard from '@/components/insights/DashboardContainer';
 import React from 'react';
 import { View, Text, Dimensions } from 'react-native';
 
@@ -154,7 +155,7 @@ const MonthlyHeatmap: React.FC<MonthlyHeatmapProps> = ({
   };
 
   return (
-    <View className="bg-background border border-surface rounded-lg p-4">
+    <DashboardCard className="bg-background border border-surface rounded-[35px] p-4">
       {/* Title */}
       <Text className="text-lg font-bold text-primaryText mb-4 text-center">
         {monthName}
@@ -190,7 +191,7 @@ const MonthlyHeatmap: React.FC<MonthlyHeatmapProps> = ({
           Study intensity: 0-3+ hours per day
         </Text>
       </View>
-    </View>
+    </DashboardCard>
   );
 };
 

@@ -54,14 +54,6 @@ export default function HomeScreen() {
                 <Text className="text-3xl font-medium text-indigo-800 mb-2">
                     Welcome Back,
                 </Text>
-                {/* Theme Toggle Button */}
-                <Pressable onPress={toggleTheme} hitSlop={8} className="p-2 rounded-full bg-surface/60">
-                    <Ionicons 
-                        name={themeMode === 'dark' ? 'sunny' : 'moon'} 
-                        size={24} 
-                        color={themeMode === 'dark' ? light.text : dark.text} 
-                    />
-                </Pressable>
             </View>
             <View className="px-6 mb-4">
                 <Text className="text-3xl font-bold text-indigo-600">

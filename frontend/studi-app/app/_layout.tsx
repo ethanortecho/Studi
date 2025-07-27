@@ -17,6 +17,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { cssInterop } from 'nativewind';
 import { StudySessionProvider } from '@/context/StudySessionContext';
+import { AuthProvider } from '@/contexts/AuthContext';
 import { applyDarkTheme, applyLightTheme, ThemeMode } from '@/theme/applyTheme';
 import { dark } from '@/theme/dark';
 import { light } from '@/theme/light';
@@ -104,23 +105,30 @@ export default function RootLayout() {
   }
 
   return (
-    <StudySessionProvider>
-      <NavigationThemeProvider value={themeMode === 'dark' ? DarkTheme : DefaultTheme}>
-        <ThemeContext.Provider value={{ mode: themeMode, toggle: toggleTheme }}>
-          <SafeAreaView edges={['left', 'right']} style={[{ flex: 1 }, themeStyles]}>
-            <Stack>
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="screens/manage-categories" options={{ headerShown: true, title: 'Manage Categories' }} />
-              <Stack.Screen name="screens/set-weekly-goal" options={{ headerShown: false }} />
-              <Stack.Screen name="screens/record" options={{ headerShown: true, title: 'Record Session' }} />
-              <Stack.Screen name="screens/timer/stopwatch" options={{ headerShown: false }} />
-              <Stack.Screen name="screens/timer/countdown" options={{ headerShown: false }} />
-              <Stack.Screen name="+not-found" />
-            </Stack>
-          </SafeAreaView>
-          <StatusBar translucent backgroundColor="transparent" style="light" />
-        </ThemeContext.Provider>
-      </NavigationThemeProvider>
-    </StudySessionProvider>
+    <AuthProvider>
+      <StudySessionProvider>
+        <NavigationThemeProvider value={themeMode === 'dark' ? DarkTheme : DefaultTheme}>
+          <ThemeContext.Provider value={{ mode: themeMode, toggle: toggleTheme }}>
+            <SafeAreaView edges={['left', 'right']} style={[{ flex: 1 }, themeStyles]}>
+              <Stack>
+                {/* Authentication Routes */}
+                <Stack.Screen name="auth/login" options={{ headerShown: false }} />
+                <Stack.Screen name="auth/register" options={{ headerShown: false }} />
+                
+                {/* Protected App Routes */}
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="screens/manage-categories" options={{ headerShown: true, title: 'Manage Categories' }} />
+                <Stack.Screen name="screens/set-weekly-goal" options={{ headerShown: false }} />
+                <Stack.Screen name="screens/record" options={{ headerShown: true, title: 'Record Session' }} />
+                <Stack.Screen name="screens/timer/stopwatch" options={{ headerShown: false }} />
+                <Stack.Screen name="screens/timer/countdown" options={{ headerShown: false }} />
+                <Stack.Screen name="+not-found" />
+              </Stack>
+            </SafeAreaView>
+            <StatusBar translucent backgroundColor="transparent" style="light" />
+          </ThemeContext.Provider>
+        </NavigationThemeProvider>
+      </StudySessionProvider>
+    </AuthProvider>
   );
 }

@@ -23,10 +23,23 @@ class SplitAggregateUpdateService:
             session: StudySession instance
         """
         try:
-            user = session.user
-            session_date = session.start_time.date()
+            import pytz
             
-            print(f"Updating all aggregates for session {session.id} on {session_date}")
+            user = session.user
+            
+            # Convert session start time to user's timezone to get correct local date
+            user_timezone_str = getattr(user, 'timezone', 'UTC')
+            try:
+                user_tz = pytz.timezone(user_timezone_str)
+            except pytz.exceptions.UnknownTimeZoneError:
+                user_tz = pytz.UTC
+                print(f"⚠️ Invalid timezone '{user_timezone_str}' for user {user.username}, falling back to UTC")
+            
+            # Convert UTC session start time to user's local date
+            session_local_time = session.start_time.astimezone(user_tz)
+            session_date = session_local_time.date()
+            
+            print(f"Updating all aggregates for session {session.id} on {session_date} (user timezone: {user_timezone_str})")
             
             # Update daily aggregate
             SplitAggregateUpdateService._update_daily_aggregate(user, session_date)

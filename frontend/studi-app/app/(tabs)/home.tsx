@@ -8,10 +8,12 @@ import { ThemedView } from '@/components/ThemedView';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import TimerConfigModal, { TimerConfig } from '@/components/timerconfig/TimerConfigModal';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function HomeScreen() {
     const [modalVisible, setModalVisible] = useState(false);
-
+    
+    const { user } = useAuth();
     const { mode: themeMode, toggle: toggleTheme } = useThemeMode();
 
     const handleStartStudying = () => {
@@ -57,7 +59,7 @@ export default function HomeScreen() {
             </View>
             <View className="px-6 mb-4">
                 <Text className="text-3xl font-bold text-indigo-600">
-                    Ethan
+                    {user?.first_name || 'User'}
                 </Text>
             </View>
             

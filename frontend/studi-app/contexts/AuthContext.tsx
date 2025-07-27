@@ -77,8 +77,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    */
   const loadStoredAuth = async () => {
     try {
-      console.log('🔍 AuthContext: Checking for stored authentication...');
-      
       // Get all stored auth data at once (faster than individual calls)
       const [storedAccessToken, storedRefreshToken, storedUser] = await Promise.all([
         AsyncStorage.getItem('accessToken'),
@@ -88,12 +86,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       // If we have all three pieces, user was previously logged in
       if (storedAccessToken && storedRefreshToken && storedUser) {
-        console.log('✅ AuthContext: Found stored authentication, restoring session');
         setAccessToken(storedAccessToken);
         setRefreshToken(storedRefreshToken);
         setUser(JSON.parse(storedUser)); // Convert JSON string back to object
-      } else {
-        console.log('❌ AuthContext: No stored authentication found');
       }
     } catch (error) {
       console.error('❌ AuthContext: Failed to load stored auth:', error);
@@ -114,8 +109,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    */
   const storeAuth = async (tokens: { access: string; refresh: string }, userData: User) => {
     try {
-      console.log('💾 AuthContext: Storing authentication data');
-      
       // Save all auth data to phone's storage
       await Promise.all([
         AsyncStorage.setItem('accessToken', tokens.access),
@@ -129,10 +122,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(userData);
       
       // Clear API cache when user changes to prevent data leaks
-      console.log('🧹 AuthContext: Clearing API cache for user change');
       clearApiCache();
-      
-      console.log('✅ AuthContext: Authentication data stored successfully');
     } catch (error) {
       console.error('❌ AuthContext: Failed to store auth:', error);
       throw error;
@@ -147,8 +137,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    */
   const clearAuth = async () => {
     try {
-      console.log('🧹 AuthContext: Clearing authentication data');
-      
       // Remove all auth data from phone's storage
       await Promise.all([
         AsyncStorage.removeItem('accessToken'),
@@ -162,10 +150,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(null);
       
       // Clear API cache when user logs out to prevent data leaks
-      console.log('🧹 AuthContext: Clearing API cache for logout');
       clearApiCache();
-      
-      console.log('✅ AuthContext: Authentication data cleared');
     } catch (error) {
       console.error('❌ AuthContext: Failed to clear auth:', error);
     }

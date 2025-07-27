@@ -223,7 +223,6 @@ export default function useAggregateData(time_frame: string,
         
         // Include user ID in cache key to prevent data leaks between users
         const key = `user-${user.id}-${time_frame}-${start_date}${end_date ? `-${end_date}` : ''}`;
-        console.log('🔑 fetchApi: Generated user-specific cache key:', key);
         return key;
     }, [time_frame, start_date, end_date, user?.id]);
 
@@ -256,46 +255,29 @@ export default function useAggregateData(time_frame: string,
                     const maxCurrentDayAge = 30 * 1000; // 30 seconds
                     
                     if (cacheAge > maxCurrentDayAge) {
-                        console.log(`🕒 fetchApi: Current day cache expired (${(cacheAge/1000).toFixed(1)}s old) for: ${cacheKey}`);
-                        // Let it fall through to fresh fetch
+                        // Cache expired, let it fall through to fresh fetch
                     } else {
-                        console.log('💾 fetchApi: Cache HIT (current day, recent) for:', cacheKey);
-                        const cacheRetrievalStart = performance.now();
-                        
-                        cacheAccessTimes.set(cacheKey, Date.now()); // Update access time
+                        // Use recent cache
+                        cacheAccessTimes.set(cacheKey, Date.now());
                         setData(apiCache.get(cacheKey));
                         setLoading(false);
-                        
-                        const cacheRetrievalTime = performance.now() - cacheRetrievalStart;
-                        console.log(`⚡ fetchApi: Cache retrieval took ${cacheRetrievalTime.toFixed(2)}ms for ${cacheKey}`);
                         return;
                     }
                 } else {
                     // Historical data - use cache without time limit
-                    console.log('💾 fetchApi: Cache HIT (historical) for:', cacheKey);
-                    const cacheRetrievalStart = performance.now();
-                    
                     cacheAccessTimes.set(cacheKey, Date.now()); // Update access time
                     setData(apiCache.get(cacheKey));
                     setLoading(false);
-                    
-                    const cacheRetrievalTime = performance.now() - cacheRetrievalStart;
-                    console.log(`⚡ fetchApi: Cache retrieval took ${cacheRetrievalTime.toFixed(2)}ms for ${cacheKey}`);
                     return;
                 }
             }
 
-            console.log(`🔍 fetchApi: Cache MISS for ${cacheKey} (current day: ${isCurrentDay})`);
+            // Cache miss - fetch from API
 
             // Check if this request is already ongoing
             if (ongoingRequests.has(cacheKey)) {
-                console.log('⏳ fetchApi: Request already in progress for:', cacheKey);
                 try {
-                    const waitStart = performance.now();
                     const cachedResult = await ongoingRequests.get(cacheKey);
-                    const waitTime = performance.now() - waitStart;
-                    console.log(`⏱️ fetchApi: Waited ${waitTime.toFixed(2)}ms for ongoing request: ${cacheKey}`);
-                    
                     setData(cachedResult);
                     setLoading(false);
                 } catch (error) {

@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework_simplejwt',  # JWT authentication
+    'rest_framework_simplejwt.token_blacklist',  # Token blacklisting for logout
     'corsheaders',
 ]
 
@@ -134,14 +136,39 @@ AUTH_USER_MODEL = 'analytics.CustomUser'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',  # Keep for admin
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticated',  # Secure by default
     ],
 }
 
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = True  # Only for development
 CORS_ALLOW_CREDENTIALS = True
+
+# JWT Authentication Settings
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    # Token lifetimes
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),   # Short-lived for security
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),      # Long-lived for convenience
+    
+    # Token refresh behavior
+    'ROTATE_REFRESH_TOKENS': True,                    # Generate new refresh token on refresh
+    'BLACKLIST_AFTER_ROTATION': True,                # Invalidate old refresh tokens
+    
+    # Token algorithm and signing
+    'ALGORITHM': 'HS256',                             # Standard JWT algorithm
+    'SIGNING_KEY': SECRET_KEY,                        # Use Django's secret key
+    
+    # Token format
+    'AUTH_HEADER_TYPES': ('Bearer',),                # Authorization: Bearer <token>
+    'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
+    
+    # Claims
+    'USER_ID_FIELD': 'id',                           # Which user field to include
+    'USER_ID_CLAIM': 'user_id',                      # Claim name in token
+}

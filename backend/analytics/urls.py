@@ -7,7 +7,7 @@ from .views.category_api import CategoryList, CategoryDetail, BreakCategory
 from .views.goal_api import WeeklyGoalView
 from .views.user_api import UserProfileView, UserTimezoneView
 from .views.auth_api import (
-    CustomTokenObtainPairView, 
+    custom_token_obtain_pair, 
     register_user, 
     logout_user,
     request_password_reset,
@@ -20,7 +20,7 @@ urlpatterns = [
     # AUTHENTICATION ENDPOINTS
     # ========================
     path('auth/register/', register_user, name='auth-register'),
-    path('auth/login/', CustomTokenObtainPairView.as_view(), name='auth-login'),
+    path('auth/login/', custom_token_obtain_pair, name='auth-login'),
     path('auth/logout/', logout_user, name='auth-logout'),
     path('auth/refresh/', TokenRefreshView.as_view(), name='auth-refresh'),
     path('auth/password-reset/', request_password_reset, name='auth-password-reset'),

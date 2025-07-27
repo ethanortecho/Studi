@@ -14,12 +14,13 @@ Key Concepts:
 - All endpoints return JSON for mobile app consumption
 """
 
-from rest_framework import status
+from rest_framework import status, serializers
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
@@ -34,33 +35,115 @@ import re
 from analytics.models import CustomUser
 
 
-class CustomTokenObtainPairView(TokenObtainPairView):
+class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
     """
-    Custom login endpoint that returns user data along with tokens.
+    Custom JWT serializer that allows login with email instead of username.
     
-    Extends the default JWT login to include user profile information.
-    This saves the frontend from making a separate API call after login.
+    Converts email to username behind the scenes for Django authentication.
     """
     
-    def post(self, request, *args, **kwargs):
-        # Get the default token response
-        response = super().post(request, *args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Remove username requirement and add email field
+        self.fields.pop('username', None)
+        self.fields['email'] = serializers.EmailField()
+    
+    def validate(self, attrs):
+        # Get email and password from request
+        email = attrs.get('email')
+        password = attrs.get('password')
         
-        if response.status_code == 200:
-            # If login successful, add user data to response
-            email = request.data.get('email')
-            user = CustomUser.objects.get(email=email)
-            
-            # Add user profile to the response (no username exposed)
-            response.data['user'] = {
-                'id': user.id,
-                'email': user.email,
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-                'timezone': user.timezone,
-            }
+        print(f"🔍 Serializer validating: email={email}, password={'*' * len(password) if password else None}")
         
-        return response
+        if not email or not password:
+            raise serializers.ValidationError('Email and password are required')
+        
+        # Look up user by email to get username
+        try:
+            user = CustomUser.objects.get(email=email.lower())
+            username = user.username
+            print(f"🔍 Found user: {username} (ID: {user.id})")
+        except CustomUser.DoesNotExist:
+            print(f"🔍 User not found for email: {email}")
+            raise serializers.ValidationError('Invalid email or password')
+        
+        # Replace email with username for Django's authentication
+        attrs['username'] = username
+        attrs.pop('email', None)
+        
+        print(f"🔍 Final attrs being passed to parent: {attrs}")
+        print(f"🔍 Calling parent validation with username: {username}")
+        
+        # Create a fresh copy to avoid any mutation issues
+        clean_attrs = {
+            'username': username,
+            'password': password
+        }
+        print(f"🔍 Clean attrs: {clean_attrs}")
+        
+        # Use parent validation with clean data
+        try:
+            result = super().validate(clean_attrs)
+            print(f"🔍 Parent validation successful")
+            return result
+        except Exception as e:
+            print(f"🔍 Parent validation failed: {e}")
+            raise
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def custom_token_obtain_pair(request):
+    """
+    Simple email-based login endpoint.
+    Converts email to username and uses standard JWT authentication.
+    """
+    # Get email and password from request
+    email = request.data.get('email')
+    password = request.data.get('password')
+    
+    if not email or not password:
+        return Response(
+            {'error': 'Email and password are required'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    # Look up user by email
+    try:
+        user = CustomUser.objects.get(email=email.lower())
+    except CustomUser.DoesNotExist:
+        return Response(
+            {'error': 'Invalid email or password'}, 
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+    
+    # Use Django's standard authentication
+    from django.contrib.auth import authenticate
+    authenticated_user = authenticate(username=user.username, password=password)
+    
+    if not authenticated_user:
+        return Response(
+            {'error': 'Invalid email or password'}, 
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+    
+    # Generate JWT tokens manually
+    from rest_framework_simplejwt.tokens import RefreshToken
+    refresh = RefreshToken.for_user(authenticated_user)
+    access_token = refresh.access_token
+    
+    # Return tokens and user data
+    return Response({
+        'refresh': str(refresh),
+        'access': str(access_token),
+        'user': {
+            'id': user.id,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'timezone': user.timezone,
+        }
+    }, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])

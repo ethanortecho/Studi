@@ -5,6 +5,7 @@ import { createStudySession, endStudySession, createCategoryBlock, endCategoryBl
 import SessionStatsModal from '@/components/modals/SessionStatsModal';
 import { detectUserTimezone } from '@/utils/timezoneUtils';
 import { clearDashboardCache } from '@/utils/fetchApi';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 interface StudySessionContextType {
@@ -176,13 +177,20 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
         console.log('Hook: Checking for hanging sessions on app startup...');
         
         // Call backend endpoint to check for and cleanup hanging sessions
+        // Use JWT authentication like our other API calls
+        const accessToken = await AsyncStorage.getItem('accessToken');
+        
+        if (!accessToken) {
+          console.log('Hook: No access token available, skipping hanging session cleanup');
+          return;
+        }
+
         const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000'}/analytics/cleanup-hanging-sessions/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Basic ${btoa('ethanortecho:EthanVer2010!')}`
-          },
-          credentials: 'include'
+            'Authorization': `Bearer ${accessToken}`
+          }
         });
         
         if (response.ok) {

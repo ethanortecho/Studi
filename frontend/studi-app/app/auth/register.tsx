@@ -116,10 +116,11 @@ export default function RegisterScreen() {
       });
 
       if (result.success) {
-        console.log('✅ RegisterScreen: Registration successful, user auto-logged in');
-        // Registration successful and user is auto-logged in
-        // Navigation will happen automatically due to auth state change
-        router.replace('/(tabs)');
+        console.log('✅ RegisterScreen: Registration successful, navigating to app');
+        // Small delay to ensure AuthContext state is updated
+        setTimeout(() => {
+          router.replace('/(tabs)/home');
+        }, 100);
       } else {
         console.log('❌ RegisterScreen: Registration failed:', result.error);
         // Show user-friendly error message

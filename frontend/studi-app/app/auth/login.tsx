@@ -62,10 +62,11 @@ export default function LoginScreen() {
       const result = await login(email.trim().toLowerCase(), password);
 
       if (result.success) {
-        console.log('✅ LoginScreen: Login successful, redirecting to app');
-        // Login successful - AuthContext will automatically update state
-        // Navigation will happen automatically due to auth state change
-        router.replace('/(tabs)');
+        console.log('✅ LoginScreen: Login successful, navigating to app');
+        // Small delay to ensure AuthContext state is updated
+        setTimeout(() => {
+          router.replace('/(tabs)/home');
+        }, 100);
       } else {
         console.log('❌ LoginScreen: Login failed:', result.error);
         // Show user-friendly error message

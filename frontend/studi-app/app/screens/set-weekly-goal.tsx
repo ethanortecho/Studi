@@ -5,6 +5,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { WEEKLY_GOAL_OPTIONS } from '@/constants/goalOptions';
 import { getApiUrl } from '@/config/api';
 import { useWeeklyGoal } from '@/hooks/useWeeklyGoal';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function SetWeeklyGoalScreen() {
   const params = useLocalSearchParams<{ edit?: string }>();
@@ -42,11 +43,20 @@ export default function SetWeeklyGoalScreen() {
         active_weekdays: selectedDays,
       };
 
+      // Use JWT authentication like our other API calls
+      const accessToken = await AsyncStorage.getItem('accessToken');
+      
+      if (!accessToken) {
+        throw new Error('User not authenticated - please login');
+      }
+
       const res = await fetch(getApiUrl('/goals/weekly/'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Basic ${btoa('ethanortecho:EthanVer2010!')}` },
+        headers: { 
+          'Content-Type': 'application/json', 
+          'Authorization': `Bearer ${accessToken}` 
+        },
         body: JSON.stringify(body),
-        credentials: 'include',
       });
       if (!res.ok && res.status !== 201) {
         const text = await res.text();

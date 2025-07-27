@@ -31,7 +31,7 @@ export default function AuthGuard({ children, fallback }: AuthGuardProps) {
   const { user, isLoading, accessToken } = useAuth();
 
   useEffect(() => {
-    // Only redirect after loading is complete and user is not authenticated
+    // If loading is complete and user is not authenticated, redirect to login
     if (!isLoading && (!user || !accessToken)) {
       console.log('🚫 AuthGuard: User not authenticated, redirecting to login');
       router.replace('/auth/login');
@@ -40,12 +40,14 @@ export default function AuthGuard({ children, fallback }: AuthGuardProps) {
 
   // Show loading spinner while checking authentication
   if (isLoading) {
+    console.log('⏳ AuthGuard: Still checking authentication...');
     return fallback || <AuthLoadingScreen />;
   }
 
-  // If user is not authenticated, show nothing (redirect will happen)
+  // If user is not authenticated, show loading while redirect happens
   if (!user || !accessToken) {
-    return null;
+    console.log('🚫 AuthGuard: User not authenticated, redirecting...');
+    return fallback || <AuthLoadingScreen />;
   }
 
   // User is authenticated, show protected content

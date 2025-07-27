@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { getApiUrl } from '@/config/api';
 import { formatDateForAPI } from '@/utils/dateUtils';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // --- Types ----------------------------------------------------
 export interface WeeklyGoal {
@@ -39,12 +40,77 @@ function ensureMonday(date: Date): Date {
   return d;
 }
 
+// --- Authentication Helper -----------------------------------
+/**
+ * JWT Authentication helper for goal API calls
+ * (Same pattern as other API files)
+ */
+async function makeAuthenticatedGoalRequest(url: string, options: RequestInit = {}): Promise<Response> {
+  const accessToken = await AsyncStorage.getItem('accessToken');
+  
+  if (!accessToken) {
+    throw new Error('User not authenticated - please login');
+  }
+
+  let response = await fetch(url, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`,
+      ...options.headers,
+    },
+  });
+
+  // Handle token refresh if needed
+  if (response.status === 401) {
+    console.log('🔄 useGoalForWeek: Token expired, attempting refresh...');
+    
+    const refreshToken = await AsyncStorage.getItem('refreshToken');
+    if (!refreshToken) {
+      throw new Error('Authentication expired - please login again');
+    }
+
+    const refreshResponse = await fetch(getApiUrl('/auth/refresh/'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh: refreshToken }),
+    });
+
+    if (refreshResponse.ok) {
+      const data = await refreshResponse.json();
+      await AsyncStorage.setItem('accessToken', data.access);
+      
+      if (data.refresh) {
+        await AsyncStorage.setItem('refreshToken', data.refresh);
+      }
+      
+      // Retry original request
+      const newAccessToken = await AsyncStorage.getItem('accessToken');
+      response = await fetch(url, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${newAccessToken}`,
+          ...options.headers,
+        },
+      });
+    } else {
+      await AsyncStorage.multiRemove(['accessToken', 'refreshToken', 'user']);
+      throw new Error('Authentication expired - please login again');
+    }
+  }
+
+  return response;
+}
+
 // --- Hook -----------------------------------------------------
 /**
  * Fetch the WeeklyGoal object for the ISO-week that starts on the provided date.
  *
  * The backend identifies a week via its Monday date (week_start). We normalise
  * any incoming date to Monday and query `/goals/weekly/?week_start=YYYY-MM-DD`.
+ * 
+ * UPDATED: Now uses JWT authentication instead of hardcoded Basic auth
  */
 export function useGoalForWeek(weekStartDate: Date): WeeklyGoalState {
   const [goal, setGoal] = useState<WeeklyGoal | null>(null);
@@ -60,16 +126,16 @@ export function useGoalForWeek(weekStartDate: Date): WeeklyGoalState {
     setLoading(true);
     setMissing(false);
     setError(null);
+    
     try {
-      const authHeaders = {
-        Authorization: `Basic ${btoa('ethanortecho:EthanVer2010!')}`,
-      };
-      const url = getApiUrl(`/goals/weekly/?week_start=${weekStartParam}&username=ethanortecho`);
-      const response = await fetch(url, {
-        credentials: 'include',
-        headers: authHeaders,
-      });
+      console.log('📅 useGoalForWeek: Fetching goal for week:', weekStartParam);
+      
+      // JWT tokens contain user identity - no need for username parameter
+      const url = getApiUrl(`/goals/weekly/?week_start=${weekStartParam}`);
+      const response = await makeAuthenticatedGoalRequest(url);
+      
       if (response.status === 404) {
+        console.log('📅 useGoalForWeek: No goal found for this week');
         setMissing(true);
         setGoal(null);
       } else if (!response.ok) {
@@ -77,10 +143,11 @@ export function useGoalForWeek(weekStartDate: Date): WeeklyGoalState {
         throw new Error(`Error ${response.status}: ${txt}`);
       } else {
         const data = (await response.json()) as WeeklyGoal;
+        console.log('✅ useGoalForWeek: Goal fetched successfully:', data);
         setGoal(data);
       }
     } catch (err: any) {
-      console.error('Failed to fetch weekly goal', err);
+      console.error('❌ useGoalForWeek: Failed to fetch weekly goal', err);
       setError(err.message ?? 'Unknown error');
     } finally {
       setLoading(false);

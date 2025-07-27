@@ -152,9 +152,9 @@ CORS_ALLOW_CREDENTIALS = True
 from datetime import timedelta
 
 SIMPLE_JWT = {
-    # Token lifetimes
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),   # Short-lived for security
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),      # Long-lived for convenience
+    # Token lifetimes - generous for productivity app
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),       # 24 hours - full day coverage
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=180),    # 6 months - excellent UX
     
     # Token refresh behavior
     'ROTATE_REFRESH_TOKENS': True,                    # Generate new refresh token on refresh

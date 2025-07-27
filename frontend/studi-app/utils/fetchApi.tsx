@@ -2,6 +2,7 @@ import React from 'react';
 import { useEffect, useMemo, useState, useRef } from 'react';
 import { API_BASE_URL } from '../config/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth } from '../contexts/AuthContext';
 
 // Cache for storing API responses
 const apiCache = new Map<string, any>();
@@ -210,12 +211,21 @@ export default function useAggregateData(time_frame: string,
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     
-    // Create cache key for this request
+    // Get current user for cache isolation
+    const { user } = useAuth();
+    
+    // Create cache key for this request - INCLUDING USER ID for data isolation
     const cacheKey = useMemo(() => {
-        const key = `${time_frame}-${start_date}${end_date ? `-${end_date}` : ''}`;
-        console.log('🔑 fetchApi: Generated cache key:', key);
+        if (!user?.id) {
+            // No user logged in, use temporary key that won't be cached
+            return `temp-${time_frame}-${start_date}${end_date ? `-${end_date}` : ''}`;
+        }
+        
+        // Include user ID in cache key to prevent data leaks between users
+        const key = `user-${user.id}-${time_frame}-${start_date}${end_date ? `-${end_date}` : ''}`;
+        console.log('🔑 fetchApi: Generated user-specific cache key:', key);
         return key;
-    }, [time_frame, start_date, end_date]);
+    }, [time_frame, start_date, end_date, user?.id]);
 
     useEffect(() => {
         const fetchData = async() => {

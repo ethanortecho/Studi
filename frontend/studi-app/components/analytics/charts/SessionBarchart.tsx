@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, ScrollView } from 'react-native';
+import { formatDurationFromMinutes } from '@/utils/timeFormatting';
 
 /**
  * SessionBarchart - A customizable session timeline visualization
@@ -226,18 +227,6 @@ export default function SessionBarchart({
 
   const { sessions, axisDurationMinutes, timeMarkers } = processSessionData();
 
-  // Helper function to format duration
-  const formatDuration = (minutes: number): string => {
-    if (minutes < 1) {
-      return `${Math.round(minutes * 60)}s`;
-    }
-    if (minutes < 60) {
-      return `${Math.round(minutes)}m`;
-    }
-    const hours = Math.floor(minutes / 60);
-    const mins = Math.round(minutes % 60);
-    return `${hours}h ${mins}m`;
-  };
 
   // Debug logs removed
 
@@ -265,7 +254,7 @@ export default function SessionBarchart({
                   {/* Session Label */}
                   <View className="w-16">
                     <Text className="text-xs text-secondaryText">Session {session.index}</Text>
-                    <Text className="text-xs text-secondaryText">{formatDuration(session.durationMinutes)}</Text>
+                    <Text className="text-xs text-secondaryText">{formatDurationFromMinutes(session.durationMinutes)}</Text>
                   </View>
 
                   {/* Session Bar Container */}

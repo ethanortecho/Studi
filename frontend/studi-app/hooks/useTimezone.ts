@@ -65,14 +65,11 @@ export const useTimezone = () => {
       const end = endTime ? convertUTCToUserTimezone(endTime, userTimezone) : new Date();
       
       const durationMs = end.getTime() - start.getTime();
-      const minutes = Math.floor(durationMs / (1000 * 60));
-      const hours = Math.floor(minutes / 60);
-      const remainingMinutes = minutes % 60;
+      const seconds = Math.floor(durationMs / 1000);
       
-      if (hours > 0) {
-        return `${hours}h ${remainingMinutes}m`;
-      }
-      return `${minutes}m`;
+      // Use centralized formatting utility
+      const { formatDuration } = require('@/utils/timeFormatting');
+      return formatDuration(seconds);
     },
 
     /**

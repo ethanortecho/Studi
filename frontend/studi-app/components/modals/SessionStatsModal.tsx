@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Modal, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import { formatDurationFromMinutes } from '@/utils/timeFormatting';
 
 interface SessionStatsModalProps {
   visible: boolean;
@@ -29,21 +30,6 @@ export default function SessionStatsModal({
     { value: 5, emoji: '🤩', text: 'Excellent' },
   ];
   
-  // Format duration to human readable format
-  const formatDuration = (minutes: number): string => {
-    if (minutes < 60) {
-      return `${minutes} min`;
-    }
-    
-    const hours = Math.floor(minutes / 60);
-    const remainingMinutes = minutes % 60;
-    
-    if (remainingMinutes === 0) {
-      return `${hours} hr`;
-    }
-    
-    return `${hours} hr ${remainingMinutes} min`;
-  };
 
   const handleRatingSelect = async (rating: number) => {
     if (isSubmitting) return;
@@ -147,7 +133,7 @@ export default function SessionStatsModal({
               <Text className="text-lg text-gray-600 mb-6 text-center">
                 You studied for{' '}
                 <Text className="font-semibold text-purple-600">
-                  {formatDuration(sessionDuration)}
+                  {formatDurationFromMinutes(sessionDuration)}
                 </Text>
               </Text>
             )}

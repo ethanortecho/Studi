@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text } from 'react-native';
+import { formatDuration } from '@/utils/timeFormatting';
 
 interface LegendProps {
     category_durations: { [key: string]: number };
@@ -13,12 +14,6 @@ export default function Legend({ category_durations, category_metadata }: Legend
         .filter(([_, duration]) => duration > 0)
         .map(([categoryName, _]) => categoryName);
 
-    // Helper to format seconds into "Xh Ym" or "Xm"
-    const formatTime = (seconds: number) => {
-        const hrs = Math.floor(seconds / 3600);
-        const mins = Math.floor((seconds % 3600) / 60);
-        return hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
-    };
 
     return (
         <View>
@@ -47,7 +42,7 @@ export default function Legend({ category_durations, category_metadata }: Legend
                                     {categoryMeta.name}
                                 </Text>
                                 <Text className="text-secondaryText text-xs">
-                                    {formatTime(durationSeconds)}
+                                    {formatDuration(durationSeconds)}
                                 </Text>
                             </View>
                         </View>

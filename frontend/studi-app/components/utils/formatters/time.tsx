@@ -1,8 +1,7 @@
+import { formatDuration } from '@/utils/timeFormatting';
+
 export function formatStudyTime(apiData:any){
-    const seconds = apiData?.aggregate?.total_duration;
-    const totalHours = seconds / 3600;
-    
-    // Round to 1 decimal place
-    return totalHours.toFixed(2);
+    const seconds = apiData?.aggregate?.total_duration || 0;
+    return formatDuration(seconds);
 }
 

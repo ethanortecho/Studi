@@ -67,7 +67,7 @@ class StudySession(models.Model):
     def save(self, *args, **kwargs):
         if self.end_time and self.start_time:
             duration = self.end_time - self.start_time
-            self.total_duration = int(duration.total_seconds())
+            self.total_duration = round(duration.total_seconds())
         super().save(*args, **kwargs)
 
 
@@ -99,7 +99,7 @@ class CategoryBlock(models.Model):
     def save(self, *args, **kwargs):
         if self.end_time and self.start_time:
             duration = self.end_time - self.start_time
-            self.duration = int(duration.total_seconds())
+            self.duration = round(duration.total_seconds())
         super().save(*args, **kwargs)
 
 
@@ -197,7 +197,7 @@ class Break(models.Model):
     def save(self, *args, **kwargs):
         if self.end_time and self.start_time:
             duration = self.end_time - self.start_time
-            self.duration = int(duration.total_seconds())
+            self.duration = round(duration.total_seconds())
         super().save(*args, **kwargs)
 
 

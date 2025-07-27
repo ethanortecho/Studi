@@ -47,11 +47,8 @@ export function parseCategoryDurations(apiData: any) {
 }
 
 export function secondsToHours(apiData:any){
-    const seconds = apiData?.aggregate?.total_duration;
-    const totalHours = seconds / 3600;
-    
-    // Round to 1 decimal place
-    return totalHours.toFixed(2);
+    const seconds = apiData?.aggregate?.total_duration || 0;
+    return standardFormatDuration(seconds);
 }
 
 export function secondsToHoursAndMinutes(apiData: any): { hours: number; minutes: number } {
@@ -62,10 +59,10 @@ export function secondsToHoursAndMinutes(apiData: any): { hours: number; minutes
     return { hours, minutes };
 }
 
+import { formatDuration as standardFormatDuration } from '@/utils/timeFormatting';
+
 export function formatDuration(seconds: number): string {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    return `${hours}hrs ${minutes}min`;
+    return standardFormatDuration(seconds);
 }
 
 export function ParseStudyTrends(trend_data: Record<string, any>, category: string) {

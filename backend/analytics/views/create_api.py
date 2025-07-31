@@ -71,7 +71,13 @@ class CancelStudySession(APIView):
             
             # Use provided end_time if available, otherwise use server time
             if 'end_time' in request.data:
-                session.end_time = request.data['end_time']
+                from django.utils.dateparse import parse_datetime
+                end_time_str = request.data['end_time']
+                # Parse the ISO datetime string to datetime object
+                session.end_time = parse_datetime(end_time_str)
+                if session.end_time is None:
+                    # If parsing fails, fall back to server time
+                    session.end_time = timezone.now()
             else:
                 session.end_time = timezone.now()
             

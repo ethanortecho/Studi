@@ -94,14 +94,14 @@ class SplitAggregateUpdateService:
         print(f"{action} daily aggregate: {aggregate_data['session_count']} sessions, {aggregate_data['total_duration']} seconds")
     
     @staticmethod
-    def _calculate_daily_aggregate_data(user, date):
+    def _calculate_daily_aggregate_data(user, target_date):
         """
         Calculate complete daily aggregate data including timeline
-        Uses timezone-aware filtering to ensure sessions are grouped by user's perceived date
+        Uses 3-day buffer query + Python filtering to avoid timezone boundary bugs
         """
         from django.utils import timezone as django_timezone
         import pytz
-        from datetime import datetime, time
+        from datetime import datetime, time, timedelta
         
         # Get user's timezone
         user_timezone_str = getattr(user, 'timezone', 'UTC')
@@ -111,28 +111,32 @@ class SplitAggregateUpdateService:
             user_tz = pytz.UTC
             print(f"⚠️ Invalid timezone '{user_timezone_str}' for user {user.username}, falling back to UTC")
         
-        # Create start and end boundaries for the date in user's timezone
-        date_start_local = datetime.combine(date, time.min)  # Start of day in user timezone
-        date_end_local = datetime.combine(date, time.max)    # End of day in user timezone
+        # Query a generous 3-day window to capture any timezone edge cases
+        buffer_start = target_date - timedelta(days=1)  # Yesterday
+        buffer_end = target_date + timedelta(days=1)    # Tomorrow  
         
-        # Convert to UTC for database query (keep timezone-aware)
-        date_start_utc = user_tz.localize(date_start_local).astimezone(pytz.UTC)
-        date_end_utc = user_tz.localize(date_end_local).astimezone(pytz.UTC)
+        print(f"🕒 Filtering sessions for {user.username} on {target_date} ({user_timezone_str})")
+        print(f"   Querying buffer: {buffer_start} to {buffer_end} (UTC dates)")
         
-        print(f"🕒 Filtering sessions for {user.username} on {date} ({user_timezone_str})")
-        print(f"   Local range: {date_start_local} to {date_end_local}")
-        print(f"   UTC range: {date_start_utc} to {date_end_utc}")
-        
-        # Get only completed sessions within the user's timezone date boundaries
-        sessions = StudySession.objects.filter(
+        # Simple UTC date query - no complex timezone boundary math
+        candidate_sessions = StudySession.objects.filter(
             user=user,
-            start_time__gte=date_start_utc,
-            start_time__lte=date_end_utc,
+            start_time__date__gte=buffer_start,
+            start_time__date__lte=buffer_end,
             status='completed',
             end_time__isnull=False  # Defensive: exclude any hanging sessions
         ).prefetch_related('categoryblock_set__category', 'break_set')
         
-        if not sessions.exists():
+        # Filter in Python with reliable timezone conversion
+        sessions = []
+        for session in candidate_sessions:
+            session_local_date = session.start_time.astimezone(user_tz).date()
+            if session_local_date == target_date:
+                sessions.append(session)
+        
+        print(f"   Found {candidate_sessions.count()} candidates, {len(sessions)} match target date")
+        
+        if not sessions:
             return {
                 'total_duration': 0,
                 'category_durations': {},

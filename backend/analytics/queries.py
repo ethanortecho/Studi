@@ -75,21 +75,74 @@ class StudyAnalytics:
         )
     
     @staticmethod
-    def get_daily_sessions_with_breakdown(user, date):
-        return StudySession.objects.filter(
+    def get_daily_sessions_with_breakdown(user, target_date):
+        from datetime import timedelta
+        import pytz
+        
+        # Get user's timezone
+        user_timezone_str = getattr(user, 'timezone', 'UTC')
+        try:
+            user_tz = pytz.timezone(user_timezone_str)
+        except pytz.exceptions.UnknownTimeZoneError:
+            user_tz = pytz.UTC
+        
+        # Query 3-day buffer to capture timezone edge cases
+        buffer_start = target_date - timedelta(days=1)
+        buffer_end = target_date + timedelta(days=1)
+        
+        # Get candidate sessions
+        candidate_sessions = StudySession.objects.filter(
             user=user,
-            start_time__date=date,
-            status='completed'  # Only include completed sessions
+            start_time__date__gte=buffer_start,
+            start_time__date__lte=buffer_end,
+            status='completed'
         ).prefetch_related('categoryblock_set').order_by('start_time')
+        
+        # Filter by user's local date in Python
+        target_sessions = []
+        for session in candidate_sessions:
+            session_local_date = session.start_time.astimezone(user_tz).date()
+            if session_local_date == target_date:
+                target_sessions.append(session)
+        
+        return target_sessions
     
     @staticmethod
     def get_weekly_session_times(user, week_start, week_end):
-        return StudySession.objects.filter(
+        from datetime import timedelta
+        import pytz
+        
+        # Get user's timezone
+        user_timezone_str = getattr(user, 'timezone', 'UTC')
+        try:
+            user_tz = pytz.timezone(user_timezone_str)
+        except pytz.exceptions.UnknownTimeZoneError:
+            user_tz = pytz.UTC
+        
+        # Query with buffer to capture timezone edge cases
+        buffer_start = week_start - timedelta(days=1)
+        buffer_end = week_end + timedelta(days=1)
+        
+        # Get candidate sessions
+        candidate_sessions = StudySession.objects.filter(
             user=user,
-            start_time__date__gte=week_start,
-            start_time__date__lte=week_end,
-            status='completed'  # Only include completed sessions
-        ).values('start_time', 'end_time', 'total_duration').order_by('start_time')
+            start_time__date__gte=buffer_start,
+            start_time__date__lte=buffer_end,
+            status='completed'
+        ).order_by('start_time')
+        
+        # Filter by user's local date range in Python
+        target_sessions = []
+        for session in candidate_sessions:
+            session_local_date = session.start_time.astimezone(user_tz).date()
+            if week_start <= session_local_date <= week_end:
+                target_sessions.append({
+                    'start_time': session.start_time,
+                    'end_time': session.end_time,
+                    'total_duration': session.total_duration
+                })
+        
+        return target_sessions
 
     @staticmethod
     def get_longest_session(user, start_date, end_date):

@@ -54,9 +54,13 @@ export default function DashboardContent({
         const animationStart = performance.now();
         
         const targetPosition = selectedTab === 'daily' ? 0 : selectedTab === 'weekly' ? -screenWidth : -screenWidth * 2;
-        translateX.value = withTiming(targetPosition, {
-            duration: 300,
-            easing: Easing.out(Easing.cubic),
+        
+        // Use requestAnimationFrame to ensure we're not writing to shared value during render
+        requestAnimationFrame(() => {
+            translateX.value = withTiming(targetPosition, {
+                duration: 300,
+                easing: Easing.out(Easing.cubic),
+            });
         });
         
         DEBUG_DASHBOARD && console.log(`⏱️ DashboardContent: Animation setup took ${(performance.now() - animationStart).toFixed(2)}ms`);

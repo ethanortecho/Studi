@@ -18,12 +18,7 @@ export default function Index() {
   const { user, isLoading, accessToken } = useAuth();
 
   useEffect(() => {
-    console.log('🔍 Index: Auth state changed', { 
-      isLoading, 
-      hasUser: !!user, 
-      hasAccessToken: !!accessToken,
-      userEmail: user?.email 
-    });
+    // Auth state change
 
     if (!isLoading) {
       if (user && accessToken) {

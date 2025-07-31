@@ -25,7 +25,7 @@ function manageCacheSize() {
             cacheAccessTimes.delete(key);
         });
         
-        console.log(`Cache cleaned: removed ${entriesToRemove.length} old entries`);
+        // Cache cleaned
     }
 }
 
@@ -34,7 +34,7 @@ export function clearApiCache() {
     apiCache.clear();
     cacheAccessTimes.clear();
     ongoingRequests.clear();
-    console.log('API cache cleared');
+    // API cache cleared
 }
 
 // Export cache stats for debugging
@@ -80,7 +80,7 @@ async function getAuthHeaders(): Promise<{ [key: string]: string } | null> {
         }
 
         // Try using current access token first
-        console.log('🔑 fetchApi: Using stored access token');
+        // Using stored access token
         return {
             'Authorization': `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
@@ -132,7 +132,7 @@ async function refreshAccessToken(): Promise<boolean> {
                 await AsyncStorage.setItem('refreshToken', data.refresh);
             }
             
-            console.log('✅ fetchApi: Token refresh successful');
+            // Token refresh successful
             return true;
         } else {
             console.log('❌ fetchApi: Refresh token expired, user needs to login again');
@@ -292,7 +292,7 @@ export default function useAggregateData(time_frame: string,
             const requestPromise = (async () => {
                 try {
                     const apiCallStart = performance.now();
-                    console.log('🌐 fetchApi: Making API request for:', cacheKey, isCurrentDay ? '(LIVE - no cache)' : '(cacheable)', 'localToday:', localToday);
+                    // Making API request
 
                     /**
                      * EXPLANATION: JWT Authentication Integration
@@ -317,41 +317,14 @@ export default function useAggregateData(time_frame: string,
                     }
 
                     const apiCallTime = performance.now() - apiCallStart;
-                    console.log(`🌐 fetchApi: API response received in ${apiCallTime.toFixed(2)}ms, status: ${response.status} for ${cacheKey}`);
+                    // API response received
                     
                     const jsonParseStart = performance.now();
                     const json = await response.json();
                     const jsonParseTime = performance.now() - jsonParseStart;
-                    console.log(`📄 fetchApi: JSON parsing took ${jsonParseTime.toFixed(2)}ms for ${cacheKey}`);
+                    // JSON parsing complete
                     
-                    // 🐛 TIMEZONE DEBUG: Log raw UTC times from server
-                    console.log('🕒 TIMEZONE DEBUG - Raw API Response Times:');
-                    if (json?.timeline_data) {
-                        json.timeline_data.slice(0, 3).forEach((session: any, i: number) => {
-                            console.log(`  📊 Session ${i + 1}:`, {
-                                session_start: session.start_time,
-                                session_end: session.end_time,
-                                breakdowns: session.breakdowns?.slice(0, 2).map((bd: any) => ({
-                                    category: bd.category,
-                                    start: bd.start_time, 
-                                    end: bd.end_time
-                                })) || session.category_blocks?.slice(0, 2).map((bd: any) => ({
-                                    category: bd.category,
-                                    start: bd.start_time,
-                                    end: bd.end_time
-                                })) || []
-                            });
-                        });
-                    }
-                    if (json?.session_times) {
-                        json.session_times.slice(0, 3).forEach((session: any, i: number) => {
-                            console.log(`  ⏱️ Session Time ${i + 1}:`, {
-                                start: session.start_time,
-                                end: session.end_time,
-                                duration: session.total_duration
-                            });
-                        });
-                    }
+                    // Debug timezone data if needed
                     
                     // Cache all data - current day with short expiry, historical data permanently
                     const cacheStoreStart = performance.now();
@@ -361,13 +334,13 @@ export default function useAggregateData(time_frame: string,
                     const cacheStoreTime = performance.now() - cacheStoreStart;
                     
                     if (isCurrentDay) {
-                        console.log(`💾 fetchApi: Current day data cached (30s expiry) in ${cacheStoreTime.toFixed(2)}ms for ${cacheKey}`);
+                        // Current day data cached (30s expiry)
                     } else {
-                        console.log(`💾 fetchApi: Historical data cached permanently in ${cacheStoreTime.toFixed(2)}ms for ${cacheKey}`);
+                        // Historical data cached permanently
                     }
                     
                     const totalTime = performance.now() - overallStart;
-                    console.log(`✅ fetchApi: Complete request cycle took ${totalTime.toFixed(2)}ms for ${cacheKey}`);
+                    // Request cycle complete
                     
                     return json;
                 } catch (error) {
@@ -377,13 +350,13 @@ export default function useAggregateData(time_frame: string,
                 } finally {
                     // Remove from ongoing requests
                     ongoingRequests.delete(cacheKey);
-                    console.log('🧹 fetchApi: Cleaned up ongoing request for:', cacheKey);
+                    // Cleaned up ongoing request
                 }
             })();
 
             // Store the ongoing request
             ongoingRequests.set(cacheKey, requestPromise);
-            console.log('📋 fetchApi: Added to ongoing requests:', cacheKey);
+            // Added to ongoing requests
 
             try {
                 const result = await requestPromise;
@@ -410,7 +383,7 @@ export function clearDashboardCache() {
     const localToday = new Date(today.getTime() - (today.getTimezoneOffset() * 60000))
         .toISOString().split('T')[0];
     
-    console.log('🧹 Clearing dashboard cache for current period...');
+    // Clearing dashboard cache for current period
     
     // Clear daily cache for today
     const dailyKey = `daily-${localToday}`;

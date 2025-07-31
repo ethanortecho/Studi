@@ -8,6 +8,14 @@ import { Appearance } from 'react-native';
 import React, { useEffect, useState, useMemo, createContext, useContext } from 'react';
 import 'react-native-reanimated';
 import '../global.css';
+
+// Configure Reanimated logging to reduce noise during development
+if (__DEV__) {
+  require('react-native-reanimated').configureReanimatedLogger({
+    strict: false, // Disable strict mode warnings
+    level: 'error', // Only show errors, not warnings
+  });
+}
 import { 
   Poppins_400Regular,
   Poppins_500Medium,

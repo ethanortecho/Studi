@@ -39,32 +39,17 @@ const StudyDayBars: React.FC<StudyDayBarsProps> = ({ sessionTimes, isEmpty = fal
     let earliestHour = 6; // Default start at 6am
     let latestHour = 24; // Default end at 12am (midnight)
     
-    console.log('🔍 TIMELINE DEBUG: Processing sessions for timeline...');
-    console.log('📅 User timezone:', userTimezone);
-    console.log('📊 Total sessions to process:', sessionTimes.length);
-    
+    // Process sessions for timeline
     sessionTimes.forEach((session, index) => {
-      console.log(`\n📍 Session ${index + 1}:`);
-      console.log('  Raw times:', { start: session.start_time, end: session.end_time, duration: session.total_duration });
-      
       // Get start and end components in user's timezone
       const startComponents = getLocalDateComponents(session.start_time, userTimezone);
       const endComponents = getLocalDateComponents(session.end_time, userTimezone);
-      
-      console.log('  Start components:', startComponents);
-      console.log('  End components:', endComponents);
       
       // Create Date objects for day calculation
       const startDate = new Date(startComponents.year, startComponents.month, startComponents.day);
       const endDate = new Date(endComponents.year, endComponents.month, endComponents.day);
       
       const dayOfWeek = dayMappings[startDate.getDay() === 0 ? 6 : startDate.getDay() - 1]; // Convert to our format
-      
-      console.log('  Day mapping:', {
-        startDateGetDay: startDate.getDay(),
-        calculatedIndex: startDate.getDay() === 0 ? 6 : startDate.getDay() - 1,
-        dayOfWeek: dayOfWeek
-      });
       
       const startHour = startComponents.hour;
       const endHour = endComponents.hour;
@@ -82,12 +67,6 @@ const StudyDayBars: React.FC<StudyDayBarsProps> = ({ sessionTimes, isEmpty = fal
       const normalizedEndHour = sessionSpansToNextDay ? 24 : endHour;
       latestHour = Math.max(latestHour, normalizedEndHour);
       
-      console.log('  Processed time:', {
-        startHour, startMinute,
-        endHour, normalizedEndHour, endMinute,
-        assignedToDay: dayOfWeek
-      });
-      
       if (!sessionsByDay[dayOfWeek]) {
         sessionsByDay[dayOfWeek] = [];
       }
@@ -98,13 +77,6 @@ const StudyDayBars: React.FC<StudyDayBarsProps> = ({ sessionTimes, isEmpty = fal
         startMinute,
         endMinute
       });
-    });
-    
-    console.log('\n📋 FINAL SESSIONS BY DAY:');
-    Object.entries(sessionsByDay).forEach(([day, sessions]) => {
-      console.log(`  ${day}:`, sessions.map(s => 
-        `${s.startHour}:${s.startMinute.toString().padStart(2, '0')}-${s.endHour}:${s.endMinute.toString().padStart(2, '0')}`
-      ));
     });
     
     // Fixed 6am-12am timeline with minimal extension

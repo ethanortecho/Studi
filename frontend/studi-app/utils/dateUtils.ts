@@ -72,11 +72,13 @@ export function isSameDay(date1: Date, date2: Date): boolean {
 
 export function getWeekStart(date: Date): Date {
   const d = new Date(date);
-  const day = d.getDay(); // 0 = Sunday
+  const day = d.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
 
   const weekStart = new Date(d);
-  // Move backwards 'day' days so that weekStart is Sunday
-  weekStart.setDate(d.getDate() - day);
+  // Convert to Monday-based week: Monday = 0, Tuesday = 1, ..., Sunday = 6
+  const mondayOffset = day === 0 ? 6 : day - 1; // Sunday becomes 6, Monday becomes 0
+  // Move backwards to get Monday
+  weekStart.setDate(d.getDate() - mondayOffset);
 
   // Zero-out time portion for consistency
   weekStart.setHours(0, 0, 0, 0);
@@ -145,7 +147,7 @@ export function getDefaultDate(type: 'daily' | 'weekly'): Date {
   return today;
 }
 
-// Returns an array of 7 Date objects representing the Sun→Sat week window
+// Returns an array of 7 Date objects representing the Mon→Sun week window
 export function getWeekDays(weekStart: Date): Date[] {
   const days: Date[] = [];
   for (let i = 0; i < 7; i++) {

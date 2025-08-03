@@ -1,0 +1,72 @@
+sequenceDiagram
+    participant User
+    participant Mobile as React Native App
+    participant API as Django REST API
+    participant Services as Backend Services
+    participant DB as PostgreSQL
+    participant Cache as Smart Cache
+
+    Note over User, Cache: Study Session Lifecycle
+
+    User->>Mobile: Start Timer (Pomodoro/Stopwatch/Countdown)
+    Mobile->>API: POST /create-session/
+    API->>Services: Create StudySession
+    Services->>DB: Store session record
+    DB-->>Services: Session created
+    Services-->>API: Session ID
+    API-->>Mobile: Session details
+    Mobile-->>User: Timer starts
+
+    Note over User, Cache: Active Session Management
+
+    User->>Mobile: Switch category during session
+    Mobile->>API: POST /create-category-block/
+    API->>Services: Create CategoryBlock
+    Services->>DB: Store category block
+    DB-->>API: Block created
+    API-->>Mobile: Block confirmed
+
+    User->>Mobile: End session
+    Mobile->>API: PUT /end-session/{id}
+    API->>Services: End StudySession
+    Services->>DB: Update session duration
+    Services->>Services: Trigger aggregate update
+    Services->>DB: Update DailyAggregate
+    Services->>DB: Update WeeklyAggregate
+    Services->>DB: Update MonthlyAggregate
+    Services->>DB: Update goal progress
+    DB-->>Services: All updates complete
+    Services-->>API: Session ended
+    API-->>Mobile: Session complete
+    Mobile->>Cache: Invalidate analytics cache
+    Mobile-->>User: Show session summary
+
+    Note over User, Cache: Analytics Dashboard
+
+    User->>Mobile: Open insights dashboard
+    Mobile->>Cache: Check cache for data
+    alt Cache Hit (< 30s for current day)
+        Cache-->>Mobile: Return cached data
+        Mobile-->>User: Display analytics
+    else Cache Miss or Expired
+        Mobile->>API: GET /insights/daily/
+        API->>Services: Fetch analytics
+        Services->>DB: Query aggregates
+        DB-->>Services: Return pre-computed data
+        Services-->>API: Analytics data
+        API-->>Mobile: JSON response
+        Mobile->>Cache: Store in cache
+        Mobile-->>User: Display analytics
+    end
+
+    Note over User, Cache: Goal Management
+
+    User->>Mobile: Set weekly goal
+    Mobile->>API: POST /goals/weekly/
+    API->>Services: Create/Update WeeklyGoal
+    Services->>Services: Calculate daily targets
+    Services->>DB: Store goals
+    DB-->>Services: Goals saved
+    Services-->>API: Goal confirmation
+    API-->>Mobile: Goal set
+    Mobile-->>User: Confirmation

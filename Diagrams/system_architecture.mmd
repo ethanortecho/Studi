@@ -1,0 +1,71 @@
+graph TB
+    %% User Layer
+    subgraph "Client Layer"
+        Mobile[React Native Mobile App<br/>- Expo Framework<br/>- Timer System<br/>- Analytics Dashboard]
+    end
+
+    %% API Gateway
+    subgraph "API Layer"
+        API[Django REST API<br/>- JWT Authentication<br/>- Session Management<br/>- Analytics Endpoints]
+    end
+
+    %% Business Logic
+    subgraph "Backend Services"
+        Auth[Authentication Service<br/>- CustomUser Model<br/>- JWT Tokens<br/>- Timezone Support]
+        
+        Session[Session Management<br/>- StudySession Model<br/>- CategoryBlock Tracking<br/>- Break Management]
+        
+        Analytics[Analytics Engine<br/>- Real-time Aggregation<br/>- Performance Optimization<br/>- Timeline Data]
+        
+        Goals[Goal Management<br/>- Weekly/Daily Goals<br/>- Progress Tracking<br/>- Carry-over Logic]
+        
+        Categories[Category System<br/>- User Categories<br/>- Color Management<br/>- Activity Tracking]
+    end
+
+    %% Data Layer
+    subgraph "Data Layer"
+        DB[(PostgreSQL Database<br/>- User Data<br/>- Session History<br/>- Pre-computed Aggregates)]
+        
+        Cache[Smart Caching<br/>- LRU Eviction<br/>- Request Deduplication<br/>- Cache Invalidation]
+    end
+
+    %% External Services
+    subgraph "External Services"
+        Storage[AsyncStorage<br/>- JWT Tokens<br/>- User Preferences<br/>- Offline Data]
+        
+        Background[Background Tasks<br/>- Timer Continuity<br/>- Session Auto-pause<br/>- Cleanup Jobs]
+    end
+
+    %% Connections
+    Mobile -.->|HTTP/JSON| API
+    API --> Auth
+    API --> Session
+    API --> Analytics
+    API --> Goals
+    API --> Categories
+    
+    Auth --> DB
+    Session --> DB
+    Analytics --> DB
+    Goals --> DB
+    Categories --> DB
+    
+    Mobile --> Cache
+    Mobile --> Storage
+    Mobile --> Background
+    
+    Session -.->|Real-time Updates| Analytics
+    Analytics -.->|Invalidation| Cache
+
+    %% Styling
+    classDef client fill:#e1f5fe
+    classDef api fill:#f3e5f5
+    classDef service fill:#e8f5e8
+    classDef data fill:#fff3e0
+    classDef external fill:#fce4ec
+
+    class Mobile client
+    class API api
+    class Auth,Session,Analytics,Goals,Categories service
+    class DB,Cache data
+    class Storage,Background external

@@ -1,11 +1,27 @@
+# Core Django
 asgiref==3.8.1
 Django==5.1.5
+
+# Django Extensions & Utilities
 django-extensions==3.2.3
+django-cors-headers==4.7.0
+
+# Django REST Framework & Authentication
 djangorestframework==3.15.2
 djangorestframework-simplejwt==5.3.0
-Faker==34.0.2
-graphviz==0.20.3
+
+# Database
 psycopg2-binary==2.9.10
+
+# Production Web Server & Static Files
+gunicorn==23.0.0
+whitenoise==6.9.0
+
+# Development & Testing
+Faker==34.0.2
+
+# Utilities (keeping existing ones you might need)
+graphviz==0.20.3
 pydot==3.0.4
 pyparsing==3.2.1
 python-dateutil==2.9.0.post0

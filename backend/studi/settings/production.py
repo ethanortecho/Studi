@@ -11,6 +11,19 @@ These settings are used for Render deployment.
 import os
 from .base import *
 
+# Override MIDDLEWARE to include whitenoise for static file serving
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Serve static files in production
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware', 
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
 # SECURITY WARNING: SECRET_KEY must be set as environment variable in production
 SECRET_KEY = os.environ.get('SECRET_KEY')
 if not SECRET_KEY:
@@ -58,7 +71,12 @@ SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
 
-# Static files - will be handled by whitenoise (we'll add this next)
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# Static files configuration for whitenoise
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Where collectstatic puts files
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'  # Compression + cache busting
+
+# Whitenoise settings for better performance
+WHITENOISE_USE_FINDERS = True  # Find static files automatically
+WHITENOISE_AUTOREFRESH = True  # Auto-refresh in development-like scenarios
 
 print("🔒 Running in PRODUCTION mode")

@@ -1,6 +1,7 @@
 # Core Django
 asgiref==3.8.1
 Django==5.1.5
+setuptools==75.6.0
 
 # Django Extensions & Utilities
 django-extensions==3.2.3

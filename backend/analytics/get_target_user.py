@@ -9,7 +9,7 @@ def get_target_user(request):
     # If no username specified, use the requesting user
     if not target_username:
         return requesting_user
-        
+        #test
     # If requesting user is admin, allow access to any user
     if requesting_user.is_staff:
         try:

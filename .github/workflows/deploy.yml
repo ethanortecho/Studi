@@ -11,6 +11,11 @@ on:
     branches: [main]
     paths: ['backend/**']
 
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
 jobs:
   test:
     name: Run Tests
@@ -76,10 +81,19 @@ jobs:
         RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
         RENDER_SERVICE_ID: ${{ secrets.RENDER_STAGING_SERVICE_ID }}
       run: |
-        curl -X POST "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys" \
+        echo "Triggering staging deployment..."
+        response=$(curl -X POST "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys" \
           -H "Authorization: Bearer $RENDER_API_KEY" \
-          -H "Content-Type: application/json" \
-          -d '{"clearCache": false}'
+          -w "\nHTTP_CODE:%{http_code}" -s)
+        echo "Response: $response"
+        
+        if echo "$response" | grep -q "HTTP_CODE:201"; then
+          deploy_id=$(echo "$response" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
+          echo "✅ Staging deployment triggered successfully! Deploy ID: $deploy_id"
+        else
+          echo "❌ Staging deployment failed"
+          exit 1
+        fi
           
     - name: Comment PR with staging URL
       uses: actions/github-script@v6
@@ -106,7 +120,16 @@ jobs:
         RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
         RENDER_SERVICE_ID: ${{ secrets.RENDER_PRODUCTION_SERVICE_ID }}
       run: |
-        curl -X POST "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys" \
+        echo "Triggering production deployment..."
+        response=$(curl -X POST "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys" \
           -H "Authorization: Bearer $RENDER_API_KEY" \
-          -H "Content-Type: application/json" \
-          -d '{"clearCache": false}'
+          -w "\nHTTP_CODE:%{http_code}" -s)
+        echo "Response: $response"
+        
+        if echo "$response" | grep -q "HTTP_CODE:201"; then
+          deploy_id=$(echo "$response" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
+          echo "✅ Production deployment triggered successfully! Deploy ID: $deploy_id"
+        else
+          echo "❌ Production deployment failed"
+          exit 1
+        fi

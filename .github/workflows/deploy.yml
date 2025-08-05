@@ -81,10 +81,18 @@ jobs:
         RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
         RENDER_SERVICE_ID: ${{ secrets.RENDER_STAGING_SERVICE_ID }}
       run: |
-        curl -X POST "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys" \
+        response=$(curl -X POST "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys" \
           -H "Authorization: Bearer $RENDER_API_KEY" \
           -H "Content-Type: application/json" \
-          -d '{"clearCache": false}'
+          -d '{"clearCache":false}' \
+          -w "\nHTTP_CODE:%{http_code}")
+        echo "Response: $response"
+        if echo "$response" | grep -q "HTTP_CODE:2"; then
+          echo "✅ Staging deployment triggered successfully"
+        else
+          echo "❌ Staging deployment failed"
+          exit 1
+        fi
           
     - name: Comment PR with staging URL
       uses: actions/github-script@v6
@@ -111,7 +119,23 @@ jobs:
         RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
         RENDER_SERVICE_ID: ${{ secrets.RENDER_PRODUCTION_SERVICE_ID }}
       run: |
-        curl -X POST "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys" \
+        echo "Triggering deployment for service: $RENDER_SERVICE_ID"
+        response=$(curl -X POST "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys" \
           -H "Authorization: Bearer $RENDER_API_KEY" \
-          -H "Content-Type: application/json" \
-          -d '{"clearCache": false}'
+          -H "Accept: application/json" \
+          -w "\nHTTP_CODE:%{http_code}" \
+          -s)
+        echo "Response: $response"
+        if echo "$response" | grep -q "HTTP_CODE:2"; then
+          echo "✅ Production deployment triggered successfully"
+        else
+          echo "❌ Production deployment failed"
+          echo "Trying with empty JSON body..."
+          response2=$(curl -X POST "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys" \
+            -H "Authorization: Bearer $RENDER_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            -w "\nHTTP_CODE:%{http_code}" \
+            -s)
+          echo "Response2: $response2"
+        fi

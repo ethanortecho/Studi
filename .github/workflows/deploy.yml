@@ -81,16 +81,35 @@ jobs:
         RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
         RENDER_SERVICE_ID: ${{ secrets.RENDER_STAGING_SERVICE_ID }}
       run: |
-        response=$(curl -X POST "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys" \
+        echo "Testing different API formats..."
+        
+        echo "1. Trying with no body:"
+        response1=$(curl -X POST "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys" \
+          -H "Authorization: Bearer $RENDER_API_KEY" \
+          -w "\nHTTP_CODE:%{http_code}" -s)
+        echo "Response1: $response1"
+        
+        echo "2. Trying with empty JSON:"
+        response2=$(curl -X POST "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys" \
           -H "Authorization: Bearer $RENDER_API_KEY" \
           -H "Content-Type: application/json" \
-          -d "{\"serviceId\":\"$RENDER_SERVICE_ID\",\"clearCache\":false}" \
-          -w "\nHTTP_CODE:%{http_code}")
-        echo "Response: $response"
-        if echo "$response" | grep -q "HTTP_CODE:2"; then
+          -d '{}' \
+          -w "\nHTTP_CODE:%{http_code}" -s)
+        echo "Response2: $response2"
+        
+        echo "3. Trying clearCache only:"
+        response3=$(curl -X POST "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys" \
+          -H "Authorization: Bearer $RENDER_API_KEY" \
+          -H "Content-Type: application/json" \
+          -d '{"clearCache":false}' \
+          -w "\nHTTP_CODE:%{http_code}" -s)
+        echo "Response3: $response3"
+        
+        # Check if any worked
+        if echo "$response1$response2$response3" | grep -q "HTTP_CODE:2"; then
           echo "✅ Staging deployment triggered successfully"
         else
-          echo "❌ Staging deployment failed"
+          echo "❌ All deployment attempts failed"
           exit 1
         fi
           

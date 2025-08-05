@@ -43,7 +43,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // API configuration
-const API_BASE_URL = 'http://0.0.0.0:8000/api';
+import { API_BASE_URL } from '../config/api';
 
 // =============================================
 // AUTH PROVIDER - The main authentication logic

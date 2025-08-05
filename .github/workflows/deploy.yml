@@ -84,7 +84,7 @@ jobs:
         response=$(curl -X POST "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys" \
           -H "Authorization: Bearer $RENDER_API_KEY" \
           -H "Content-Type: application/json" \
-          -d '{"clearCache":false}' \
+          -d "{\"serviceId\":\"$RENDER_SERVICE_ID\",\"clearCache\":false}" \
           -w "\nHTTP_CODE:%{http_code}")
         echo "Response: $response"
         if echo "$response" | grep -q "HTTP_CODE:2"; then
@@ -122,20 +122,13 @@ jobs:
         echo "Triggering deployment for service: $RENDER_SERVICE_ID"
         response=$(curl -X POST "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys" \
           -H "Authorization: Bearer $RENDER_API_KEY" \
-          -H "Accept: application/json" \
-          -w "\nHTTP_CODE:%{http_code}" \
-          -s)
+          -H "Content-Type: application/json" \
+          -d "{\"serviceId\":\"$RENDER_SERVICE_ID\",\"clearCache\":false}" \
+          -w "\nHTTP_CODE:%{http_code}")
         echo "Response: $response"
         if echo "$response" | grep -q "HTTP_CODE:2"; then
           echo "✅ Production deployment triggered successfully"
         else
           echo "❌ Production deployment failed"
-          echo "Trying with empty JSON body..."
-          response2=$(curl -X POST "https://api.render.com/v1/services/$RENDER_SERVICE_ID/deploys" \
-            -H "Authorization: Bearer $RENDER_API_KEY" \
-            -H "Content-Type: application/json" \
-            -d '{}' \
-            -w "\nHTTP_CODE:%{http_code}" \
-            -s)
-          echo "Response2: $response2"
+          exit 1
         fi

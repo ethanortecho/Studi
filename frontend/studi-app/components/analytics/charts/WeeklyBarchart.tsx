@@ -224,13 +224,16 @@ const WeeklyBarchart: React.FC<WeeklyBarchartProps> = ({
   const currentData = chartData;
   const currentYKeys = categories;
 
+  // Calculate proper Y-axis domain to avoid negative values and handle small data
+  const yAxisMax = Math.max(1, Math.ceil(maxTotal * 1.2));
+
   return (
       <View style={{ height: height, width: responsiveWidth }}>
         <CartesianChart
           data={currentData}
           xKey="period"
           yKeys={currentYKeys}
-          domain={{ y: [0, Math.ceil(maxTotal * 1.2)] }}
+          domain={{ y: [0, yAxisMax] }}
           domainPadding={{ left: timeframe === 'weekly' ? 15 : 45, right: timeframe === 'weekly' ? 15 : 45 }}
           padding={{ left: 0, top: 0, right: 0, bottom: 0 }}
           xAxis={{

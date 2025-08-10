@@ -10,7 +10,30 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.ethanortecho.studi"
+      "bundleIdentifier": "com.ethanortecho.studi",
+      "infoPlist": {
+        "NSUserTrackingUsageDescription": "This app does not track users across other apps or websites.",
+        "NSCameraUsageDescription": "Camera access is used to capture study notes and materials.",
+        "NSPhotoLibraryUsageDescription": "Photo library access allows you to save and organize study-related images.",
+        "NSLocationWhenInUseUsageDescription": "Location is used to provide study location tracking and analytics.",
+        "CFBundleAllowMixedLocalizations": true,
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSAppTransportSecurity": {
+          "NSExceptionDomains": {
+            "localhost": {
+              "NSExceptionAllowsInsecureHTTPLoads": true,
+              "NSExceptionMinimumTLSVersion": "1.0",
+              "NSExceptionRequiresForwardSecrecy": false
+            },
+            "studi-backend-production.onrender.com": {
+              "NSRequiresCertificateTransparency": false
+            },
+            "studi-backend-staging.onrender.com": {
+              "NSRequiresCertificateTransparency": false
+            }
+          }
+        }
+      }
     },
     "android": {
       "adaptiveIcon": {

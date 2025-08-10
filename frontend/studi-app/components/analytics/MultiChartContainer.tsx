@@ -69,7 +69,7 @@ export default function MultiChartContainer({
     const [selectedChart, setSelectedChart] = useState<ChartType>(defaultChart);
 
     // ⬇️ Consistent sizing for pie to avoid clipping
-    const PIE_SIZE = 165;          // diameter passed into CustomPieChart
+    const PIE_SIZE = 168;          // diameter passed into CustomPieChart
     const PIE_PADDING = 20;        // extra space for stroke / rounding
     const chartContainerHeight = isEmpty
         ? 400

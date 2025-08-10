@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View } from 'react-native';
+import { View, Dimensions } from 'react-native';
 import { CartesianChart, StackedBar } from 'victory-native';
 import { ThemedText } from '@/components/ThemedText';
 import { useFont } from '@shopify/react-native-skia';
@@ -54,7 +54,7 @@ const WeeklyBarchart: React.FC<WeeklyBarchartProps> = ({
   data,
   categoryMetadata,
   timeframe = 'weekly',
-  width = 500,
+  width,
   height = 150,
   isEmpty = false
 }) => {
@@ -62,6 +62,11 @@ const WeeklyBarchart: React.FC<WeeklyBarchartProps> = ({
   if (isEmpty) {
     return null;
   }
+  
+  // Calculate responsive width with proper margins
+  const screenWidth = Dimensions.get('window').width;
+  const responsiveWidth = width || Math.max(280, Math.min(screenWidth - 80, 360));
+  
   const font = useFont(require('@/assets/fonts/Poppins-Regular.ttf'), 12);
 
   const { chartData, simpleChartData, categories, colors, maxTotal } = useMemo(() => {
@@ -220,7 +225,7 @@ const WeeklyBarchart: React.FC<WeeklyBarchartProps> = ({
   const currentYKeys = categories;
 
   return (
-      <View style={{ height: height ,width: 300}}>
+      <View style={{ height: height, width: responsiveWidth }}>
         <CartesianChart
           data={currentData}
           xKey="period"

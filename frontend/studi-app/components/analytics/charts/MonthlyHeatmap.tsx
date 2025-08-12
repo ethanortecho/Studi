@@ -70,14 +70,19 @@ const MonthlyHeatmap: React.FC<MonthlyHeatmapProps> = ({
 
   const { calendar, weeksNeeded } = getCalendarData();
 
-  // Calculate responsive sizing based on screen width
-  const { width: screenWidth } = Dimensions.get('window');
+  // Constants for layout calculations
   const containerPadding = 32; // 16px padding on each side (p-4)
   const weekdayLabelWidth = 48; // Width for Mon/Tue/Wed labels
-  const availableWidth = screenWidth - containerPadding - weekdayLabelWidth;
-  const cellSize = Math.floor(availableWidth / weeksNeeded); // Divide by number of weeks
-  const maxCellSize = 40; // Cap maximum size for larger screens
-  const finalCellSize = Math.min(cellSize, maxCellSize);
+
+  // Memoize responsive sizing calculations to prevent unnecessary recalculations
+  const finalCellSize = React.useMemo(() => {
+    const { width: screenWidth } = Dimensions.get('window');
+    const availableWidth = screenWidth - containerPadding - weekdayLabelWidth;
+    const cellSize = Math.floor(availableWidth / weeksNeeded); // Divide by number of weeks
+    const maxCellSize = 40; // Cap maximum size for larger screens
+    const minCellSize = 20; // Minimum size to prevent collapse with minimal data
+    return Math.max(minCellSize, Math.min(cellSize, maxCellSize));
+  }, [weeksNeeded, containerPadding, weekdayLabelWidth]);
 
   // Format date for heatmap data lookup
   const formatDateKey = (dayNumber: number) => {

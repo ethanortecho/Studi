@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 
 /**
  * A single day timeline row visualising study sessions along a 24-hour baseline.
@@ -49,9 +49,15 @@ const DayTimeline: React.FC<Props> = ({
   sessions,
   timeWindow,
   onBarPress,
-  timelineWidth = DEFAULT_TIMELINE_WIDTH,
+  timelineWidth,
   barHeight = DEFAULT_BAR_HEIGHT,
 }) => {
+  // Calculate responsive timeline width with proper padding (matching MonthlyHeatmap)
+  const screenWidth = Dimensions.get('window').width;
+  const containerPadding = 32; // 16px on each side
+  const dayLabelWidth = 60; // Width for day label (Mon, Tue, etc.)
+  const availableWidth = screenWidth - containerPadding - dayLabelWidth;
+  const responsiveTimelineWidth = timelineWidth || Math.max(200, Math.min(availableWidth, 320));
   /* ---------------------------------- helpers --------------------------------- */
   /**
    * Merge overlapping sessions so they render as a single, wider bar.
@@ -94,7 +100,7 @@ const DayTimeline: React.FC<Props> = ({
       <Text style={styles.dayLabel}>{dayLabel}</Text>
 
       {/* Timeline container */}
-      <View style={[styles.timelineContainer, { width: timelineWidth, height: barHeight }]}>        
+      <View style={[styles.timelineContainer, { width: responsiveTimelineWidth, height: barHeight }]}>        
         {/* Baseline line */}
         <View style={[styles.baseline, { backgroundColor: TIMELINE_COLOR }]} />
 

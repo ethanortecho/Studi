@@ -14,6 +14,8 @@ interface SessionTime {
 interface StudyDayBarsProps {
   sessionTimes: SessionTime[];
   isEmpty?: boolean; // When true, component should not render
+  showTitle?: boolean; // Whether to show the title. Default true.
+  showLegend?: boolean; // Whether to show the legend. Default true.
 }
 
 interface ProcessedDayData {
@@ -21,7 +23,12 @@ interface ProcessedDayData {
   sessions: DaySession[];
 }
 
-const StudyDayBars: React.FC<StudyDayBarsProps> = ({ sessionTimes, isEmpty = false }) => {
+const StudyDayBars: React.FC<StudyDayBarsProps> = ({ 
+  sessionTimes, 
+  isEmpty = false,
+  showTitle = true,
+  showLegend = true
+}) => {
   const { userTimezone } = useContext(StudySessionContext);
   
   // Don't render if no data available
@@ -152,9 +159,11 @@ const StudyDayBars: React.FC<StudyDayBarsProps> = ({ sessionTimes, isEmpty = fal
   
   return (
     <DashboardCard className="bg-background border border-surface rounded-[35px]">
-      <Text className="text-xl font-semibold text-primaryText py-14 pt-10 px-8 text-center">
-        Your sessions throughout the day
-      </Text>
+      {showTitle && (
+        <Text className="text-xl font-semibold text-primaryText py-14 pt-10 px-8 text-center">
+          Your sessions throughout the day
+        </Text>
+      )}
 
       {/* Content wrapper */}
       <View className="px-10 pb-10">

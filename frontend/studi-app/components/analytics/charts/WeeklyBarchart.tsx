@@ -1,8 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, Dimensions } from 'react-native';
-import { CartesianChart, StackedBar } from 'victory-native';
-import { ThemedText } from '@/components/ThemedText';
-import { useFont } from '@shopify/react-native-skia';
+import { View, Dimensions, Text } from 'react-native';
 
 // Map short day codes to full day names
 const DAY_MAP: Record<string, string> = {
@@ -66,8 +63,6 @@ const WeeklyBarchart: React.FC<WeeklyBarchartProps> = ({
   // Calculate responsive width with proper margins
   const screenWidth = Dimensions.get('window').width;
   const responsiveWidth = width || Math.max(280, Math.min(screenWidth - 80, 360));
-  
-  const font = useFont(require('@/assets/fonts/Poppins-Regular.ttf'), 12);
 
   const { chartData, simpleChartData, categories, colors, maxTotal } = useMemo(() => {
     if (!data || !categoryMetadata) {
@@ -221,57 +216,52 @@ const WeeklyBarchart: React.FC<WeeklyBarchartProps> = ({
     return null;
   }
 
-  const currentData = chartData;
-  const currentYKeys = categories;
-
   // Calculate proper Y-axis domain to avoid negative values and handle small data
   const yAxisMax = Math.max(1, Math.ceil(maxTotal * 1.2));
 
+  // Layout constants for simple custom bars
+  const chartHeight = Math.max(120, (height ?? 150));
+  const labelAreaHeight = 18; // space for x-axis labels
+  const drawableHeight = chartHeight - labelAreaHeight;
+  const numBars = timeframe === 'weekly' ? 7 : 4;
+  const barGap = timeframe === 'weekly' ? 8 : 16;
+  const totalGap = barGap * (numBars - 1);
+  const barWidth = (responsiveWidth - totalGap) / numBars;
+
   return (
-      <View style={{ height: height, width: responsiveWidth }}>
-        <CartesianChart
-          data={currentData}
-          xKey="period"
-          yKeys={currentYKeys}
-          domain={{ y: [0, yAxisMax] }}
-          domainPadding={{ left: timeframe === 'weekly' ? 15 : 45, right: timeframe === 'weekly' ? 15 : 45 }}
-          padding={{ left: 0, top: 0, right: 0, bottom: 0 }}
-          xAxis={{
-            font: font,
-            tickCount: timeframe === 'weekly' ? 7 : 4,
-            lineColor: 'transparent',
-            labelColor: '#71717a',
-            formatXLabel: (value) => String(value)
-          }}
-          yAxis={[{
-            font: font,
-            tickCount: 4,
-            lineColor: '#d4d4d8',
-            labelColor: '#71717a',
-            formatYLabel: (value) => `${value}h`
-          }]}
-        >
-          {({ points, chartBounds }) => {
-            const pointsArray = categories.map(category => points[category]);
-            return (
-              <StackedBar
-                chartBounds={chartBounds}
-                points={pointsArray}
-                colors={colors}
-                animate={{ type: "timing", duration: 300 }}
-                innerPadding={ timeframe === 'weekly' ? 0.4 : 0.5}
-                barOptions={({ isBottom, isTop }) => ({
-                  roundedCorners: isTop
-                    ? { topLeft: 4, topRight: 4 }
-                    : isBottom
-                      ? { bottomLeft: 4, bottomRight: 4 }
-                      : undefined,
+    <View style={{ width: responsiveWidth, height: chartHeight, justifyContent: 'flex-end' }}>
+      {/* Bars */}
+      <View style={{ flexDirection: 'row', alignItems: 'flex-end', height: drawableHeight }}>
+        {chartData.map((periodData: any, idx: number) => {
+          const totalForPeriod = categories.reduce((sum, cat) => sum + (periodData[cat] || 0), 0);
+          const barTotalHeight = yAxisMax === 0 ? 0 : (totalForPeriod / yAxisMax) * (drawableHeight - 6);
+
+          return (
+            <View key={idx} style={{ width: barWidth, marginRight: idx === chartData.length - 1 ? 0 : barGap, justifyContent: 'flex-end' }}>
+              <View style={{ width: '100%', height: barTotalHeight, justifyContent: 'flex-end', overflow: 'hidden', borderTopLeftRadius: 4, borderTopRightRadius: 4 }}>
+                {categories.map((cat) => {
+                  const hours = periodData[cat] || 0;
+                  if (hours <= 0) return null;
+                  const segHeight = (hours / yAxisMax) * (drawableHeight - 6);
+                  const colorIndex = categories.indexOf(cat);
+                  const color = colors[colorIndex] || '#CCCCCC';
+                  return (
+                    <View key={`${idx}-${cat}`} style={{ width: '100%', height: segHeight, backgroundColor: color }} />
+                  );
                 })}
-              />
-            );
-          }}
-        </CartesianChart>
+              </View>
+            </View>
+          );
+        })}
       </View>
+
+      {/* X-axis labels */}
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 2 }}>
+        {simpleChartData.map((d) => (
+          <Text key={d.period} style={{ fontSize: 10, color: '#71717a', width: barWidth, textAlign: 'center' }}>{String(d.period)}</Text>
+        ))}
+      </View>
+    </View>
   );
 };
 

@@ -6,12 +6,16 @@ interface MonthlyHeatmapProps {
   heatmapData?: { [date: string]: number };
   monthDate: Date;
   isEmpty?: boolean; // When true, component should not render
+  showTitle?: boolean; // Whether to show the title. Default true.
+  showLegend?: boolean; // Whether to show the legend. Default true.
 }
 
 const MonthlyHeatmap: React.FC<MonthlyHeatmapProps> = ({ 
   heatmapData = {}, 
   monthDate,
-  isEmpty = false
+  isEmpty = false,
+  showTitle = true,
+  showLegend = true
 }) => {
   // Don't render if no data available
   if (isEmpty) {
@@ -162,40 +166,46 @@ const MonthlyHeatmap: React.FC<MonthlyHeatmapProps> = ({
   return (
     <DashboardCard className="bg-background border border-surface rounded-[35px] p-4">
       {/* Title */}
-      <Text className="text-lg font-bold text-primaryText mb-4 text-center">
-        {monthName}
-      </Text>
+      {showTitle && (
+        <Text className="text-lg font-bold text-primaryText mb-4 text-center">
+          {monthName}
+        </Text>
+      )}
 
       {/* Calendar Grid */}
       {renderCalendarGrid()}
       
       {/* Legend */}
-      <View className="flex-row items-center justify-center mt-4 gap-2">
-        <Text className="text-xs text-secondaryText font-medium">Less</Text>
-        {[0, 0.75, 1.5, 2.25, 3].map((hours, index) => {
-          const legendCellSize = Math.min(finalCellSize * 0.4, 12); // Scale with calendar but cap at 12px
-          return (
-            <View
-              key={index}
-              className="rounded-sm border border-gray-700"
-              style={{ 
-                width: legendCellSize, 
-                height: legendCellSize,
-                backgroundColor: getColorIntensity(hours) 
-              }}
-              accessibilityLabel={`${hours} hours intensity level`}
-            />
-          );
-        })}
-        <Text className="text-xs text-secondaryText font-medium">More</Text>
-      </View>
-      
-      {/* Study Hours Summary */}
-      <View className="flex-row items-center justify-center mt-2">
-        <Text className="text-xs text-secondaryText">
-          Study intensity: 0-3+ hours per day
-        </Text>
-      </View>
+      {showLegend && (
+        <>
+          <View className="flex-row items-center justify-center mt-4 gap-2">
+            <Text className="text-xs text-secondaryText font-medium">Less</Text>
+            {[0, 0.75, 1.5, 2.25, 3].map((hours, index) => {
+              const legendCellSize = Math.min(finalCellSize * 0.4, 12); // Scale with calendar but cap at 12px
+              return (
+                <View
+                  key={index}
+                  className="rounded-sm border border-gray-700"
+                  style={{ 
+                    width: legendCellSize, 
+                    height: legendCellSize,
+                    backgroundColor: getColorIntensity(hours) 
+                  }}
+                  accessibilityLabel={`${hours} hours intensity level`}
+                />
+              );
+            })}
+            <Text className="text-xs text-secondaryText font-medium">More</Text>
+          </View>
+          
+          {/* Study Hours Summary */}
+          <View className="flex-row items-center justify-center mt-2">
+            <Text className="text-xs text-secondaryText">
+              Study intensity: 0-3+ hours per day
+            </Text>
+          </View>
+        </>
+      )}
     </DashboardCard>
   );
 };

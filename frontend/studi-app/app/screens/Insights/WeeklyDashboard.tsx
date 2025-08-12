@@ -1,13 +1,9 @@
 import React from 'react';
 import { ScrollView, View, Text } from 'react-native';
-import CustomPieChart from '@/components/analytics/charts/CustomPieChart';
-import TotalHours from '@/components/analytics/TotalHoursContainer';
-import Legend from '@/components/analytics/DashboardLegend';
-import WeeklyBarchartContainer from '@/components/analytics/WeeklyBarchartContainer';
-import StudyDayBars from '@/components/analytics/charts/WeeklySessionTimeline';
-import DashboardCard from '@/components/insights/DashboardContainer';
-import MultiChartContainer from '@/components/analytics/MultiChartContainer';
 import { CategoryMetadata } from '@/types/api';
+import DashboardKPIs from '@/components/analytics/DashboardKPIs';
+import MultiChartContainerV2 from '@/components/analytics/MultiChartContainerV2';
+import { DashboardData } from '@/types/charts';
 
 interface WeeklyDashboardProps {
   totalHours: string;
@@ -46,36 +42,41 @@ export default function WeeklyDashboard({
     );
   }
 
+  // Prepare dashboard data in the normalized format
+  const dashboardData: DashboardData = {
+    timeframe: 'weekly',
+    totalTime,
+    percentGoal,
+    categoryMetadata: categoryMetadata || {},
+    categoryDurations: categoryDurations || {},
+    pieChartData: pieChartData || [],
+    weeklyChartData: dailyBreakdown,
+    sessionTimes: sessionTimes || [],
+    isEmpty
+  };
+
   return (
     <ScrollView 
       className="flex-1" 
       contentContainerStyle={{ paddingBottom: 30 }}
       showsVerticalScrollIndicator={false}
     >
-      <View className="mx-4 mb-4">
-        <MultiChartContainer 
-          timeframe="weekly"
-          categoryMetadata={categoryMetadata || {}}
-          categoryDurations={categoryDurations || {}}
-          pieChartData={pieChartData || []}
-          timelineData={undefined}
-          weeklyChartData={dailyBreakdown}
+      {/* High-level KPIs */}
+      {!isEmpty && (
+        <DashboardKPIs 
           totalTime={totalTime}
-          percentGoal={percentGoal ?? null}
-          isEmpty={isEmpty}
-          showTitle={false}
+          percentGoal={percentGoal}
+          flowScore={7}  // TODO: Replace with actual flow score data
+          flowScoreTotal={10}
         />
-      </View>
-      {/* Off-white container for all dashboard content - edge to edge */}
-      <View>
-        
-       
-        <View className="px-4 pb-4">
-          <StudyDayBars
-            sessionTimes={sessionTimes || []}
-            isEmpty={isEmpty}
-          />
-        </View>
+      )}
+      
+      {/* Multi-chart container with new architecture */}
+      <View className="mx-4 mb-4">
+        <MultiChartContainerV2 
+          dashboardData={dashboardData}
+          showLegend={true}
+        />
       </View>
       
     </ScrollView>

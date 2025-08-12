@@ -19,6 +19,10 @@ interface Props {
   isEmpty?: boolean;
   /** Category durations for legend display */
   categoryDurations?: { [key: string]: number };
+  /** Whether to show the title. Default true. */
+  showTitle?: boolean;
+  /** Whether to show the legend. Default true. */
+  showLegend?: boolean;
 }
 
 /** Baseline / grid colour */
@@ -33,6 +37,8 @@ const DailyHourBars: React.FC<Props> = ({
   width = 300,
   isEmpty = false,
   categoryDurations,
+  showTitle = true,
+  showLegend = true,
 }) => {
   const { userTimezone } = useContext(StudySessionContext);
   
@@ -140,9 +146,11 @@ const DailyHourBars: React.FC<Props> = ({
   return (
     <DashboardCard className="bg-background border  border-surface rounded-[35px]">
       {/* Title */}
-      <Text className="text-xl font-semibold text-primaryText py-14 pt-10 px-8 text-center">
-        Study minutes per hour
-      </Text>
+      {showTitle && (
+        <Text className="text-xl font-semibold text-primaryText py-14 pt-10 px-8 text-center">
+          Study minutes per hour
+        </Text>
+      )}
 
       <View className="px-10 pb-10">
         {/* Chart area */}
@@ -272,7 +280,7 @@ const DailyHourBars: React.FC<Props> = ({
         </View>
         
         {/* Legend */}
-        {categoryDurations && categoryMetadata && (
+        {showLegend && categoryDurations && categoryMetadata && (
           <View className="flex-row items-center justify-center pt-8 px-4">
             <Legend 
               category_durations={categoryDurations} 

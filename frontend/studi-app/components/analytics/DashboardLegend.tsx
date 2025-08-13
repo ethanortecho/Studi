@@ -14,6 +14,9 @@ export default function Legend({ category_durations, category_metadata }: Legend
         .filter(([_, duration]) => duration > 0)
         .map(([categoryName, _]) => categoryName);
 
+    if (categoriesWithData.length === 0) {
+        return null;
+    }
 
     return (
         <View>

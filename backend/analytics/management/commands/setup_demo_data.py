@@ -72,11 +72,14 @@ class Command(BaseCommand):
             session_date = now - timedelta(days=days_ago)
             
             # Skip some days (weekend study is lighter)
-            if session_date.weekday() in [5, 6] and random.random() < 0.6:  # 60% chance to skip weekends
+            if session_date.weekday() in [5, 6] and random.random() < 0.4:  # 40% chance to skip weekends
                 continue
                 
-            # Random number of sessions per day (1-3)
-            sessions_today = random.randint(1, 3)
+            # Random number of sessions per day (2-4 for weekdays, 1-2 for weekends)
+            if session_date.weekday() in [5, 6]:
+                sessions_today = random.randint(1, 2)  # Lighter weekends
+            else:
+                sessions_today = random.randint(2, 4)  # More intensive weekdays
             
             for session_num in range(sessions_today):
                 # Random start time during reasonable study hours
@@ -85,10 +88,10 @@ class Command(BaseCommand):
                 
                 session_start = session_date.replace(hour=hour, minute=minute, second=0, microsecond=0)
                 
-                # Session duration: 25-90 minutes (realistic study sessions)
+                # Session duration: 30-120 minutes (realistic study sessions for ~1hr/day avg)
                 duration_minutes = random.choices(
-                    [25, 30, 45, 60, 90], 
-                    weights=[30, 25, 25, 15, 5]  # Prefer shorter sessions
+                    [30, 45, 60, 75, 90, 120], 
+                    weights=[20, 30, 25, 15, 8, 2]  # Good mix favoring 45-60min sessions
                 )[0]
                 
                 session_end = session_start + timedelta(minutes=duration_minutes)

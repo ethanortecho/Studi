@@ -102,8 +102,11 @@ export default function MultiChartContainerV2({
         )}
       </View>
 
-      {/* Legend - only show for subjects chart or when explicitly enabled */}
-      {showLegend && activeChart?.id === 'subjects' && (
+      {/* Legend - show for charts with category-specific data based on timeframe */}
+      {showLegend && activeChart && (
+        (dashboardData.timeframe === 'daily' && ['subjects', 'sessions', 'map'].includes(activeChart.id)) ||
+        (dashboardData.timeframe !== 'daily' && ['subjects', 'trends'].includes(activeChart.id))
+      ) && (
         <View className="flex-row items-center justify-center pt-10 px-4">
           <Legend 
             category_durations={dashboardData.categoryDurations} 

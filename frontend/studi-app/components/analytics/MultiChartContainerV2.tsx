@@ -57,24 +57,8 @@ export default function MultiChartContainerV2({
   // Get chart data for active chart
   const activeChartData = activeChart?.getData(dashboardData);
   
-  // Fixed, bounded heights per chart to avoid vertical growth
-  const getChartHeight = () => {
-    switch (activeChart?.id) {
-      case 'subjects':
-        return 188; // Pie chart
-      case 'sessions':
-        return 185; // Session bars
-      case 'trends':
-        return 170; // Weekly/Monthly bar chart
-      case 'map':
-        if (dashboardData.timeframe === 'daily') return 160; // hour bars
-        if (dashboardData.timeframe === 'weekly') return 220; // session timeline
-        if (dashboardData.timeframe === 'monthly') return 240; // heatmap grid
-        return 200;
-      default:
-        return 200;
-    }
-  };
+  // Fixed height for consistent container size across all chart types
+  const FIXED_CHART_HEIGHT = 175;
 
   // Calculate page width for chart container
   const PAGE_WIDTH = Dimensions.get('window').width - 32; // Account for margins
@@ -82,8 +66,8 @@ export default function MultiChartContainerV2({
   return (
     <DashboardCard className="bg-background border border-surface rounded-[35px]">
       {/* Title */}
-      <View className="pt-6 pb-4">
-        <Text className="text-2xl font-bold text-primaryText text-center">
+      <View className="pt-6 pb-6">
+        <Text className="text-lg  text-primaryText text-center">
           Your Study Story
         </Text>
       </View>
@@ -91,13 +75,13 @@ export default function MultiChartContainerV2({
       {/* Active Chart Display */}
       <View 
         className="items-center justify-center" 
-        style={{ height: getChartHeight(), width: PAGE_WIDTH }}
+        style={{ height: FIXED_CHART_HEIGHT, width: PAGE_WIDTH }}
       >
         {activeChart && activeChart.component && activeChartData && (
           <activeChart.component 
             data={activeChartData} 
             width={PAGE_WIDTH - 40} 
-            height={getChartHeight()}
+            height={FIXED_CHART_HEIGHT}
           />
         )}
       </View>
@@ -107,7 +91,7 @@ export default function MultiChartContainerV2({
         (dashboardData.timeframe === 'daily' && ['subjects', 'sessions', 'map'].includes(activeChart.id)) ||
         (dashboardData.timeframe !== 'daily' && ['subjects', 'trends'].includes(activeChart.id))
       ) && (
-        <View className="flex-row items-center justify-center pt-10 px-4">
+        <View className="items-center justify-center pt-6 pb-6 px-4">
           <Legend 
             category_durations={dashboardData.categoryDurations} 
             category_metadata={dashboardData.categoryMetadata} 

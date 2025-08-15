@@ -113,7 +113,10 @@ export default function SessionBarchart({
     const sessionDurations = completedSessions.map(session => {
       const start = new Date(session.start_time).getTime();
       const end = new Date(session.end_time).getTime();
-      return (end - start) / (1000 * 60); // Convert to minutes
+      const durationMs = end - start;
+      // Round to nearest second before converting to minutes for consistency
+      const durationSeconds = Math.round(durationMs / 1000);
+      return durationSeconds / 60; // Convert to minutes
     });
     // Debug logs removed
 
@@ -210,7 +213,7 @@ export default function SessionBarchart({
           categoryName: categoryInfo?.name || 'Unknown',
           color,
           durationMinutes: segmentDurationMinutes,
-          widthPercent: (segmentDurationMinutes / sessionDuration) * 100
+          widthPercent: Math.round((segmentDurationMinutes / sessionDuration) * 1000) / 10 // Round to 1 decimal place
         };
       });
 
@@ -218,7 +221,7 @@ export default function SessionBarchart({
         index: index + 1,
         durationMinutes: sessionDuration,
         segments,
-        barWidthPercent: (sessionDuration / axisDurationMinutes) * 100
+        barWidthPercent: Math.round((sessionDuration / axisDurationMinutes) * 1000) / 10 // Round to 1 decimal place for consistency
       };
     });
     // Debug logs removed
@@ -267,22 +270,33 @@ export default function SessionBarchart({
                     style={{ paddingRight: axisPadding }}
                   >
                     <View 
-                      className="h-5 flex-row rounded overflow-hidden items-center"
+                      className="h-5 flex-row items-center"
                       style={{ 
-                        width: `${session.barWidthPercent}%`,
-                        minWidth: 20 // Ensure very short sessions are still visible
+                        width: `${Math.max(session.barWidthPercent, 2)}%`, // Minimum 2% width for visibility
+                        minWidth: 10, // Ensure very short sessions are still visible
+                        borderRadius: session.segments.length > 1 ? 0 : 2, // Only round single-segment bars
+                        overflow: 'hidden'
                       }}
                     >
-                      {session.segments.map((segment, segmentIndex) => (
-                        <View
-                          key={segmentIndex}
-                          className={segment.categoryName === 'Break' ? 'h-3' : 'h-full'}
-                          style={{
-                            width: `${segment.widthPercent}%`,
-                            backgroundColor: segment.color,
-                          }}
-                        />
-                      ))}
+                      {session.segments.map((segment, segmentIndex) => {
+                        const isFirst = segmentIndex === 0;
+                        const isLast = segmentIndex === session.segments.length - 1;
+                        
+                        return (
+                          <View
+                            key={segmentIndex}
+                            className={segment.categoryName === 'Break' ? 'h-3' : 'h-full'}
+                            style={{
+                              width: `${segment.widthPercent}%`,
+                              backgroundColor: segment.color,
+                              borderTopLeftRadius: isFirst ? 2 : 0,
+                              borderBottomLeftRadius: isFirst ? 2 : 0,
+                              borderTopRightRadius: isLast ? 2 : 0,
+                              borderBottomRightRadius: isLast ? 2 : 0,
+                            }}
+                          />
+                        );
+                      })}
                     </View>
                   </View>
                 </View>

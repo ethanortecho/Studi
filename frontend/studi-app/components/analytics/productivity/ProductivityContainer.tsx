@@ -15,7 +15,7 @@ export default function ProductivityContainer({
   loading = false
 }: ProductivityContainerProps) {
   return (
-    <DashboardCard className="bg-background border border-surface rounded-[35px] mx-4 p-6">
+    <DashboardCard className="bg-background border border-accent rounded-[35px] mx-4 p-6">
       {/* Header */}
       <View className="mb-4">
         <Text className="text-lg font-semibold text-primaryText">Your Focus Flow</Text>

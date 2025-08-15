@@ -7,6 +7,7 @@ import { router } from 'expo-router';
 import { useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTimerBackground } from './useTimerBackground';
+import AnimatedGradientBackground from './AnimatedGradientBackground';
 import FloatingCategoryFAB from '../FloatingCategoryFAB';
 import FloatingTimerControls from '../FloatingTimerControls';
 import CategorySelectionModal from '../CategorySelectionModal';
@@ -120,8 +121,8 @@ export default function TimerScreen({
   }, [timerType, selectedCategoryId, sessionId, sessionStarted, showCategoryModal]);
 
   return (
-    <View className={`flex-1 ${categoryColor ? '' : 'bg-background'}`} style={categoryColor ? { backgroundColor: categoryColor } : {}}>
-      <StatusBar backgroundColor={categoryColor || 'transparent'} barStyle="light-content" />
+    <AnimatedGradientBackground color={categoryColor}>
+      <StatusBar backgroundColor="transparent" translucent barStyle="light-content" />
       {/* Main content stacked vertically */}
       <SafeAreaView className="flex-1" edges={['bottom']}>
 
@@ -189,6 +190,6 @@ export default function TimerScreen({
         }}
         isLoading={isLoading}
       />
-    </View>
+    </AnimatedGradientBackground>
   );
 } 

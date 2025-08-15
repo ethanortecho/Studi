@@ -4,7 +4,7 @@ export interface CategoryMetadata {
 }
 
 export interface TimelineBreakdown {
-  category: number;
+  category: number | string;  // number for old API, string for new API
   start_time: string;
   end_time: string;
   duration: number;
@@ -14,7 +14,8 @@ export interface TimelineSession {
   start_time: string;
   end_time: string;
   breaks: any[];
-  breakdowns: TimelineBreakdown[];
+  breakdowns?: TimelineBreakdown[];  // Old API format
+  category_blocks?: TimelineBreakdown[];  // New API format
 }
 
 export interface DailyInsightsResponse {

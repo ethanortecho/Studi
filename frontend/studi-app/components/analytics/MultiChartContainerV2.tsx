@@ -75,11 +75,10 @@ export default function MultiChartContainerV2({
 
   return (
     <DashboardCard className="bg-background border border-surface rounded-[35px]">
-      {/* Title */}
-      <View className="pt-6 pb-6">
-        <Text className="text-lg  text-primaryText text-center">
-          Your Study Story
-        </Text>
+      {/* Header */}
+      <View className="p-6 pb-2">
+        <Text className="text-lg font-semibold text-primaryText">Your Study Story</Text>
+        <Text className="text-sm text-secondaryText mt-1">Charts describing the what and when</Text>
       </View>
 
       {/* Active Chart Display */}

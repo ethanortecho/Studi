@@ -19,7 +19,7 @@ export default function DashboardKPIs({
   const radius = 30;
   const strokeWidth = 5;
   const circumference = 2 * Math.PI * radius;
-  const progressPercentage = percentGoal ? (percentGoal / 100) : 0;
+  const progressPercentage = percentGoal ? Math.min(Math.max(percentGoal, 0), 100) / 100 : 0;
   const strokeDashoffset = circumference - (circumference * progressPercentage);
 
   return (
@@ -50,42 +50,40 @@ export default function DashboardKPIs({
       {/* Goal Progress */}
       {percentGoal !== null && percentGoal !== undefined && (
         <View className="flex-1 items-end">
-          <View className="relative">
-            <Text className="text-secondaryText text-base absolute top-2 left-1/2 transform -translate-x-1/2">Goal</Text>
-            <Svg width={70} height={70}>
-              {/* Background circle */}
-              <Circle
-                cx={35}
-                cy={35}
-                r={radius}
-                stroke="#3A3D4D"
-                strokeWidth={strokeWidth}
-                fill="none"
-              />
-              {/* Progress circle */}
-              <Circle
-                cx={35}
-                cy={35}
-                r={radius}
-                stroke="#5A4FCF"
-                strokeWidth={strokeWidth}
-                fill="none"
-                strokeDasharray={circumference}
-                strokeDashoffset={strokeDashoffset}
-                strokeLinecap="round"
-                transform={`rotate(-90 35 35)`}
-              />
-              {/* Percentage text */}
-              <Text
-                x={35}
-                y={40}
-                textAnchor="middle"
-                className="text-primaryText text-lg font-bold"
-                fill="white"
-              >
-                {percentGoal}%
-              </Text>
-            </Svg>
+          <View className="items-center">
+            <Text className="text-secondaryText text-base mb-1">Goal</Text>
+            <View className="relative">
+              <Svg width={70} height={70}>
+                {/* Background circle */}
+                <Circle
+                  cx={35}
+                  cy={35}
+                  r={radius}
+                  stroke="#3A3D4D"
+                  strokeWidth={strokeWidth}
+                  fill="none"
+                />
+                {/* Progress circle */}
+                <Circle
+                  cx={35}
+                  cy={35}
+                  r={radius}
+                  stroke="#5A4FCF"
+                  strokeWidth={strokeWidth}
+                  fill="none"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={strokeDashoffset}
+                  strokeLinecap="round"
+                  transform={`rotate(-90 35 35)`}
+                />
+              </Svg>
+              {/* Percentage text overlay - positioned outside SVG */}
+              <View className="absolute inset-0 justify-center items-center">
+                <Text className="text-primaryText text-lg font-bold">
+                  {Math.round(percentGoal)}%
+                </Text>
+              </View>
+            </View>
           </View>
         </View>
       )}

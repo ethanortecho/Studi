@@ -56,12 +56,29 @@ const DailyHourBarsInner: React.FC<Props> = ({
     if (!timelineData || timelineData.length === 0) return base;
 
     timelineData.forEach((session) => {
-      const breakdowns = session.breakdowns || [];
+      // Handle both 'breakdowns' (old API) and 'category_blocks' (new API)
+      const breakdowns = session.breakdowns || session.category_blocks || [];
       breakdowns.forEach((bd) => {
-        const categoryId = bd.category.toString();
-        const categoryName = categoryMetadata[categoryId]?.name;
+        // Handle both formats: 
+        // Old API: category is an ID number
+        // New API: category is the name string directly
+        let categoryName: string;
+        let meta: any;
+        
+        if (typeof bd.category === 'string') {
+          // New API format - category is already the name
+          categoryName = bd.category;
+          // Find metadata by name
+          meta = Object.values(categoryMetadata).find((m: any) => m.name === categoryName);
+        } else {
+          // Old API format - category is an ID
+          const categoryId = bd.category.toString();
+          categoryName = categoryMetadata[categoryId]?.name;
+          meta = categoryMetadata[categoryId];
+        }
+        
         if (!categoryName || categoryName === 'Break') return;
-        const meta = categoryMetadata[categoryId];
+        if (!meta) return;
 
         const startComponents = getLocalDateComponents(bd.start_time, userTimezone);
         const endComponents = getLocalDateComponents(bd.end_time, userTimezone);

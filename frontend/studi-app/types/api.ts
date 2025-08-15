@@ -30,6 +30,8 @@ export interface DailyInsightsResponse {
     user: number;
     is_final: boolean;
     last_updated: string;
+    productivity_score?: number | null;
+    productivity_sessions_count?: number;
   };
   timeline_data: TimelineSession[];
   category_metadata: { [key: string]: CategoryMetadata };
@@ -37,6 +39,7 @@ export interface DailyInsightsResponse {
     longest_session: number | null;
     avg_break_duration: number;
   };
+  all_time_avg_productivity?: number | null;
 }
 
 export interface WeeklyInsightsResponse {

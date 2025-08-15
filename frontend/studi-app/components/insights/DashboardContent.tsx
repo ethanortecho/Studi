@@ -110,6 +110,8 @@ export default function DashboardContent({
                     loading={false}
                     percentGoal={daily.percentGoal}
                     isEmpty={daily.isEmpty}
+                    productivityScore={daily.productivityScore}
+                    allTimeAvgProductivity={daily.allTimeAvgProductivity}
                 />
             );
             DEBUG_DASHBOARD && console.log(`⏱️ DashboardContent: Daily dashboard render took ${(performance.now() - renderStart).toFixed(2)}ms`);

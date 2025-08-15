@@ -217,7 +217,9 @@ export function useDashboardData({ dailyDate, weeklyDate, monthlyDate }: UseDash
             isEmpty: isDailyEmpty,
             goal: weeklyGoal,
             goalMinutes,
-            percentGoal
+            percentGoal,
+            productivityScore: dailyData.aggregate?.productivity_score ?? null,
+            allTimeAvgProductivity: dailyData.all_time_avg_productivity ?? null
         };
         
         const end = performance.now();

@@ -113,6 +113,10 @@ class DailyAggregate(models.Model):
     session_count = models.IntegerField(default=0)
     break_count = models.IntegerField(default=0)
     
+    # Productivity metrics
+    productivity_score = models.FloatField(null=True, blank=True)  # 0-100 percentage
+    productivity_sessions_count = models.IntegerField(default=0)  # Number of sessions with ratings
+    
     # Pre-computed JSON data for API responses
     category_durations = models.JSONField(default=dict)  # {category_name: seconds}
     timeline_data = models.JSONField(default=list)  # Complete session timeline for API

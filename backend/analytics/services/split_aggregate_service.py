@@ -86,6 +86,8 @@ class SplitAggregateUpdateService:
                 'session_count': aggregate_data['session_count'],
                 'break_count': aggregate_data['break_count'],
                 'timeline_data': aggregate_data['timeline_data'],
+                'productivity_score': aggregate_data.get('productivity_score'),
+                'productivity_sessions_count': aggregate_data.get('productivity_sessions_count', 0),
                 'is_final': is_final
             }
         )
@@ -142,7 +144,9 @@ class SplitAggregateUpdateService:
                 'category_durations': {},
                 'session_count': 0,
                 'break_count': 0,
-                'timeline_data': []
+                'timeline_data': [],
+                'productivity_score': None,
+                'productivity_sessions_count': 0
             }
         
         # Filter sessions with valid durations  
@@ -163,6 +167,32 @@ class SplitAggregateUpdateService:
             for block in session.categoryblock_set.all():
                 if block.duration and block.duration > 0:
                     category_durations[block.category.name] += block.duration
+        
+        # Calculate weighted productivity score
+        total_weighted_score = 0
+        total_rated_duration = 0
+        sessions_with_ratings = 0
+        
+        for session in valid_sessions:
+            if session.productivity_rating:
+                try:
+                    # Convert rating string to integer (1-5)
+                    rating = int(session.productivity_rating)
+                    # Convert to percentage: 1=20%, 2=40%, 3=60%, 4=80%, 5=100%
+                    score = rating * 20
+                    # Weight by session duration
+                    total_weighted_score += score * session.total_duration
+                    total_rated_duration += session.total_duration
+                    sessions_with_ratings += 1
+                except (ValueError, TypeError):
+                    # Skip sessions with invalid ratings
+                    print(f"Invalid productivity rating for session {session.id}: {session.productivity_rating}")
+                    continue
+        
+        # Calculate final productivity score (weighted average)
+        productivity_score = None
+        if total_rated_duration > 0:
+            productivity_score = total_weighted_score / total_rated_duration
         
         # Build timeline data for API
         timeline_data = []
@@ -197,7 +227,9 @@ class SplitAggregateUpdateService:
             'category_durations': dict(category_durations),
             'session_count': session_count,
             'break_count': break_count,
-            'timeline_data': timeline_data
+            'timeline_data': timeline_data,
+            'productivity_score': productivity_score,
+            'productivity_sessions_count': sessions_with_ratings
         }
     
     @staticmethod

@@ -58,7 +58,7 @@ export default function MultiChartContainerV2({
   const activeChartData = activeChart?.getData(dashboardData);
   
   // Dynamic height based on whether chart shows legend
-  const FIXED_CHART_HEIGHT = 200;
+  const FIXED_CHART_HEIGHT = 210;
   const LEGEND_HEIGHT = 80; // Approximate height of legend space
   
   // Calculate if current chart should show legend

@@ -77,6 +77,16 @@ class DailyInsights(APIView):
             daily_aggregate = DailyAggregate.objects.get(user=user, date=date)
             print(f"Found DailyAggregate for {date}")
             
+            # Calculate all-time average productivity score
+            all_time_avg_productivity = None
+            historical_aggregates = DailyAggregate.objects.filter(
+                user=user,
+                productivity_score__isnull=False
+            ).values_list('productivity_score', flat=True)
+            
+            if historical_aggregates:
+                all_time_avg_productivity = sum(historical_aggregates) / len(historical_aggregates)
+            
             # Use precomputed data from new model
             response_data = {
                 'aggregate': {
@@ -84,10 +94,13 @@ class DailyInsights(APIView):
                     'category_durations': daily_aggregate.category_durations,
                     'session_count': daily_aggregate.session_count,
                     'break_count': daily_aggregate.break_count,
-                    'is_final': daily_aggregate.is_final
+                    'is_final': daily_aggregate.is_final,
+                    'productivity_score': daily_aggregate.productivity_score,
+                    'productivity_sessions_count': daily_aggregate.productivity_sessions_count
                 },
                 'timeline_data': daily_aggregate.timeline_data,  # Precomputed!
                 'category_metadata': category_data,
+                'all_time_avg_productivity': all_time_avg_productivity
             }
             
         except DailyAggregate.DoesNotExist:
@@ -142,10 +155,21 @@ class DailyInsights(APIView):
                     is_final=False
                 )
             
+            # Calculate all-time average for fallback case too
+            all_time_avg_productivity = None
+            historical_aggregates = DailyAggregate.objects.filter(
+                user=user,
+                productivity_score__isnull=False
+            ).values_list('productivity_score', flat=True)
+            
+            if historical_aggregates:
+                all_time_avg_productivity = sum(historical_aggregates) / len(historical_aggregates)
+            
             response_data = {
                 'aggregate': DailyAggregateSerializer(daily_aggregate).data,
                 'timeline_data': timeline_data,
                 'category_metadata': category_data,
+                'all_time_avg_productivity': all_time_avg_productivity
             }
 
         return Response(response_data, status=status.HTTP_200_OK)

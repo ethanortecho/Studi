@@ -3,6 +3,7 @@ import { ScrollView, View, Text } from 'react-native';
 import { CategoryMetadata, TimelineSession } from '@/types/api';
 import DashboardKPIs from '@/components/analytics/DashboardKPIs';
 import MultiChartContainerV2 from '@/components/analytics/MultiChartContainerV2';
+import ProductivityContainer from '@/components/analytics/productivity/ProductivityContainer';
 import { DashboardData } from '@/types/charts';
 
 interface DailyDashboardProps {
@@ -16,6 +17,8 @@ interface DailyDashboardProps {
   rawData?: any;
   loading: boolean;
   isEmpty?: boolean;
+  productivityScore?: number | null;
+  allTimeAvgProductivity?: number | null;
 }
 
 export default function DailyDashboard({
@@ -28,7 +31,9 @@ export default function DailyDashboard({
   timelineData,
   rawData,
   loading,
-  isEmpty
+  isEmpty,
+  productivityScore,
+  allTimeAvgProductivity
 }: DailyDashboardProps) {
   // Prepare dashboard data in the normalized format
   const dashboardData: DashboardData = {
@@ -66,8 +71,16 @@ export default function DailyDashboard({
         />
       </View>
       
-
-        
+      {/* Productivity Gauge Container */}
+      {!isEmpty && (
+        <View className="mb-4">
+          <ProductivityContainer 
+            productivityScore={productivityScore ?? null}
+            allTimeAverage={allTimeAvgProductivity ?? null}
+            loading={loading}
+          />
+        </View>
+      )}
       
     </ScrollView>
   );

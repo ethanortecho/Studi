@@ -128,17 +128,17 @@ const WeeklySessionTimelineInner: React.FC<Props> = ({ sessionTimes, isEmpty = f
   const { processedDays, timeWindow } = processedData;
   
   const { width: screenWidth } = Dimensions.get('window');
-  const containerPadding = 80;
+  const containerPadding = 60;
   const labelColumnWidth = 60;
   const availableWidth = screenWidth - containerPadding - labelColumnWidth;
-  const timelineWidth = Math.min(availableWidth, 250);
+  const timelineWidth = Math.min(availableWidth, 220);
   
   return (
-    <View className="px-6 pb-4">
+    <View className="px-0 pb-10 pt-20">
       {/* Global header axis */}
       <View
         style={{
-          marginBottom: 24,
+          marginBottom: 12,
           marginLeft: labelColumnWidth,
         }}
       >

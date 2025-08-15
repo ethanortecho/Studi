@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView, Dimensions } from 'react-native';
 import { formatDurationFromMinutes } from '@/utils/timeFormatting';
 
 /**
@@ -75,7 +75,7 @@ interface ProcessedSession {
 export default function SessionBarchart({
   timelineData,
   categoryMetadata,
-  width = 320,
+  width,
   rightPadding = 16,
   isEmpty = false,
 }: SessionBarchartProps) {
@@ -83,6 +83,10 @@ export default function SessionBarchart({
   if (isEmpty) {
     return null;
   }
+
+  // Calculate responsive width
+  const screenWidth = Dimensions.get('window').width;
+  const responsiveWidth = width || Math.max(280, Math.min(screenWidth - 80, 360));
 
   // Debug logs removed
 
@@ -235,7 +239,7 @@ export default function SessionBarchart({
   return (
     <View
       className="self-start pl-10"
-      style={{ width, alignSelf: 'flex-start' }}
+      style={{ width: responsiveWidth, alignSelf: 'flex-start' }}
     >
 
       <ScrollView

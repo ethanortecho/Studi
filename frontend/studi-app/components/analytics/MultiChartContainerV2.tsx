@@ -57,8 +57,18 @@ export default function MultiChartContainerV2({
   // Get chart data for active chart
   const activeChartData = activeChart?.getData(dashboardData);
   
-  // Fixed height for consistent container size across all chart types
-  const FIXED_CHART_HEIGHT = 175;
+  // Dynamic height based on whether chart shows legend
+  const FIXED_CHART_HEIGHT = 200;
+  const LEGEND_HEIGHT = 80; // Approximate height of legend space
+  
+  // Calculate if current chart should show legend
+  const shouldShowLegend = showLegend && activeChart && (
+    (dashboardData.timeframe === 'daily' && ['subjects', 'sessions', 'map'].includes(activeChart.id)) ||
+    (dashboardData.timeframe !== 'daily' && ['subjects', 'trends'].includes(activeChart.id))
+  );
+  
+  // Use larger height for charts without legends (like map in weekly/monthly)
+  const chartHeight = shouldShowLegend ? FIXED_CHART_HEIGHT : FIXED_CHART_HEIGHT + LEGEND_HEIGHT;
 
   // Calculate page width for chart container
   const PAGE_WIDTH = Dimensions.get('window').width - 32; // Account for margins
@@ -75,22 +85,19 @@ export default function MultiChartContainerV2({
       {/* Active Chart Display */}
       <View 
         className="items-center justify-center" 
-        style={{ height: FIXED_CHART_HEIGHT, width: PAGE_WIDTH }}
+        style={{ height: chartHeight, width: PAGE_WIDTH }}
       >
         {activeChart && activeChart.component && activeChartData && (
           <activeChart.component 
             data={activeChartData} 
             width={PAGE_WIDTH - 40} 
-            height={FIXED_CHART_HEIGHT}
+            height={chartHeight}
           />
         )}
       </View>
 
       {/* Legend - show for charts with category-specific data based on timeframe */}
-      {showLegend && activeChart && (
-        (dashboardData.timeframe === 'daily' && ['subjects', 'sessions', 'map'].includes(activeChart.id)) ||
-        (dashboardData.timeframe !== 'daily' && ['subjects', 'trends'].includes(activeChart.id))
-      ) && (
+      {shouldShowLegend && (
         <View className="items-center justify-center pt-6 pb-6 px-4">
           <Legend 
             category_durations={dashboardData.categoryDurations} 

@@ -68,8 +68,8 @@ const MonthlyHeatmapInner: React.FC<Props> = ({
     const { width: screenWidth } = Dimensions.get('window');
     const availableWidth = screenWidth - containerPadding - weekdayLabelWidth;
     const cellSize = Math.floor(availableWidth / weeksNeeded);
-    const maxCellSize = 40;
-    const minCellSize = 20;
+    const maxCellSize = 30;
+    const minCellSize = 15;
     return Math.max(minCellSize, Math.min(cellSize, maxCellSize));
   }, [weeksNeeded]);
 
@@ -144,6 +144,34 @@ const MonthlyHeatmapInner: React.FC<Props> = ({
     <View className="p-4">
       {/* Calendar Grid */}
       {renderCalendarGrid()}
+      
+      {/* Intensity Legend */}
+      <View className="flex-row items-center justify-center mt-4 gap-2">
+        <Text className="text-xs text-secondaryText font-medium">Less</Text>
+        {[0, 0.75, 1.5, 2.25, 3].map((hours, index) => {
+          const legendCellSize = Math.min(finalCellSize * 0.4, 12);
+          return (
+            <View
+              key={index}
+              className="rounded-sm border border-gray-700"
+              style={{ 
+                width: legendCellSize, 
+                height: legendCellSize,
+                backgroundColor: getColorIntensity(hours) 
+              }}
+              accessibilityLabel={`${hours} hours intensity level`}
+            />
+          );
+        })}
+        <Text className="text-xs text-secondaryText font-medium">More</Text>
+      </View>
+      
+      {/* Study Hours Summary */}
+      <View className="flex-row items-center justify-center mt-2">
+        <Text className="text-xs text-secondaryText">
+          Study intensity: 0-3+ hours per day
+        </Text>
+      </View>
     </View>
   );
 };

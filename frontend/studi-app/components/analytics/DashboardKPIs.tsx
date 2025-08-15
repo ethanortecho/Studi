@@ -24,26 +24,26 @@ export default function DashboardKPIs({
 
   return (
     <View className="flex-row justify-between items-center mb-6 px-6">
-      {/* Total Study Time */}
-      {totalTime && (
+      {/* Flow Score */}
+      {flowScore !== undefined && (
         <View className="flex-1">
-          <View className="flex-row items-baseline">
-            <Text className="text-primaryText text-3xl font-bold">{totalTime.hours}</Text>
-            <Text className="text-primaryText text-3xl font-normal">h</Text>
-            <Text className="text-primaryText text-3xl font-bold ml-1">{totalTime.minutes}</Text>
-            <Text className="text-primaryText text-3xl font-normal">m</Text>
-          </View>
-          <Text className="text-secondaryText text-base mt-1">Study Time</Text>
+          <Text className="text-primaryText text-2xl font-bold text-center">
+            {flowScore}/{flowScoreTotal}
+          </Text>
+          <Text className="text-secondaryText text-base mt-1 text-center">Flow score</Text>
         </View>
       )}
 
-      {/* Flow Score */}
-      {flowScore !== undefined && (
+      {/* Total Study Time */}
+      {totalTime && (
         <View className="flex-1 items-center">
-          <Text className="text-accent text-3xl font-bold">
-            {flowScore}/{flowScoreTotal}
-          </Text>
-          <Text className="text-secondaryText text-base mt-1">Flow score</Text>
+          <View className="flex-row items-baseline">
+            <Text className="text-primaryText text-2xl font-bold">{totalTime.hours}</Text>
+            <Text className="text-primaryText text-2xl font-bold">h</Text>
+            <Text className="text-primaryText text-2xl font-bold ml-1">{totalTime.minutes}</Text>
+            <Text className="text-primaryText text-2xl font-bold">m</Text>
+          </View>
+          <Text className="text-secondaryText text-base mt-1">Study Time</Text>
         </View>
       )}
 

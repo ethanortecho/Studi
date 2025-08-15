@@ -56,11 +56,12 @@ const DailyHourBarsInner: React.FC<Props> = ({
     if (!timelineData || timelineData.length === 0) return base;
 
     timelineData.forEach((session) => {
-      const breakdowns = session.breakdowns || session.category_blocks || [];
+      const breakdowns = session.breakdowns || [];
       breakdowns.forEach((bd) => {
-        const categoryName = bd.category;
-        const meta = categoryNameToMeta[categoryName];
-        if (meta?.name === 'Break') return;
+        const categoryId = bd.category.toString();
+        const categoryName = categoryMetadata[categoryId]?.name;
+        if (!categoryName || categoryName === 'Break') return;
+        const meta = categoryMetadata[categoryId];
 
         const startComponents = getLocalDateComponents(bd.start_time, userTimezone);
         const endComponents = getLocalDateComponents(bd.end_time, userTimezone);

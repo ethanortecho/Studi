@@ -58,8 +58,8 @@ export const DailyMapChart: React.FC<ChartComponentProps<DailyMapChartData>> = (
       timelineData={data.timelineData}
       categoryMetadata={data.categoryMetadata}
       categoryDurations={data.categoryDurations}
-      width={300}
-      height={100}
+      width={280}
+      height={120} // Taller for 60m scale
       isEmpty={data.isEmpty}
     />
   );
@@ -95,16 +95,16 @@ export const MonthlyMapChart: React.FC<ChartComponentProps<MonthlyMapChartData>>
 /**
  * Trends Chart Wrapper (Weekly/Monthly Bar Chart)
  */
-export const TrendsChart: React.FC<ChartComponentProps<TrendsChartData>> = ({ data, width = 320, height = 150 }) => {
+export const TrendsChart: React.FC<ChartComponentProps<TrendsChartData>> = ({ data, width = 320, height = 100 }) => {
   const isWeekly = data.timeframe === 'weekly';
   return (
-    <View className="items-center justify-end" style={{ height }}>
+    <View className="items-center justify-end" style={{ height: 100 }}>
       <WeeklyBarchart 
         data={isWeekly ? data.weeklyChartData : data.monthlyChartData}
         categoryMetadata={data.categoryMetadata}
         timeframe={isWeekly ? 'weekly' : 'monthly'}
         width={width}
-        height={height}
+        height={100} // Shorter like Apple's design
         isEmpty={data.isEmpty}
       />
     </View>

@@ -13,7 +13,8 @@ interface Props {
   isEmpty?: boolean;
 }
 
-const GRID_COLOUR = '#3A3D4D';
+const GRID_COLOUR = '#E5E7EB';
+const VERTICAL_GRID_COLOUR = '#E5E7EB';
 const BAR_GAP = 2;
 
 /**
@@ -122,56 +123,47 @@ const DailyHourBarsInner: React.FC<Props> = ({
     }));
   }, [timelineData, categoryMetadata, userTimezone]);
 
-  const DEFAULT_BAR_WIDTH = 10;
+  const DEFAULT_BAR_WIDTH = 8; // Slimmer bars like Apple
   const computedWidth = width ?? DEFAULT_BAR_WIDTH * 24 + BAR_GAP * 23;
   const barWidth = (computedWidth - BAR_GAP * 23) / 24;
 
-  const hourLabels = ['12am', '6am', '12pm', '6pm', '12am'];
-  const hourLabelPositions = [0, 6, 12, 18, 24];
+  // Updated to match Apple's style - no 12am at the end
+  const hourLabels = ['12 AM', '6 AM', '12 PM', '6 PM'];
+  const hourLabelPositions = [0, 6, 12, 18];
 
   return (
-    <View className="px-6 pb-4">
-      {/* Chart area */}
-      <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+    <View className="pb-4">
+      {/* Chart area with Y-axis labels */}
+      <View style={{ flexDirection: 'row' }}>
+        {/* Y-axis labels */}
+        <View style={{ width: 40, height, justifyContent: 'space-between', marginRight: 8 }}>
+          <Text style={{ fontSize: 10, color: '#6B7280', textAlign: 'right' }}>60m</Text>
+          <Text style={{ fontSize: 10, color: '#6B7280', textAlign: 'right' }}>30m</Text>
+          <Text style={{ fontSize: 10, color: '#6B7280', textAlign: 'right' }}>0</Text>
+        </View>
+        
+        {/* Chart with bars and grid */}
         <View style={{ width: computedWidth, position: 'relative' }}>
-          {/* Horizontal grid lines */}
-          <View
-            style={{
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              bottom: 0,
-              height: 1,
-              backgroundColor: GRID_COLOUR,
-              opacity: 0.6,
-            }}
-          />
-          <View
-            style={{
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              bottom: height / 2,
-              height: 1,
-              backgroundColor: GRID_COLOUR,
-              opacity: 0.6,
-            }}
-          />
-          <View
-            style={{
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              top: 0,
-              height: 1,
-              backgroundColor: GRID_COLOUR,
-              opacity: 0.6,
-            }}
-          />
+          {/* Horizontal grid lines - 5 lines total like Apple */}
+          {[0, 0.25, 0.5, 0.75, 1].map((position, index) => (
+            <View
+              key={`h-grid-${index}`}
+              style={{
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                bottom: height * position,
+                height: 1,
+                backgroundColor: GRID_COLOUR,
+                opacity: 0.3,
+              }}
+            />
+          ))}
 
-          {/* Vertical grid lines at time markers */}
+          {/* Vertical dotted lines at time markers - more subtle */}
           {hourLabelPositions.map((hourPosition, index) => {
             const xPosition = (hourPosition / 24) * computedWidth;
+            // Create dotted effect with multiple small views
             return (
               <View
                 key={`vertical-grid-${index}`}
@@ -181,11 +173,20 @@ const DailyHourBarsInner: React.FC<Props> = ({
                   top: 0,
                   bottom: 0,
                   width: 1,
-                  backgroundColor: GRID_COLOUR,
-                  opacity: 0.4,
-                  borderStyle: 'dashed',
                 }}
-              />
+              >
+                {Array.from({ length: 10 }).map((_, dotIndex) => (
+                  <View
+                    key={`dot-${dotIndex}`}
+                    style={{
+                      height: height / 20,
+                      backgroundColor: VERTICAL_GRID_COLOUR,
+                      opacity: 0.2,
+                      marginBottom: height / 20,
+                    }}
+                  />
+                ))}
+              </View>
             );
           })}
 
@@ -210,8 +211,8 @@ const DailyHourBarsInner: React.FC<Props> = ({
                     justifyContent: 'flex-end',
                     marginRight: idx === 23 ? 0 : BAR_GAP,
                     overflow: 'hidden',
-                    borderTopLeftRadius: 4,
-                    borderTopRightRadius: 4,
+                    borderTopLeftRadius: 2,
+                    borderTopRightRadius: 2,
                   }}
                 >
                   {segments.map((seg) => {
@@ -235,21 +236,29 @@ const DailyHourBarsInner: React.FC<Props> = ({
           {/* Hour tick labels */}
           <View
             style={{
-              flexDirection: 'row',
               position: 'absolute',
-              bottom: -18,
+              bottom: -20,
               width: '100%',
-              justifyContent: 'space-between',
             }}
           >
-            {hourLabels.map((label, index) => (
-              <Text
-                key={`${label}-${index}`}
-                style={{ fontSize: 10, color: '#6C6C6C' }}
-              >
-                {label}
-              </Text>
-            ))}
+            {hourLabels.map((label, index) => {
+              const xPosition = (hourLabelPositions[index] / 24) * computedWidth;
+              return (
+                <Text
+                  key={`${label}-${index}`}
+                  style={{ 
+                    fontSize: 10, 
+                    color: '#6B7280',
+                    position: 'absolute',
+                    left: xPosition - 20, // Center the label
+                    width: 40,
+                    textAlign: 'center'
+                  }}
+                >
+                  {label}
+                </Text>
+              );
+            })}
           </View>
         </View>
       </View>

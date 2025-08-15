@@ -4,15 +4,15 @@ import { CartesianChart, StackedBar } from 'victory-native';
 import { ThemedText } from '@/components/ThemedText';
 import { useFont } from '@shopify/react-native-skia';
 
-// Map short day codes to full day names
+// Map short day codes to labels
 const DAY_MAP: Record<string, string> = {
-  'MO': 'Mo',
-  'TU': 'Tu',
-  'WE': 'We',
-  'TH': 'Th',
-  'FR': 'Fr',
-  'SA': 'Sa',
-  'SU': 'Su'
+  'MO': 'Mo',  // Monday
+  'TU': 'Tu',  // Tuesday
+  'WE': 'We',  // Wednesday
+  'TH': 'Th',  // Thursday
+  'FR': 'Fr',  // Friday
+  'SA': 'Sa',  // Saturday
+  'SU': 'Su'   // Sunday
 };
 
 // Map week numbers to display names
@@ -55,7 +55,7 @@ const WeeklyBarchart: React.FC<WeeklyBarchartProps> = ({
   categoryMetadata,
   timeframe = 'weekly',
   width = 500,
-  height = 150,
+  height = 100, // Shorter like Apple's design
   isEmpty = false
 }) => {
   // Don't render if no data available
@@ -225,22 +225,23 @@ const WeeklyBarchart: React.FC<WeeklyBarchartProps> = ({
           data={currentData}
           xKey="period"
           yKeys={currentYKeys}
-          domain={{ y: [0, Math.ceil(maxTotal * 1.2)] }}
-          domainPadding={{ left: timeframe === 'weekly' ? 15 : 45, right: timeframe === 'weekly' ? 15 : 45 }}
-          padding={{ left: 0, top: 0, right: 0, bottom: 0 }}
+          domain={{ y: [0, Math.ceil(maxTotal * 1.1)] }} // Less padding at top
+          domainPadding={{ left: timeframe === 'weekly' ? 20 : 50, right: timeframe === 'weekly' ? 20 : 50 }}
+          padding={{ left: 0, top: 5, right: 0, bottom: 0 }}
           xAxis={{
             font: font,
             tickCount: timeframe === 'weekly' ? 7 : 4,
             lineColor: 'transparent',
-            labelColor: '#71717a',
-            formatXLabel: (value) => String(value)
+            labelColor: '#6B7280',
+            formatXLabel: (value) => String(value),
+            labelOffset: 2,
           }}
           yAxis={[{
             font: font,
-            tickCount: 4,
-            lineColor: '#d4d4d8',
-            labelColor: '#71717a',
-            formatYLabel: (value) => `${value}h`
+            tickCount: 3, // Fewer ticks for cleaner look
+            lineColor: '#E5E7EB',
+            labelColor: '#6B7280',
+            formatYLabel: (value) => value > 0 ? `${value}h` : '0'
           }]}
         >
           {({ points, chartBounds }) => {
@@ -251,12 +252,12 @@ const WeeklyBarchart: React.FC<WeeklyBarchartProps> = ({
                 points={pointsArray}
                 colors={colors}
                 animate={{ type: "timing", duration: 300 }}
-                innerPadding={ timeframe === 'weekly' ? 0.4 : 0.5}
+                innerPadding={ timeframe === 'weekly' ? 0.5 : 0.65} // Thinner bars
                 barOptions={({ isBottom, isTop }) => ({
                   roundedCorners: isTop
-                    ? { topLeft: 4, topRight: 4 }
+                    ? { topLeft: 3, topRight: 3 } // Smaller radius
                     : isBottom
-                      ? { bottomLeft: 4, bottomRight: 4 }
+                      ? { bottomLeft: 0, bottomRight: 0 }
                       : undefined,
                 })}
               />

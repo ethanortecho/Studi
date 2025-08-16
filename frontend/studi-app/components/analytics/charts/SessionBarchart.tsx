@@ -241,8 +241,7 @@ export default function SessionBarchart({
 
   return (
     <View
-      className="self-start pl-10"
-      style={{ width: responsiveWidth, alignSelf: 'flex-start' }}
+      style={{ width: responsiveWidth }}
     >
 
       <ScrollView

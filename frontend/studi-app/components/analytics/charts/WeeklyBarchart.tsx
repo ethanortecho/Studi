@@ -255,7 +255,7 @@ const WeeklyBarchart: React.FC<WeeklyBarchartProps> = ({
         data={currentData}
         xKey="period"
         yKeys={currentYKeys}
-        domain={{ y: [0, Math.ceil(maxTotal)] }} // Exact ceiling, no extra padding
+        domain={{ y: [0, Math.ceil(maxTotal * 1.2)] }} // Add 20% padding to accommodate all ticks
         domainPadding={{ left: timeframe === 'weekly' ? 20 : 50, right: timeframe === 'weekly' ? 20 : 50 }}
         padding={{ left: 0, top: 5, right: 0, bottom: 0 }}
         xAxis={{
@@ -268,7 +268,7 @@ const WeeklyBarchart: React.FC<WeeklyBarchartProps> = ({
         }}
         yAxis={[{
           font: font,
-          tickCount: Math.ceil(maxTotal) + 1, // Dynamic tick count based on max value
+          tickCount: 4, // Fixed tick count for consistent gridlines
           lineColor: '#E5E7EB',
           labelColor: '#6B7280',
           formatYLabel: (value) => value > 0 ? `${value}h` : '0'

@@ -27,8 +27,8 @@ const DailyHourBarsInner: React.FC<Props> = ({
   isEmpty = false,
 }) => {
   const { userTimezone } = useContext(StudySessionContext);
-  // Hardcode the light blue color that matches the border
-  const gridColor = '#D4DCF0';
+  // Use surface color for grid lines
+  const gridColor = '#262748';
   
   if (isEmpty) {
     return null;
@@ -155,7 +155,7 @@ const DailyHourBarsInner: React.FC<Props> = ({
                 bottom: height * position,
                 height: 1,
                 backgroundColor: gridColor,
-                opacity: 0.5,
+                opacity: 1,
               }}
             />
           ))}
@@ -181,7 +181,7 @@ const DailyHourBarsInner: React.FC<Props> = ({
                     style={{
                       height: height / 20,
                       backgroundColor: gridColor,
-                      opacity: 0.3,
+                      opacity: 0.8,
                       marginBottom: height / 20,
                     }}
                   />

@@ -42,7 +42,7 @@ interface Props {
 const DEFAULT_TIMELINE_WIDTH = 256;
 const DEFAULT_BAR_HEIGHT = 8;
 
-const TIMELINE_COLOR = '#3A3D4D';
+const TIMELINE_COLOR = '#2D2E6F';
 
 const DayTimeline: React.FC<Props> = ({
   dayLabel,

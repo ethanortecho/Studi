@@ -151,8 +151,8 @@ const WeeklySessionTimelineInner: React.FC<Props> = ({ sessionTimes, isEmpty = f
               right: 0,
               top: '50%',
               height: 1,
-              backgroundColor: '#3A3D4D',
-              opacity: 0.6,
+              backgroundColor: '#2D2E6F',
+              opacity: 1,
             }}
           />
 

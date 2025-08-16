@@ -269,7 +269,8 @@ const WeeklyBarchart: React.FC<WeeklyBarchartProps> = ({
         yAxis={[{
           font: font,
           tickCount: 4, // Fixed tick count for consistent gridlines
-          lineColor: '#E5E7EB',
+          lineColor: '#2D2E6F',
+          lineWidth: 1, // Ensure lines are visible
           labelColor: '#6B7280',
           formatYLabel: (value) => value > 0 ? `${value}h` : '0'
         }]}

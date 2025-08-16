@@ -267,7 +267,6 @@ export default function SessionBarchart({
                   {/* Session Bar Container */}
                   <View
                     className="flex-1 ml-2"
-                    style={{ paddingRight: axisPadding }}
                   >
                     <View 
                       className="h-5 flex-row items-center"

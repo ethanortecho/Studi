@@ -17,7 +17,7 @@ export default function ProductivityContainer({
   return (
     <DashboardCard className="bg-background border border-accent rounded-[35px] mx-4 p-6">
       {/* Header */}
-      <View className="mb-4">
+      <View className="mb-8">
         <Text className="text-lg font-semibold text-primaryText">Your Focus Flow</Text>
         <Text className="text-sm text-secondaryText mt-1">How productive were your sessions today?</Text>
       </View>
@@ -25,7 +25,7 @@ export default function ProductivityContainer({
       {/* Gauge Chart */}
       <View className="items-center">
         {loading ? (
-          <View className="h-[200px] items-center justify-center">
+          <View className="h-[180px] items-center justify-center">
             <Text className="text-secondaryText">Loading...</Text>
           </View>
         ) : (
@@ -39,15 +39,15 @@ export default function ProductivityContainer({
       
       {/* Legend (if we have data) */}
       {productivityScore !== null && !loading && (
-        <View className="mt-4 flex-row justify-center items-center space-x-4">
+        <View className=" flex-row justify-center items-center gap-6">
           <View className="flex-row items-center">
-            <View className="w-3 h-3 rounded-full bg-purple-600 mr-2" />
-            <Text className="text-xs text-secondaryText">Today's Score</Text>
+            <View className="w-3 h-3 rounded-sm bg-purple-600 mr-2" />
+            <Text className="text-sm font-medium text-primaryText">Today's Score</Text>
           </View>
           {allTimeAverage !== null && (
             <View className="flex-row items-center">
-              <View className="w-3 h-3 rounded-full bg-gray-700 mr-2" />
-              <Text className="text-xs text-secondaryText">Your Average</Text>
+              <View className="w-3 h-3 rounded-sm bg-gray-700 mr-2" />
+              <Text className="text-sm font-medium text-primaryText">Your Average</Text>
             </View>
           )}
         </View>

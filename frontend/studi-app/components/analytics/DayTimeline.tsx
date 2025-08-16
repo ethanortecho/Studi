@@ -138,11 +138,10 @@ const styles = StyleSheet.create({
   rowContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20, // space between rows (tighten density)
+    marginBottom: 16, // space between rows (tighten density)
   },
   dayLabel: {
-    width: 48, // fixed column width (~"Mon" text width + padding)
-    marginRight: 12,
+    width: 56, // fixed column width (~"Mon" text width + padding)
     fontSize: 10,
     fontWeight: '400',
     color: '#FFFFFF',

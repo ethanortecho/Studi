@@ -16,7 +16,7 @@ export default function DashboardKPIs({
   flowScoreTotal = 10
 }: DashboardKPIsProps) {
   // Calculate the circle progress for goal percentage
-  const radius = 30;
+  const radius = 32;  // Scaled down from 35
   const strokeWidth = 5;
   const circumference = 2 * Math.PI * radius;
   const progressPercentage = percentGoal ? Math.min(Math.max(percentGoal, 0), 100) / 100 : 0;
@@ -49,15 +49,14 @@ export default function DashboardKPIs({
 
       {/* Goal Progress */}
       {percentGoal !== null && percentGoal !== undefined && (
-        <View className="flex-1 items-end">
+        <View className="flex-1">
           <View className="items-center">
-            <Text className="text-secondaryText text-base mb-1">Goal</Text>
             <View className="relative">
-              <Svg width={70} height={70}>
+              <Svg width={74} height={74}>
                 {/* Background circle */}
                 <Circle
-                  cx={35}
-                  cy={35}
+                  cx={37}
+                  cy={37}
                   r={radius}
                   stroke="#3A3D4D"
                   strokeWidth={strokeWidth}
@@ -65,8 +64,8 @@ export default function DashboardKPIs({
                 />
                 {/* Progress circle */}
                 <Circle
-                  cx={35}
-                  cy={35}
+                  cx={37}
+                  cy={37}
                   r={radius}
                   stroke="#5A4FCF"
                   strokeWidth={strokeWidth}
@@ -74,14 +73,15 @@ export default function DashboardKPIs({
                   strokeDasharray={circumference}
                   strokeDashoffset={strokeDashoffset}
                   strokeLinecap="round"
-                  transform={`rotate(-90 35 35)`}
+                  transform={`rotate(-90 37 37)`}
                 />
               </Svg>
-              {/* Percentage text overlay - positioned outside SVG */}
+              {/* Percentage and Goal text overlay - positioned outside SVG */}
               <View className="absolute inset-0 justify-center items-center">
-                <Text className="text-primaryText text-lg font-bold">
+                <Text className="text-primaryText text-base font-bold">
                   {Math.round(percentGoal)}%
                 </Text>
+                <Text className="text-secondaryText" style={{ fontSize: 11 }}>Goal</Text>
               </View>
             </View>
           </View>

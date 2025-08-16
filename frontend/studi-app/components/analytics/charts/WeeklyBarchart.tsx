@@ -1,8 +1,14 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { View, Dimensions } from 'react-native';
 import { CartesianChart, StackedBar } from 'victory-native';
 import { ThemedText } from '@/components/ThemedText';
 import { useFont } from '@shopify/react-native-skia';
+import Animated, { 
+  useSharedValue, 
+  useAnimatedStyle, 
+  withTiming, 
+  Easing 
+} from 'react-native-reanimated';
 
 // Map short day codes to labels
 const DAY_MAP: Record<string, string> = {
@@ -63,6 +69,30 @@ const WeeklyBarchart: React.FC<WeeklyBarchartProps> = ({
     return null;
   }
   const font = useFont(require('@/assets/fonts/Poppins-Regular.ttf'), 12);
+
+  // Animation values
+  const opacity = useSharedValue(0);
+  const scale = useSharedValue(0.95);
+
+  // Trigger animation on mount
+  useEffect(() => {
+    opacity.value = withTiming(1, {
+      duration: 250,
+      easing: Easing.out(Easing.cubic),
+    });
+    scale.value = withTiming(1, {
+      duration: 250,
+      easing: Easing.out(Easing.cubic),
+    });
+  }, []);
+
+  // Animated styles
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: opacity.value,
+      transform: [{ scale: scale.value }],
+    };
+  });
 
   const { chartData, simpleChartData, categories, colors, maxTotal } = useMemo(() => {
     if (!data || !categoryMetadata) {
@@ -220,51 +250,51 @@ const WeeklyBarchart: React.FC<WeeklyBarchartProps> = ({
   const currentYKeys = categories;
 
   return (
-      <View style={{ height: height, width: 300 }}>
-        <CartesianChart
-          data={currentData}
-          xKey="period"
-          yKeys={currentYKeys}
-          domain={{ y: [0, Math.ceil(maxTotal * 1.1)] }} // Less padding at top
-          domainPadding={{ left: timeframe === 'weekly' ? 20 : 50, right: timeframe === 'weekly' ? 20 : 50 }}
-          padding={{ left: 0, top: 5, right: 0, bottom: 0 }}
-          xAxis={{
-            font: font,
-            tickCount: timeframe === 'weekly' ? 7 : 4,
-            lineColor: 'transparent',
-            labelColor: '#6B7280',
-            formatXLabel: (value) => String(value),
-            labelOffset: 2,
-          }}
-          yAxis={[{
-            font: font,
-            tickCount: 3, // Fewer ticks for cleaner look
-            lineColor: '#E5E7EB',
-            labelColor: '#6B7280',
-            formatYLabel: (value) => value > 0 ? `${value}h` : '0'
-          }]}
-        >
-          {({ points, chartBounds }) => {
-            const pointsArray = categories.map(category => points[category]);
-            return (
-              <StackedBar
-                chartBounds={chartBounds}
-                points={pointsArray}
-                colors={colors}
-                animate={{ type: "timing", duration: 300 }}
-                innerPadding={ timeframe === 'weekly' ? 0.5 : 0.65} // Thinner bars
-                barOptions={({ isBottom, isTop }) => ({
-                  roundedCorners: isTop
-                    ? { topLeft: 3, topRight: 3 } // Smaller radius
-                    : isBottom
-                      ? { bottomLeft: 0, bottomRight: 0 }
-                      : undefined,
-                })}
-              />
-            );
-          }}
-        </CartesianChart>
-      </View>
+    <Animated.View style={[{ height: height, width: 300 }, animatedStyle]}>
+      <CartesianChart
+        data={currentData}
+        xKey="period"
+        yKeys={currentYKeys}
+        domain={{ y: [0, Math.ceil(maxTotal)] }} // Exact ceiling, no extra padding
+        domainPadding={{ left: timeframe === 'weekly' ? 20 : 50, right: timeframe === 'weekly' ? 20 : 50 }}
+        padding={{ left: 0, top: 5, right: 0, bottom: 0 }}
+        xAxis={{
+          font: font,
+          tickCount: timeframe === 'weekly' ? 7 : 4,
+          lineColor: 'transparent',
+          labelColor: '#6B7280',
+          formatXLabel: (value) => String(value),
+          labelOffset: 2,
+        }}
+        yAxis={[{
+          font: font,
+          tickCount: Math.ceil(maxTotal) + 1, // Dynamic tick count based on max value
+          lineColor: '#E5E7EB',
+          labelColor: '#6B7280',
+          formatYLabel: (value) => value > 0 ? `${value}h` : '0'
+        }]}
+      >
+        {({ points, chartBounds }) => {
+          const pointsArray = categories.map(category => points[category]);
+          return (
+            <StackedBar
+              chartBounds={chartBounds}
+              points={pointsArray}
+              colors={colors}
+              animate={{ type: "timing", duration: 300 }}
+              innerPadding={ timeframe === 'weekly' ? 0.5 : 0.65} // Thinner bars
+              barOptions={({ isBottom, isTop }) => ({
+                roundedCorners: isTop
+                  ? { topLeft: 3, topRight: 3 } // Smaller radius
+                  : isBottom
+                    ? { bottomLeft: 0, bottomRight: 0 }
+                    : undefined,
+              })}
+            />
+          );
+        }}
+      </CartesianChart>
+    </Animated.View>
   );
 };
 

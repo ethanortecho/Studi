@@ -13,9 +13,7 @@ interface Props {
   isEmpty?: boolean;
 }
 
-const GRID_COLOUR = '#E5E7EB';
-const VERTICAL_GRID_COLOUR = '#E5E7EB';
-const BAR_GAP = 2;
+const BAR_GAP = 4;
 
 /**
  * DailyHourBarsInner - Inner component without DashboardCard wrapper
@@ -29,6 +27,8 @@ const DailyHourBarsInner: React.FC<Props> = ({
   isEmpty = false,
 }) => {
   const { userTimezone } = useContext(StudySessionContext);
+  // Hardcode the light blue color that matches the border
+  const gridColor = '#D4DCF0';
   
   if (isEmpty) {
     return null;
@@ -154,8 +154,8 @@ const DailyHourBarsInner: React.FC<Props> = ({
                 right: 0,
                 bottom: height * position,
                 height: 1,
-                backgroundColor: GRID_COLOUR,
-                opacity: 0.3,
+                backgroundColor: gridColor,
+                opacity: 0.5,
               }}
             />
           ))}
@@ -180,8 +180,8 @@ const DailyHourBarsInner: React.FC<Props> = ({
                     key={`dot-${dotIndex}`}
                     style={{
                       height: height / 20,
-                      backgroundColor: VERTICAL_GRID_COLOUR,
-                      opacity: 0.2,
+                      backgroundColor: gridColor,
+                      opacity: 0.3,
                       marginBottom: height / 20,
                     }}
                   />

@@ -273,7 +273,7 @@ export default function SessionBarchart({
                       style={{ 
                         width: `${Math.max(session.barWidthPercent, 2)}%`, // Minimum 2% width for visibility
                         minWidth: 10, // Ensure very short sessions are still visible
-                        borderRadius: session.segments.length > 1 ? 0 : 2, // Only round single-segment bars
+                        borderRadius: 2, // Always use consistent border radius
                         overflow: 'hidden'
                       }}
                     >
@@ -286,12 +286,8 @@ export default function SessionBarchart({
                             key={segmentIndex}
                             className={segment.categoryName === 'Break' ? 'h-3' : 'h-full'}
                             style={{
-                              width: `${segment.widthPercent}%`,
+                              flex: segment.durationMinutes, // Use flex to fill proportionally
                               backgroundColor: segment.color,
-                              borderTopLeftRadius: isFirst ? 2 : 0,
-                              borderBottomLeftRadius: isFirst ? 2 : 0,
-                              borderTopRightRadius: isLast ? 2 : 0,
-                              borderBottomRightRadius: isLast ? 2 : 0,
                             }}
                           />
                         );

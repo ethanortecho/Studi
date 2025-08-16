@@ -129,6 +129,7 @@ export default function RootLayout() {
                 <Stack.Screen name="screens/set-weekly-goal" options={{ headerShown: false }} />
                 <Stack.Screen name="screens/timer/stopwatch" options={{ headerShown: false }} />
                 <Stack.Screen name="screens/timer/countdown" options={{ headerShown: false }} />
+                <Stack.Screen name="screens/timer/pomo" options={{ headerShown: false }} />
                 <Stack.Screen name="+not-found" />
               </Stack>
             </SafeAreaView>

@@ -20,16 +20,11 @@ export default function TabLayout() {
           tabBarShowLabel: false,
           tabBarActiveTintColor: '#5D3EDA',
           tabBarInactiveTintColor: '#9BA1A6',
-          tabBarItemStyle: {
-            paddingVertical: 10,
-          },
           tabBarStyle: {
-            height: 70,
             backgroundColor: '#212030',
             borderTopWidth: 1,
             borderTopColor: '#262748',
-            paddingBottom: 20,
-            paddingTop: 10,
+            paddingTop: 20,
           },
         }}>
 

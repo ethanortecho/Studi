@@ -5,7 +5,7 @@ import { View, Text } from 'react-native';
 
 export default function InsightsScreen() {
     return (
-        <SafeAreaView className="flex-1 bg-background">
+        <SafeAreaView className="flex-1 bg-background" edges={['top']}>
           
             <DashboardTabs />
         </SafeAreaView>

@@ -129,7 +129,7 @@ export default function TimerScreen({
       <SafeAreaView className="flex-1" edges={['bottom']}>
         
         {/* Switch Subject Button at top */}
-        <View className="items-center pt-12 pb-4">
+        <View className="items-center pt-20 pb-4">
           <Pressable 
             onPress={handleFABPress}
             className="px-6 py-3 rounded-full"

@@ -47,7 +47,9 @@ export default function TimerScreen({
   
   // Check if session is already running
   const isSessionActive = sessionId !== null;
-  const currentCategory = categories.find(cat => cat.id === String(currentCategoryId));
+  const currentCategory = categories.find(cat => 
+    cat.id === String(currentCategoryId) || cat.id === currentCategoryId
+  );
   
   // Handler for first real category selection
   const handleFirstCategorySelect = async (categoryId: string | number) => {
@@ -125,9 +127,32 @@ export default function TimerScreen({
       <StatusBar backgroundColor="transparent" translucent barStyle="light-content" />
       {/* Main content stacked vertically */}
       <SafeAreaView className="flex-1" edges={['bottom']}>
+        
+        {/* Switch Subject Button at top */}
+        <View className="items-center pt-12 pb-4">
+          <Pressable 
+            onPress={handleFABPress}
+            className="px-6 py-3 rounded-full"
+            style={{ 
+              backgroundColor: 'rgba(255, 255, 255, 0.08)',
+              borderWidth: 1,
+              borderColor: 'rgba(255, 255, 255, 0.15)',
+            }}
+          >
+            <Text className="text-white/90 text-base">Switch Subject</Text>
+          </Pressable>
+        </View>
 
-        {/* Timer Display - occupies remaining space */}
-        <View className="flex-1 justify-center items-center">
+        {/* Timer Display and Category Indicator */}
+        <View className="flex-1 justify-center items-center px-6">
+          {/* Category Indicator */}
+          <View className="mb-8">
+            <Text className="text-white/60 text-lg text-center">
+              {currentCategory ? `You're studying ${currentCategory.name}` : 'Select a subject'}
+            </Text>
+          </View>
+          
+          {/* Timer Display */}
           {timerDisplayComponent}
         </View>
 
@@ -150,15 +175,6 @@ export default function TimerScreen({
           }}
           onCancel={() => setShowCancelModal(true)}
         />
-
-        {/* Category FAB with a small top margin for spacing */}
-        <View className="mt-4">
-          <FloatingCategoryFAB 
-            onPress={handleFABPress}
-            isSessionActive={isSessionActive}
-            status={status}
-          />
-        </View>
 
         {/* Category Selection Modal */}
         <CategorySelectionModal

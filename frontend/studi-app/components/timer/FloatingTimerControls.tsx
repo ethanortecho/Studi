@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Pressable, Text } from 'react-native';
+import { View } from 'react-native';
+import GlassmorphicButton from './GlassmorphicButton';
 
 interface FloatingTimerControlsProps {
   status: 'idle' | 'running' | 'paused';
@@ -8,67 +9,41 @@ interface FloatingTimerControlsProps {
   onCancel: () => void;
 }
 
-export default function FloatingTimerControls({ status, onPauseResume, onStop, onCancel }: FloatingTimerControlsProps) {
-  // Always show controls
+export default function FloatingTimerControls({ 
+  status, 
+  onPauseResume, 
+  onStop, 
+  onCancel 
+}: FloatingTimerControlsProps) {
   
   return (
-    <View className="flex-row justify-center items-end px-6 mb-14" style={{ gap: 25 }}>
-      {/* Cancel Button */}
-      <View className="items-center">
-        <Pressable 
+    <View className="flex-row justify-center items-end px-6 mb-16">
+      {/* Cancel Button - smaller and raised */}
+      <View style={{ marginBottom: 20, marginRight: 40 }}>
+        <GlassmorphicButton 
           onPress={onCancel}
-          className="h-20 w-20 bg-surface rounded-full items-center justify-center"
-          style={{ 
-            shadowColor: '#000', 
-            shadowOffset: { width: 0, height: 4 }, 
-            shadowOpacity: 0.25, 
-            shadowRadius: 8,
-            elevation: 8
-          }}
-        >
-          <Text className="text-primaryText font-bold text-xl">✕</Text>
-        </Pressable>
-        <Text className="text-primaryText text-xs mt-1">Cancel</Text>
+          icon="✕"
+          label="Cancel"
+          size="small"
+        />
       </View>
 
-      {/* Pause/Resume Button */}
-      <View className="items-center">
-        <Pressable 
-          onPress={onPauseResume}
-          className="h-20 w-20 bg-surface rounded-full items-center justify-center"
-          style={{ 
-            shadowColor: '#000', 
-            shadowOffset: { width: 0, height: 4 }, 
-            shadowOpacity: 0.25, 
-            shadowRadius: 8,
-            elevation: 8
-          }}
-        >
-          <Text className="text-primaryText font-bold text-xl">
-            {status === 'running' ? '||' : '▶'}
-          </Text>
-        </Pressable>
-        <Text className="text-primaryText text-xs mt-1">
-          {status === 'running' ? 'Pause' : status === 'paused' ? 'Resume' : 'Start'}
-        </Text>
-      </View>
+      {/* Pause/Resume Button - center large */}
+      <GlassmorphicButton 
+        onPress={onPauseResume}
+        icon={status === 'running' ? '❚❚' : '▶'}
+        label={status === 'running' ? 'Pause' : status === 'paused' ? 'Resume' : 'Start'}
+        size="large"
+      />
       
-      {/* Complete Button */}
-      <View className="items-center">
-        <Pressable 
+      {/* Complete Button - smaller and raised */}
+      <View style={{ marginBottom: 20, marginLeft: 40 }}>
+        <GlassmorphicButton 
           onPress={onStop}
-          className="h-20 w-20 bg-surface rounded-full items-center justify-center"
-          style={{ 
-            shadowColor: '#000', 
-            shadowOffset: { width: 0, height: 4 }, 
-            shadowOpacity: 0.25, 
-            shadowRadius: 8,
-            elevation: 8
-          }}
-        >
-          <Text className="text-primaryText font-bold text-xl">✓</Text>
-        </Pressable>
-        <Text className="text-primaryText text-xs mt-1">Complete</Text>
+          icon="✓"
+          label="Complete"
+          size="small"
+        />
       </View>
     </View>
   );

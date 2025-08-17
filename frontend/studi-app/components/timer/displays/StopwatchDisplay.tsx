@@ -7,6 +7,16 @@ interface StopwatchDisplayProps {
 
 export default function StopwatchDisplay({ formatTime }: StopwatchDisplayProps) {
   return (
-    <Text className="text-6xl font-bold text-white">{formatTime()}</Text>
+    <Text 
+      className="text-white font-bold tracking-tight"
+      style={{ 
+        fontSize: 96,
+        fontFamily: 'Inter',
+        fontWeight: '700',
+        letterSpacing: -2
+      }}
+    >
+      {formatTime()}
+    </Text>
   );
-} 
+}

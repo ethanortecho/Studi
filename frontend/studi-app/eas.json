@@ -29,7 +29,7 @@
       "distribution": "internal",
       "channel": "preview",
       "env": {
-        "ENVIRONMENT": "staging"
+        "EXPO_PUBLIC_ENVIRONMENT": "staging"
       },
       "ios": {
         "resourceClass": "m-medium"

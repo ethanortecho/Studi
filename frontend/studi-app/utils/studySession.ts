@@ -1,5 +1,4 @@
-import { API_BASE_URL } from '../config/api';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { apiClient } from './apiClient';
 
 /**
  * STUDY SESSION API UTILITIES - JWT AUTHENTICATION
@@ -24,114 +23,13 @@ export interface Category {
 }
 
 // =============================================
-// JWT AUTHENTICATION HELPER
+// All API calls now use apiClient which handles:
+// - JWT Bearer token authentication
+// - Automatic token refresh on 401
+// - Retry logic with exponential backoff
+// - Request deduplication for GET requests
+// - Comprehensive error handling
 // =============================================
-
-/**
- * EXPLANATION: makeAuthenticatedApiCall()
- * 
- * This is a smart wrapper around fetch() that:
- * 1. Automatically adds JWT Bearer token to requests
- * 2. Handles token refresh if access token expired (401 response)
- * 3. Retries the original request with new token
- * 4. Throws authentication error if refresh fails
- * 
- * This replaces the old AUTH_HEADER constant with dynamic JWT handling.
- */
-async function makeAuthenticatedApiCall(url: string, options: RequestInit = {}): Promise<Response> {
-  // Get current access token
-  const accessToken = await AsyncStorage.getItem('accessToken');
-  
-  if (!accessToken) {
-    throw new Error('User not authenticated - please login');
-  }
-
-  // Make first attempt with current token
-  let response = await fetch(url, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-      ...options.headers,
-    },
-  });
-
-  // If token expired (401), try to refresh and retry
-  if (response.status === 401) {
-    console.log('🔄 studySession: Access token expired, attempting refresh...');
-    
-    const refreshSuccessful = await refreshToken();
-    
-    if (refreshSuccessful) {
-      // Get new access token and retry
-      const newAccessToken = await AsyncStorage.getItem('accessToken');
-      if (newAccessToken) {
-        console.log('🔄 studySession: Retrying request with new token...');
-        response = await fetch(url, {
-          ...options,
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${newAccessToken}`,
-            ...options.headers,
-          },
-        });
-      }
-    } else {
-      throw new Error('Authentication expired - please login again');
-    }
-  }
-
-  return response;
-}
-
-/**
- * EXPLANATION: refreshToken()
- * 
- * When access token expires, use refresh token to get a new one.
- * This happens automatically behind the scenes.
- */
-async function refreshToken(): Promise<boolean> {
-  try {
-    const refreshToken = await AsyncStorage.getItem('refreshToken');
-    
-    if (!refreshToken) {
-      console.log('❌ studySession: No refresh token available');
-      return false;
-    }
-
-    const response = await fetch(`${API_BASE_URL}/auth/refresh/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ refresh: refreshToken }),
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      
-      // Store new access token
-      await AsyncStorage.setItem('accessToken', data.access);
-      
-      // Store new refresh token if provided (token rotation)
-      if (data.refresh) {
-        await AsyncStorage.setItem('refreshToken', data.refresh);
-      }
-      
-      console.log('✅ studySession: Token refresh successful');
-      return true;
-    } else {
-      console.log('❌ studySession: Refresh token expired');
-      // Clear all auth data
-      await AsyncStorage.multiRemove(['accessToken', 'refreshToken', 'user']);
-      return false;
-    }
-  } catch (error) {
-    console.error('❌ studySession: Token refresh failed:', error);
-    await AsyncStorage.multiRemove(['accessToken', 'refreshToken', 'user']);
-    return false;
-  }
-}
 
 // =============================================
 // CATEGORY MANAGEMENT FUNCTIONS
@@ -140,62 +38,49 @@ async function refreshToken(): Promise<boolean> {
 export const fetchCategories = async (): Promise<Category[]> => {
   console.log("API: fetchCategories called");
   
-  // JWT tokens contain user identity - no need for username parameter
-  const res = await makeAuthenticatedApiCall(`${API_BASE_URL}/category-list/`);
+  const response = await apiClient.get('/category-list/');
   
-  if (!res.ok) {
-    const errorData = await res.json();
-    throw new Error(errorData.error || errorData.message || 'Failed to fetch categories');
+  if (response.error) {
+    throw new Error(response.error.message || 'Failed to fetch categories');
   }
   
-  const data = await res.json();
-  console.log("API: fetchCategories data:", data);
-  return data;
+  console.log("API: fetchCategories data:", response.data);
+  return response.data;
 };
 
 export const createCategory = async (name: string, color: string): Promise<Category> => {
   console.log("API: createCategory called with", name, color);
-  const res = await makeAuthenticatedApiCall(`${API_BASE_URL}/category-list/`, {
-    method: "POST",
-    body: JSON.stringify({ name, color }),
-  });
   
-  if (!res.ok) {
-    const errorData = await res.json();
-    throw new Error(errorData.error || errorData.message || 'Failed to create category');
+  const response = await apiClient.post('/category-list/', { name, color });
+  
+  if (response.error) {
+    throw new Error(response.error.message || 'Failed to create category');
   }
   
-  const data = await res.json();
-  console.log("API: createCategory data:", data);
-  return data;
+  console.log("API: createCategory data:", response.data);
+  return response.data;
 };
 
 export const updateCategory = async (id: string, name: string, color: string): Promise<Category> => {
   console.log("API: updateCategory called with", id, name, color);
-  const res = await makeAuthenticatedApiCall(`${API_BASE_URL}/categories/${id}/`, {
-    method: "PUT",
-    body: JSON.stringify({ name, color }),
-  });
   
-  if (!res.ok) {
-    const errorData = await res.json();
-    throw new Error(errorData.error || errorData.message || 'Failed to update category');
+  const response = await apiClient.put(`/categories/${id}/`, { name, color });
+  
+  if (response.error) {
+    throw new Error(response.error.message || 'Failed to update category');
   }
   
-  const data = await res.json();
-  console.log("API: updateCategory data:", data);
-  return data;
+  console.log("API: updateCategory data:", response.data);
+  return response.data;
 };
 
 export const deleteCategory = async (id: string): Promise<void> => {
   console.log("API: deleteCategory called with", id);
-  const res = await makeAuthenticatedApiCall(`${API_BASE_URL}/categories/${id}/`, {
-    method: "DELETE",
-  });
   
-  if (!res.ok) {
-    const errorData = await res.json();
-    throw new Error(errorData.error || errorData.message || 'Failed to delete category');
+  const response = await apiClient.delete(`/categories/${id}/`);
+  
+  if (response.error) {
+    throw new Error(response.error.message || 'Failed to delete category');
   }
   
   console.log("API: deleteCategory successful");
@@ -203,16 +88,15 @@ export const deleteCategory = async (id: string): Promise<void> => {
 
 export const fetchBreakCategory = async (): Promise<Category> => {
   console.log("API: fetchBreakCategory called");
-  const res = await makeAuthenticatedApiCall(`${API_BASE_URL}/break-category/`);
   
-  if (!res.ok) {
-    const errorData = await res.json();
-    throw new Error(errorData.error || errorData.message || 'Failed to fetch break category');
+  const response = await apiClient.get('/break-category/');
+  
+  if (response.error) {
+    throw new Error(response.error.message || 'Failed to fetch break category');
   }
   
-  const data = await res.json();
-  console.log("API: fetchBreakCategory data:", data);
-  return data;
+  console.log("API: fetchBreakCategory data:", response.data);
+  return response.data;
 };
 
 // =============================================
@@ -223,14 +107,14 @@ export const createStudySession = async (startTime: Date) => {
     console.log("API: createStudySession called with", startTime);
     console.log("API: Sending UTC time to server:", startTime.toISOString());
     
-    const res = await makeAuthenticatedApiCall(`${API_BASE_URL}/create-session/`, {
-      method: "POST",
-      body: JSON.stringify({ start_time: startTime }),
-    });
-    console.log("API: createStudySession response status:", res.status);
-    const data = await res.json();
-    console.log("API: createStudySession data:", data);
-    return data;
+    const response = await apiClient.post('/create-session/', { start_time: startTime });
+    
+    if (response.error) {
+      throw new Error(response.error.message || 'Failed to create study session');
+    }
+    
+    console.log("API: createStudySession data:", response.data);
+    return response.data;
   };
   
 export const endStudySession = async (sessionId: string, endTime: Date, productivityRating?: number) => {
@@ -247,32 +131,28 @@ export const endStudySession = async (sessionId: string, endTime: Date, producti
       requestBody.productivity_rating = productivityRating.toString();
     }
     
-    const res = await makeAuthenticatedApiCall(`${API_BASE_URL}/end-session/${sessionId}/`, {
-      method: "PUT",
-      body: JSON.stringify(requestBody),
-    });
-    const data = await res.json();
-    return data;
+    const response = await apiClient.put(`/end-session/${sessionId}/`, requestBody);
+    
+    if (response.error) {
+      throw new Error(response.error.message || 'Failed to end study session');
+    }
+    
+    return response.data;
   };
 
 export const updateSessionRating = async (sessionId: string, productivityRating: number) => {
     console.log("API: updateSessionRating called with", sessionId, productivityRating);
     
-    const res = await makeAuthenticatedApiCall(`${API_BASE_URL}/update-session-rating/${sessionId}/`, {
-      method: "PUT",
-      body: JSON.stringify({
-        productivity_rating: productivityRating
-      }),
+    const response = await apiClient.put(`/update-session-rating/${sessionId}/`, {
+      productivity_rating: productivityRating
     });
     
-    if (!res.ok) {
-      const errorData = await res.json();
-      throw new Error(errorData.error || errorData.message || 'Failed to update session rating');
+    if (response.error) {
+      throw new Error(response.error.message || 'Failed to update session rating');
     }
     
-    const data = await res.json();
-    console.log("API: updateSessionRating response:", data);
-    return data;
+    console.log("API: updateSessionRating response:", response.data);
+    return response.data;
   };
   
 // =============================================
@@ -283,26 +163,33 @@ export const createCategoryBlock = async (sessionId: string, categoryId: string,
     console.log("API: createCategoryBlock called with", categoryId, startTime);
     console.log("API: Sending UTC category block start time to server:", startTime.toISOString());
     
-    const res = await makeAuthenticatedApiCall(`${API_BASE_URL}/create-category-block/`, {
-      method: "POST",
-      body: JSON.stringify({ study_session: sessionId, category: categoryId, start_time: startTime }),
+    const response = await apiClient.post('/create-category-block/', {
+      study_session: sessionId,
+      category: categoryId,
+      start_time: startTime
     });
-    console.log("API: createCategoryBlock body:", JSON.stringify({ study_session: sessionId, category: categoryId, start_time: startTime }));
-    console.log("API: createCategoryBlock response status:", res.status);
-    const data = await res.json();
-    return data;
+    
+    if (response.error) {
+      throw new Error(response.error.message || 'Failed to create category block');
+    }
+    
+    console.log("API: createCategoryBlock data:", response.data);
+    return response.data;
   };
   
 export const endCategoryBlock = async (categoryBlockId: string, endTime: Date) => {
     console.log("API: endCategoryBlock called with", categoryBlockId, endTime);
     console.log("API: Sending UTC category block end time to server:", endTime.toISOString());
     
-    const res = await makeAuthenticatedApiCall(`${API_BASE_URL}/end-category-block/${categoryBlockId}/`, {
-      method: "PUT",
-      body: JSON.stringify({ end_time: endTime }),
+    const response = await apiClient.put(`/end-category-block/${categoryBlockId}/`, {
+      end_time: endTime
     });
-    const data = await res.json();
-    return data;
+    
+    if (response.error) {
+      throw new Error(response.error.message || 'Failed to end category block');
+    }
+    
+    return response.data;
   };
 
 export const cancelStudySession = async (sessionId: string, endTime?: Date) => {
@@ -316,17 +203,12 @@ export const cancelStudySession = async (sessionId: string, endTime?: Date) => {
     requestBody.end_time = endTime;
   }
   
-  const res = await makeAuthenticatedApiCall(`${API_BASE_URL}/cancel-session/${sessionId}/`, {
-    method: "PUT",
-    body: JSON.stringify(requestBody),
-  });
+  const response = await apiClient.put(`/cancel-session/${sessionId}/`, requestBody);
   
-  if (!res.ok) {
-    const errorData = await res.json();
-    throw new Error(errorData.error || errorData.message || 'Failed to cancel session');
+  if (response.error) {
+    throw new Error(response.error.message || 'Failed to cancel session');
   }
   
-  const data = await res.json();
-  console.log("API: cancelStudySession data:", data);
-  return data;
+  console.log("API: cancelStudySession data:", response.data);
+  return response.data;
 };

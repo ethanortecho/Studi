@@ -27,7 +27,7 @@ export default function TimerScreen({
   timerHook 
 }: TimerScreenProps) {
   const { selectedCategoryId } = useLocalSearchParams();
-  const { sessionId, currentCategoryId, categories, switchCategory } = useContext(StudySessionContext);
+  const { sessionId, currentCategoryId, categories, switchCategory, refreshCategories } = useContext(StudySessionContext);
   
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -77,6 +77,14 @@ export default function TimerScreen({
     setShowCategoryModal(true);
   };
   
+  // Fetch categories when timer screen loads (if not already loaded)
+  useEffect(() => {
+    if (categories.length === 0) {
+      console.log("TimerScreen: No categories loaded, fetching...");
+      refreshCategories();
+    }
+  }, []);
+
   // For countdown and pomo, if there's a selectedCategoryId from route params, 
   // trigger the category selection flow automatically
   useEffect(() => {

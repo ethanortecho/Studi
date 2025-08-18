@@ -114,7 +114,8 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    refreshCategories();
+    // Don't fetch categories on mount - they'll be fetched when needed
+    // This prevents "User not authenticated" errors on app startup
     
     // Initialize timezone detection
     try {

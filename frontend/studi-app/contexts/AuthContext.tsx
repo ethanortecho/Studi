@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { clearApiCache } from '../utils/fetchApi';
+import { apiClient } from '../utils/apiClient';
 
 // =============================================
 // TYPE DEFINITIONS - What our data looks like
@@ -122,7 +122,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(userData);
       
       // Clear API cache when user changes to prevent data leaks
-      clearApiCache();
+      apiClient.clearCache();
     } catch (error) {
       console.error('❌ AuthContext: Failed to store auth:', error);
       throw error;
@@ -150,7 +150,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(null);
       
       // Clear API cache when user logs out to prevent data leaks
-      clearApiCache();
+      apiClient.clearCache();
     } catch (error) {
       console.error('❌ AuthContext: Failed to clear auth:', error);
     }

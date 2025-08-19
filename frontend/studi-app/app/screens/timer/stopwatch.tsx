@@ -1,7 +1,7 @@
 import React from 'react';
-import { useStopwatch, StopwatchConfig } from '@/hooks/timer';
-import TimerScreen from '@/components/timer/shared/TimerScreen';
-import StopwatchDisplay from '@/components/timer/displays/StopwatchDisplay';
+import { useStopwatch, StopwatchConfig } from '../../../hooks/timer';
+import TimerScreen from '../../../components/timer/shared/TimerScreen';
+import StopwatchDisplay from '../../../components/timer/displays/StopwatchDisplay';
 
 export default function RecordSessionScreen() {
     // Create config with category info

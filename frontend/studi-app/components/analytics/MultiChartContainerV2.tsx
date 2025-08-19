@@ -9,12 +9,12 @@
 
 import React from 'react';
 import { View, Text, Dimensions } from 'react-native';
-import DashboardCard from '@/components/insights/DashboardContainer';
-import Legend from '@/components/analytics/DashboardLegend';
+import DashboardCard from '../insights/DashboardContainer';
+import Legend from './DashboardLegend';
 import ChartNavigationButtons from './ChartNavigationButtons';
-import { DashboardData } from '@/types/charts';
-import { getChartsForTimeframe } from '@/config/chartRegistry';
-import { useChartNavigation } from '@/hooks/useChartNavigation';
+import { DashboardData } from '../../types/charts';
+import { getChartsForTimeframe } from '../../config/chartRegistry';
+import { useChartNavigation } from '../../hooks/useChartNavigation';
 
 interface MultiChartContainerV2Props {
   dashboardData: DashboardData;

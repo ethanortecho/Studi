@@ -12,7 +12,7 @@ import {
   DailyMapChartData,
   WeeklyMapChartData,
   MonthlyMapChartData
-} from '@/types/charts';
+} from '../types/charts';
 import {
   SubjectsChart,
   SessionsChart,
@@ -20,7 +20,7 @@ import {
   WeeklyMapChart,
   MonthlyMapChart,
   TrendsChart
-} from '@/components/analytics/charts/ChartWrappers';
+} from '../components/analytics/charts/ChartWrappers';
 
 /**
  * Subjects Chart Configuration (Pie Chart)

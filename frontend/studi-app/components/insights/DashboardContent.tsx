@@ -6,9 +6,9 @@ import Animated, {
     withTiming,
     Easing 
 } from 'react-native-reanimated';
-import DailyDashboard from '@/app/screens/Insights/DailyDashboard';
-import WeeklyDashboard from '@/app/screens/Insights/WeeklyDashboard';
-import MonthlyDashboard from '@/app/screens/Insights/MonthlyDashboard';
+import DailyDashboard from '../../app/screens/Insights/DailyDashboard';
+import WeeklyDashboard from '../../app/screens/Insights/WeeklyDashboard';
+import MonthlyDashboard from '../../app/screens/Insights/MonthlyDashboard';
 import { DashboardSkeleton } from './SkeletonLoader';
 
 interface DashboardContentProps {

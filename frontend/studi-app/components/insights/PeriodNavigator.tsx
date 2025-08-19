@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getWeekStart, navigateWeek, getMonthStart, canNavigate } from '@/utils/dateUtils';
+import { getWeekStart, navigateWeek, getMonthStart, canNavigate } from '../../utils/dateUtils';
 
 type Timeframe = 'daily' | 'weekly' | 'monthly';
 

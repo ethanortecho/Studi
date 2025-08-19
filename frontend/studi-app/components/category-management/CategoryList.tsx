@@ -1,8 +1,8 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Category } from '@/utils/studySession';
-import { StudySessionContext } from '@/context/StudySessionContext';
+import { Category } from '../../utils/studySession';
+import { StudySessionContext } from '../../context/StudySessionContext';
 import EditCategoryModal from './EditCategoryModal';
 import AddCategoryModal from './AddCategoryModal';
 

@@ -1,10 +1,10 @@
 import React from 'react';
 import { ScrollView, View, Text } from 'react-native';
-import { CategoryMetadata, TimelineSession } from '@/types/api';
-import DashboardKPIs from '@/components/analytics/DashboardKPIs';
-import MultiChartContainerV2 from '@/components/analytics/MultiChartContainerV2';
-import ProductivityContainer from '@/components/analytics/productivity/ProductivityContainer';
-import { DashboardData } from '@/types/charts';
+import { CategoryMetadata, TimelineSession } from '../../../types/api';
+import DashboardKPIs from '../../../components/analytics/DashboardKPIs';
+import MultiChartContainerV2 from '../../../components/analytics/MultiChartContainerV2';
+import ProductivityContainer from '../../../components/analytics/productivity/ProductivityContainer';
+import { DashboardData } from '../../../types/charts';
 
 interface DailyDashboardProps {
   totalHours: string;

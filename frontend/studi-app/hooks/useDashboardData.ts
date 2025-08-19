@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import useAggregateData from '@/utils/fetchApi';
-import { parseCategoryDurations, ParseStudyTrends, secondsToHours, secondsToHoursAndMinutes, filterBreakCategory, filterBreakFromDailyBreakdown } from '@/utils/parseData';
-import { DailyInsightsResponse, WeeklyInsightsResponse, MonthlyInsightsResponse } from '@/types/api';
-import { formatDateForAPI, getWeekEnd, getWeekStart, navigateDate, getWeekDays, getMonthStart, getMonthEnd } from '@/utils/dateUtils';
-import { useGoalForWeek } from '@/hooks/useGoalForWeek';
+import useAggregateData from '../utils/fetchApi';
+import { parseCategoryDurations, ParseStudyTrends, secondsToHours, secondsToHoursAndMinutes, filterBreakCategory, filterBreakFromDailyBreakdown } from '../utils/parseData';
+import { DailyInsightsResponse, WeeklyInsightsResponse, MonthlyInsightsResponse } from '../types/api';
+import { formatDateForAPI, getWeekEnd, getWeekStart, navigateDate, getWeekDays, getMonthStart, getMonthEnd } from '../utils/dateUtils';
+import { useGoalForWeek } from './useGoalForWeek';
 
 interface UseDashboardDataParams {
     dailyDate?: Date;

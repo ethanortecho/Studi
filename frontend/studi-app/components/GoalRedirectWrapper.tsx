@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { router, usePathname } from 'expo-router';
-import { useWeeklyGoal } from '@/hooks/useWeeklyGoal';
+import { useWeeklyGoal } from '../hooks/useWeeklyGoal';
 
 /**
  * This component handles the weekly goal redirect logic.

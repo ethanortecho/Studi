@@ -1,7 +1,7 @@
 import React, { useMemo, useEffect } from 'react';
 import { View, Dimensions } from 'react-native';
 import { CartesianChart, StackedBar } from 'victory-native';
-import { ThemedText } from '@/components/ThemedText';
+import { ThemedText } from '../../ThemedText';
 import { useFont } from '@shopify/react-native-skia';
 import Animated, { 
   useSharedValue, 
@@ -68,7 +68,7 @@ const WeeklyBarchart: React.FC<WeeklyBarchartProps> = ({
   if (isEmpty) {
     return null;
   }
-  const font = useFont(require('@/assets/fonts/Poppins-Regular.ttf'), 12);
+  const font = useFont(require('../../../assets/fonts/Poppins-Regular.ttf'), 12);
 
   // Animation values
   const opacity = useSharedValue(0);

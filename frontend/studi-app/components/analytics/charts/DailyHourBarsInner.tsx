@@ -1,8 +1,8 @@
 import React, { useMemo, useContext } from 'react';
 import { View, Text } from 'react-native';
-import { TimelineSession, CategoryMetadata } from '@/types/api';
-import { StudySessionContext } from '@/context/StudySessionContext';
-import { getLocalDateComponents } from '@/utils/timezoneUtils';
+import { TimelineSession, CategoryMetadata } from '../../../types/api';
+import { StudySessionContext } from '../../../context/StudySessionContext';
+import { getLocalDateComponents } from '../../../utils/timezoneUtils';
 
 interface Props {
   timelineData: TimelineSession[];

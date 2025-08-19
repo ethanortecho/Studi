@@ -24,13 +24,13 @@ import {
 } from '@expo-google-fonts/poppins';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { cssInterop } from 'nativewind';
-import { StudySessionProvider } from '@/context/StudySessionContext';
-import { AuthProvider } from '@/contexts/AuthContext';
-import { applyDarkTheme, applyLightTheme, ThemeMode } from '@/theme/applyTheme';
-import { dark } from '@/theme/dark';
-import { light } from '@/theme/light';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { GoalRedirectWrapper } from '@/components/GoalRedirectWrapper';
+import { StudySessionProvider } from '../context/StudySessionContext';
+import { AuthProvider } from '../contexts/AuthContext';
+import { applyDarkTheme, applyLightTheme, ThemeMode } from '../theme/applyTheme';
+import { dark } from '../theme/dark';
+import { light } from '../theme/light';
+import { useColorScheme } from '../hooks/useColorScheme';
+import { GoalRedirectWrapper } from '../components/GoalRedirectWrapper';
 
 // Fix SafeAreaView compatibility with NativeWind
 cssInterop(SafeAreaView, { className: "style" });

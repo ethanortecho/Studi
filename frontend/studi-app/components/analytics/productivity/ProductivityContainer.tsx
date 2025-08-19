@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import ProductivityGauge from './ProductivityGauge';
-import DashboardCard from '@/components/insights/DashboardContainer';
+import DashboardCard from '../../insights/DashboardContainer';
 
 interface ProductivityContainerProps {
   productivityScore: number | null;

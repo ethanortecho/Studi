@@ -1,4 +1,4 @@
-import DashboardCard from '@/components/insights/DashboardContainer';
+import DashboardCard from '../../insights/DashboardContainer';
 import React from 'react';
 import { View, Text, Dimensions } from 'react-native';
 

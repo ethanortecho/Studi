@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text } from 'react-native';
-import { formatDuration } from '@/utils/timeFormatting';
+import { formatDuration } from '../../utils/timeFormatting';
 
 interface LegendProps {
     category_durations: { [key: string]: number };

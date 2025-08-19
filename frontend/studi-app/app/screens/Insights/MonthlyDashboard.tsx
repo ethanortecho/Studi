@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, ScrollView, Text } from 'react-native';
-import { CategoryMetadata } from '@/types/api';
-import DashboardKPIs from '@/components/analytics/DashboardKPIs';
-import MultiChartContainerV2 from '@/components/analytics/MultiChartContainerV2';
-import { DashboardData } from '@/types/charts';
+import { CategoryMetadata } from '../../../types/api';
+import DashboardKPIs from '../../../components/analytics/DashboardKPIs';
+import MultiChartContainerV2 from '../../../components/analytics/MultiChartContainerV2';
+import { DashboardData } from '../../../types/charts';
 
 interface MonthlyDashboardProps {
   totalHours: number;

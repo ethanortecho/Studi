@@ -1,7 +1,7 @@
 import { useBaseTimer } from "./useBaseTimer";
 import { useStudySession } from "../useStudySession";
 import { useContext, useEffect, useState } from "react";
-import { StudySessionContext } from "@/context/StudySessionContext";
+import { StudySessionContext } from '../../context/StudySessionContext';
 
 export interface PomoConfig {
     pomodoroBlocks: number;

@@ -1,8 +1,8 @@
 import React from 'react';
-import { usePomo, PomoConfig } from '@/hooks/timer';
+import { usePomo, PomoConfig } from '../../../hooks/timer';
 import { useLocalSearchParams } from 'expo-router';
-import TimerScreen from '@/components/timer/shared/TimerScreen';
-import PomoDisplay from '@/components/timer/displays/PomoDisplay';
+import TimerScreen from '../../../components/timer/shared/TimerScreen';
+import PomoDisplay from '../../../components/timer/displays/PomoDisplay';
 
 export default function PomoSessionScreen() {
     // Get pomodoro config from route params (passed from modal)

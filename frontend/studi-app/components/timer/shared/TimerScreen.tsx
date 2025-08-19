@@ -1,8 +1,8 @@
 import React from 'react';
 import { Text, View, Pressable, StatusBar } from 'react-native';
 import { useState, useContext, useEffect } from 'react';
-import { StudySessionContext } from '@/context/StudySessionContext';
-import { CancelSessionModal } from '@/components/modals/CancelSessionModal';
+import { StudySessionContext } from '../../../context/StudySessionContext';
+import { CancelSessionModal } from '../../modals/CancelSessionModal';
 import { router } from 'expo-router';
 import { useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';

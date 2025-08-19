@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Text, View, Pressable } from 'react-native';
 import DashboardContent from './DashboardContent';
 import PeriodNavigator from './PeriodNavigator';
-import { getDefaultDate, getWeekStart, navigateWeek, getMonthStart } from '@/utils/dateUtils';
-import { useDashboardData } from '@/hooks/useDashboardData';
+import { getDefaultDate, getWeekStart, navigateWeek, getMonthStart } from '../../utils/dateUtils';
+import { useDashboardData } from '../../hooks/useDashboardData';
 
 interface DashboardTabsProps {
     onDataChange?: (data: { totalTime?: { hours: number; minutes: number }, totalHours?: string }) => void;

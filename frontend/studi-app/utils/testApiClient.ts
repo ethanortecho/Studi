@@ -296,7 +296,7 @@ export async function testTokenRefresh(): Promise<void> {
 /**
  * Example usage in a component:
  * 
- * import { testApiClient } from '@/utils/testApiClient';
+ * import { testApiClient } from './testApiClient';
  * 
  * // In a component or screen:
  * const runTests = async () => {

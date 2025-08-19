@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, ScrollView, Dimensions } from 'react-native';
-import { formatDurationFromMinutes } from '@/utils/timeFormatting';
+import { formatDurationFromMinutes } from '../../../utils/timeFormatting';
 
 /**
  * SessionBarchart - A customizable session timeline visualization

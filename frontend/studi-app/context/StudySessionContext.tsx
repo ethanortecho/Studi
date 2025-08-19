@@ -1,10 +1,10 @@
 import { useState, useEffect, createContext, ReactNode, useCallback } from "react";
 import { AppState } from 'react-native';
-import { fetchCategories, Category, fetchBreakCategory } from '@/utils/studySession';
+import { fetchCategories, Category, fetchBreakCategory } from '../utils/studySession';
 import { createStudySession, endStudySession, createCategoryBlock, endCategoryBlock, cancelStudySession, updateSessionRating } from '../utils/studySession';
-import SessionStatsModal from '@/components/modals/SessionStatsModal';
-import { detectUserTimezone } from '@/utils/timezoneUtils';
-import { clearDashboardCache } from '@/utils/fetchApi';
+import SessionStatsModal from '../components/modals/SessionStatsModal';
+import { detectUserTimezone } from '../utils/timezoneUtils';
+import { clearDashboardCache } from '../utils/fetchApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE_URL } from '../config/api';
 

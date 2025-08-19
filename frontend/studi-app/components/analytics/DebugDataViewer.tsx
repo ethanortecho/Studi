@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { View, ScrollView, TouchableOpacity, StyleSheet, Modal } from 'react-native';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { Colors } from '@/constants/Colors';
+import { ThemedText } from '../ThemedText';
+import { ThemedView } from '../ThemedView';
+import { Colors } from '../../constants/Colors';
 
 interface DebugDataViewerProps {
   data: any;

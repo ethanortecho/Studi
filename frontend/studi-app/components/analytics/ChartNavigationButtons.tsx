@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { ChartConfig } from '@/types/charts';
+import { ChartConfig } from '../../types/charts';
 
 interface ChartNavigationButtonsProps {
   charts: ChartConfig[];

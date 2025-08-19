@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { View, Text, FlatList, PanResponder, GestureResponderEvent, PanResponderGestureState } from 'react-native';
-import { getWeekDays, isSameDay, canNavigate } from '@/utils/dateUtils';
+import { getWeekDays, isSameDay, canNavigate } from '../../utils/dateUtils';
 
 interface WeekNavigatorProps {
   weekStart: Date;

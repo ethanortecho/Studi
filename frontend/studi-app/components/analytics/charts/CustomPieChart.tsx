@@ -1,7 +1,7 @@
 import React from 'react';
 import { View } from 'react-native';
 import { Pie, PolarChart } from 'victory-native';
-import { formatDuration } from '@/utils/parseData';
+import { formatDuration } from '../../../utils/parseData';
 
 interface CustomPieChartProps {
   data: { label: string; value: number; color: string }[];

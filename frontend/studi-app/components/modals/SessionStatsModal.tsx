@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Modal, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { formatDurationFromMinutes } from '@/utils/timeFormatting';
+import { formatDurationFromMinutes } from '../../utils/timeFormatting';
 
 interface SessionStatsModalProps {
   visible: boolean;

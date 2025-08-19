@@ -223,16 +223,27 @@ class ApiClient {
           headers = { ...headers, ...authHeaders };
         }
 
-        // Create the fetch promise
+        // Create an AbortController for timeout
+        const controller = new AbortController();
+        const timeoutMs = 30000; // 30 second timeout
+        
+        const timeoutId = setTimeout(() => {
+          controller.abort();
+        }, timeoutMs);
+
+        // Create the fetch promise with abort signal
         const fetchPromise = fetch(url, {
           ...config,
           headers,
+          signal: controller.signal,
         });
 
-        const response = await fetchPromise;
+        try {
+          const response = await fetchPromise;
+          clearTimeout(timeoutId);
 
-        // Handle 401 Unauthorized - try token refresh once
-        if (response.status === 401 && !config.skipAuth && attempt === 0) {
+          // Handle 401 Unauthorized - try token refresh once
+          if (response.status === 401 && !config.skipAuth && attempt === 0) {
           console.log('🔐 API Client: Got 401, attempting token refresh...');
           const refreshSuccess = await refreshAccessToken();
           
@@ -308,10 +319,32 @@ class ApiClient {
           },
           status: response.status,
         };
+        
+        } catch (error: any) {
+          clearTimeout(timeoutId);
+          
+          // Check if it's an abort error (timeout)
+          if (error.name === 'AbortError') {
+            console.error(`❌ API Client: Request timed out after ${timeoutMs}ms on attempt ${attempt + 1}`);
+            lastError = {
+              message: 'Request timed out. Please try again.',
+              code: 'TIMEOUT',
+              retryable: true,
+            };
+          } else {
+            // Other network errors
+            console.error(`❌ API Client: Network error on attempt ${attempt + 1}:`, error.message);
+            lastError = {
+              message: 'Network error. Please check your connection.',
+              code: 'NETWORK_ERROR',
+              retryable: true,
+            };
+          }
+        }
 
       } catch (error: any) {
-        // Network error or timeout
-        console.error(`❌ API Client: Network error on attempt ${attempt + 1}:`, error.message);
+        // This should never happen now since we handle errors inside
+        console.error(`❌ API Client: Unexpected error on attempt ${attempt + 1}:`, error.message);
         
         // Deduplication temporarily disabled
 

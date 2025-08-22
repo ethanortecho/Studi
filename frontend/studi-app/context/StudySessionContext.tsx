@@ -6,6 +6,7 @@ import SessionStatsModal from '@/components/modals/SessionStatsModal';
 import { detectUserTimezone } from '@/utils/timezoneUtils';
 import { clearDashboardCache } from '@/utils/fetchApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_BASE_URL } from '../config/api';
 
 
 interface StudySessionContextType {
@@ -113,7 +114,8 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    refreshCategories();
+    // Don't fetch categories on mount - they'll be fetched when needed
+    // This prevents "User not authenticated" errors on app startup
     
     // Initialize timezone detection
     try {
@@ -185,7 +187,7 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
           return;
         }
 
-        const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000'}/analytics/cleanup-hanging-sessions/`, {
+        const response = await fetch(`${API_BASE_URL}/cleanup-hanging-sessions/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

@@ -51,7 +51,7 @@ export default function HomeScreen() {
     };
 
     return (
-        <SafeAreaView className="flex-1 bg-background">
+        <SafeAreaView className="flex-1 bg-background" edges={['top']}>
             <View className="p-6 flex-row justify-between items-center">
                 <Text className="text-3xl font-medium text-indigo-800 mb-2">
                     Welcome Back,

@@ -18,19 +18,13 @@ export default function TabLayout() {
           headerShown: false,
           tabBarButton: HapticTab,
           tabBarShowLabel: false,
-          tabBarActiveTintColor: '#FFFFFF',
-          tabBarInactiveTintColor: 'rgba(255,255,255,0.6)',
-          tabBarItemStyle: {
-            paddingVertical: 10,
-          },
+          tabBarActiveTintColor: '#5D3EDA',
+          tabBarInactiveTintColor: '#9BA1A6',
           tabBarStyle: {
-            position: 'absolute',
-            bottom: 50,
-            borderRadius: 50,
-            marginHorizontal: 50,
-            height: 60,
-            backgroundColor: Colors[colorScheme].accent,
-            borderColor: 'rgba(140, 69, 69, 0.1)',
+            backgroundColor: '#181727',
+            borderTopWidth: 1,
+            borderTopColor: '#262748',
+            paddingTop: 20,
           },
         }}>
 
@@ -41,8 +35,8 @@ export default function TabLayout() {
                   title: 'Home',
                   tabBarIcon: ({ color, focused }) => (
                     <Ionicons
-                      name={focused ? 'home' : 'home-outline'}
-                      size={28}
+                      name="home"
+                      size={30}
                       color={color}
                     />
                   ),
@@ -55,8 +49,8 @@ export default function TabLayout() {
             title: 'Insights',
             tabBarIcon: ({ color, focused }) => (
               <Ionicons
-                name={focused ? 'options' : 'options-outline'}
-                size={28}
+                name="options"
+                size={30}
                 color={color}
               />
             ),
@@ -69,8 +63,8 @@ export default function TabLayout() {
             title: 'Settings',
             tabBarIcon: ({ color, focused }) => (
               <Ionicons
-                name={focused ? 'settings' : 'settings-outline'}
-                size={28}
+                name="settings"
+                size={30}
                 color={color}
               />
             ),

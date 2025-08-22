@@ -21,7 +21,7 @@ export default function CustomPieChart({
   data, 
   size = 165, 
   title = "Study Split",
-  innerRadius = "55%",
+  innerRadius = "50%",
   startAngle = 0,
   circleSweepDegrees = 360,
   showLabels = true,

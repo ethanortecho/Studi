@@ -1,18 +1,24 @@
-import React, { useMemo } from 'react';
-import { View } from 'react-native';
+import React, { useMemo, useEffect } from 'react';
+import { View, Dimensions } from 'react-native';
 import { CartesianChart, StackedBar } from 'victory-native';
 import { ThemedText } from '@/components/ThemedText';
 import { useFont } from '@shopify/react-native-skia';
+import Animated, { 
+  useSharedValue, 
+  useAnimatedStyle, 
+  withTiming, 
+  Easing 
+} from 'react-native-reanimated';
 
-// Map short day codes to full day names
+// Map short day codes to labels
 const DAY_MAP: Record<string, string> = {
-  'MO': 'Mo',
-  'TU': 'Tu',
-  'WE': 'We',
-  'TH': 'Th',
-  'FR': 'Fr',
-  'SA': 'Sa',
-  'SU': 'Su'
+  'MO': 'Mo',  // Monday
+  'TU': 'Tu',  // Tuesday
+  'WE': 'We',  // Wednesday
+  'TH': 'Th',  // Thursday
+  'FR': 'Fr',  // Friday
+  'SA': 'Sa',  // Saturday
+  'SU': 'Su'   // Sunday
 };
 
 // Map week numbers to display names
@@ -55,7 +61,7 @@ const WeeklyBarchart: React.FC<WeeklyBarchartProps> = ({
   categoryMetadata,
   timeframe = 'weekly',
   width = 500,
-  height = 150,
+  height = 100, // Shorter like Apple's design
   isEmpty = false
 }) => {
   // Don't render if no data available
@@ -63,6 +69,30 @@ const WeeklyBarchart: React.FC<WeeklyBarchartProps> = ({
     return null;
   }
   const font = useFont(require('@/assets/fonts/Poppins-Regular.ttf'), 12);
+
+  // Animation values
+  const opacity = useSharedValue(0);
+  const scale = useSharedValue(0.95);
+
+  // Trigger animation on mount
+  useEffect(() => {
+    opacity.value = withTiming(1, {
+      duration: 250,
+      easing: Easing.out(Easing.cubic),
+    });
+    scale.value = withTiming(1, {
+      duration: 250,
+      easing: Easing.out(Easing.cubic),
+    });
+  }, []);
+
+  // Animated styles
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: opacity.value,
+      transform: [{ scale: scale.value }],
+    };
+  });
 
   const { chartData, simpleChartData, categories, colors, maxTotal } = useMemo(() => {
     if (!data || !categoryMetadata) {
@@ -220,50 +250,52 @@ const WeeklyBarchart: React.FC<WeeklyBarchartProps> = ({
   const currentYKeys = categories;
 
   return (
-      <View style={{ height: height ,width: 300}}>
-        <CartesianChart
-          data={currentData}
-          xKey="period"
-          yKeys={currentYKeys}
-          domain={{ y: [0, Math.ceil(maxTotal * 1.2)] }}
-          domainPadding={{ left: timeframe === 'weekly' ? 15 : 45, right: timeframe === 'weekly' ? 15 : 45 }}
-          padding={{ left: 0, top: 0, right: 0, bottom: 0 }}
-          xAxis={{
-            font: font,
-            tickCount: timeframe === 'weekly' ? 7 : 4,
-            lineColor: 'transparent',
-            labelColor: '#71717a',
-            formatXLabel: (value) => String(value)
-          }}
-          yAxis={[{
-            font: font,
-            tickCount: 4,
-            lineColor: '#d4d4d8',
-            labelColor: '#71717a',
-            formatYLabel: (value) => `${value}h`
-          }]}
-        >
-          {({ points, chartBounds }) => {
-            const pointsArray = categories.map(category => points[category]);
-            return (
-              <StackedBar
-                chartBounds={chartBounds}
-                points={pointsArray}
-                colors={colors}
-                animate={{ type: "timing", duration: 300 }}
-                innerPadding={ timeframe === 'weekly' ? 0.4 : 0.5}
-                barOptions={({ isBottom, isTop }) => ({
-                  roundedCorners: isTop
-                    ? { topLeft: 4, topRight: 4 }
-                    : isBottom
-                      ? { bottomLeft: 4, bottomRight: 4 }
-                      : undefined,
-                })}
-              />
-            );
-          }}
-        </CartesianChart>
-      </View>
+    <Animated.View style={[{ height: height, width: 300 }, animatedStyle]}>
+      <CartesianChart
+        data={currentData}
+        xKey="period"
+        yKeys={currentYKeys}
+        domain={{ y: [0, Math.ceil(maxTotal * 1.2)] }} // Add 20% padding to accommodate all ticks
+        domainPadding={{ left: timeframe === 'weekly' ? 20 : 50, right: timeframe === 'weekly' ? 20 : 50 }}
+        padding={{ left: 0, top: 5, right: 0, bottom: 0 }}
+        xAxis={{
+          font: font,
+          tickCount: timeframe === 'weekly' ? 7 : 4,
+          lineColor: 'transparent',
+          labelColor: '#6B7280',
+          formatXLabel: (value) => String(value),
+          labelOffset: 2,
+        }}
+        yAxis={[{
+          font: font,
+          tickCount: 4, // Fixed tick count for consistent gridlines
+          lineColor: '#2D2E6F',
+          lineWidth: 1, // Ensure lines are visible
+          labelColor: '#6B7280',
+          formatYLabel: (value) => value > 0 ? `${value}h` : '0'
+        }]}
+      >
+        {({ points, chartBounds }) => {
+          const pointsArray = categories.map(category => points[category]);
+          return (
+            <StackedBar
+              chartBounds={chartBounds}
+              points={pointsArray}
+              colors={colors}
+              animate={{ type: "timing", duration: 300 }}
+              innerPadding={ timeframe === 'weekly' ? 0.5 : 0.65} // Thinner bars
+              barOptions={({ isBottom, isTop }) => ({
+                roundedCorners: isTop
+                  ? { topLeft: 3, topRight: 3 } // Smaller radius
+                  : isBottom
+                    ? { bottomLeft: 0, bottomRight: 0 }
+                    : undefined,
+              })}
+            />
+          );
+        }}
+      </CartesianChart>
+    </Animated.View>
   );
 };
 

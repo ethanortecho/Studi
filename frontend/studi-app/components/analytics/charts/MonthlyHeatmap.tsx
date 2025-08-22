@@ -6,12 +6,16 @@ interface MonthlyHeatmapProps {
   heatmapData?: { [date: string]: number };
   monthDate: Date;
   isEmpty?: boolean; // When true, component should not render
+  showTitle?: boolean; // Whether to show the title. Default true.
+  showLegend?: boolean; // Whether to show the legend. Default true.
 }
 
 const MonthlyHeatmap: React.FC<MonthlyHeatmapProps> = ({ 
   heatmapData = {}, 
   monthDate,
-  isEmpty = false
+  isEmpty = false,
+  showTitle = true,
+  showLegend = true
 }) => {
   // Don't render if no data available
   if (isEmpty) {
@@ -70,14 +74,19 @@ const MonthlyHeatmap: React.FC<MonthlyHeatmapProps> = ({
 
   const { calendar, weeksNeeded } = getCalendarData();
 
-  // Calculate responsive sizing based on screen width
-  const { width: screenWidth } = Dimensions.get('window');
+  // Constants for layout calculations
   const containerPadding = 32; // 16px padding on each side (p-4)
   const weekdayLabelWidth = 48; // Width for Mon/Tue/Wed labels
-  const availableWidth = screenWidth - containerPadding - weekdayLabelWidth;
-  const cellSize = Math.floor(availableWidth / weeksNeeded); // Divide by number of weeks
-  const maxCellSize = 40; // Cap maximum size for larger screens
-  const finalCellSize = Math.min(cellSize, maxCellSize);
+
+  // Memoize responsive sizing calculations to prevent unnecessary recalculations
+  const finalCellSize = React.useMemo(() => {
+    const { width: screenWidth } = Dimensions.get('window');
+    const availableWidth = screenWidth - containerPadding - weekdayLabelWidth;
+    const cellSize = Math.floor(availableWidth / weeksNeeded); // Divide by number of weeks
+    const maxCellSize = 40; // Cap maximum size for larger screens
+    const minCellSize = 20; // Minimum size to prevent collapse with minimal data
+    return Math.max(minCellSize, Math.min(cellSize, maxCellSize));
+  }, [weeksNeeded, containerPadding, weekdayLabelWidth]);
 
   // Format date for heatmap data lookup
   const formatDateKey = (dayNumber: number) => {
@@ -157,40 +166,46 @@ const MonthlyHeatmap: React.FC<MonthlyHeatmapProps> = ({
   return (
     <DashboardCard className="bg-background border border-surface rounded-[35px] p-4">
       {/* Title */}
-      <Text className="text-lg font-bold text-primaryText mb-4 text-center">
-        {monthName}
-      </Text>
+      {showTitle && (
+        <Text className="text-lg font-bold text-primaryText mb-4 text-center">
+          {monthName}
+        </Text>
+      )}
 
       {/* Calendar Grid */}
       {renderCalendarGrid()}
       
       {/* Legend */}
-      <View className="flex-row items-center justify-center mt-4 gap-2">
-        <Text className="text-xs text-secondaryText font-medium">Less</Text>
-        {[0, 0.75, 1.5, 2.25, 3].map((hours, index) => {
-          const legendCellSize = Math.min(finalCellSize * 0.4, 12); // Scale with calendar but cap at 12px
-          return (
-            <View
-              key={index}
-              className="rounded-sm border border-gray-700"
-              style={{ 
-                width: legendCellSize, 
-                height: legendCellSize,
-                backgroundColor: getColorIntensity(hours) 
-              }}
-              accessibilityLabel={`${hours} hours intensity level`}
-            />
-          );
-        })}
-        <Text className="text-xs text-secondaryText font-medium">More</Text>
-      </View>
-      
-      {/* Study Hours Summary */}
-      <View className="flex-row items-center justify-center mt-2">
-        <Text className="text-xs text-secondaryText">
-          Study intensity: 0-3+ hours per day
-        </Text>
-      </View>
+      {showLegend && (
+        <>
+          <View className="flex-row items-center justify-center mt-4 gap-2">
+            <Text className="text-xs text-secondaryText font-medium">Less</Text>
+            {[0, 0.75, 1.5, 2.25, 3].map((hours, index) => {
+              const legendCellSize = Math.min(finalCellSize * 0.4, 12); // Scale with calendar but cap at 12px
+              return (
+                <View
+                  key={index}
+                  className="rounded-sm border border-gray-700"
+                  style={{ 
+                    width: legendCellSize, 
+                    height: legendCellSize,
+                    backgroundColor: getColorIntensity(hours) 
+                  }}
+                  accessibilityLabel={`${hours} hours intensity level`}
+                />
+              );
+            })}
+            <Text className="text-xs text-secondaryText font-medium">More</Text>
+          </View>
+          
+          {/* Study Hours Summary */}
+          <View className="flex-row items-center justify-center mt-2">
+            <Text className="text-xs text-secondaryText">
+              Study intensity: 0-3+ hours per day
+            </Text>
+          </View>
+        </>
+      )}
     </DashboardCard>
   );
 };

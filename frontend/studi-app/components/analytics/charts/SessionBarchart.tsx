@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView, Dimensions } from 'react-native';
 import { formatDurationFromMinutes } from '@/utils/timeFormatting';
 
 /**
@@ -75,7 +75,7 @@ interface ProcessedSession {
 export default function SessionBarchart({
   timelineData,
   categoryMetadata,
-  width = 320,
+  width,
   rightPadding = 16,
   isEmpty = false,
 }: SessionBarchartProps) {
@@ -83,6 +83,10 @@ export default function SessionBarchart({
   if (isEmpty) {
     return null;
   }
+
+  // Calculate responsive width
+  const screenWidth = Dimensions.get('window').width;
+  const responsiveWidth = width || Math.max(280, Math.min(screenWidth - 80, 360));
 
   // Debug logs removed
 
@@ -109,7 +113,10 @@ export default function SessionBarchart({
     const sessionDurations = completedSessions.map(session => {
       const start = new Date(session.start_time).getTime();
       const end = new Date(session.end_time).getTime();
-      return (end - start) / (1000 * 60); // Convert to minutes
+      const durationMs = end - start;
+      // Round to nearest second before converting to minutes for consistency
+      const durationSeconds = Math.round(durationMs / 1000);
+      return durationSeconds / 60; // Convert to minutes
     });
     // Debug logs removed
 
@@ -206,7 +213,7 @@ export default function SessionBarchart({
           categoryName: categoryInfo?.name || 'Unknown',
           color,
           durationMinutes: segmentDurationMinutes,
-          widthPercent: (segmentDurationMinutes / sessionDuration) * 100
+          widthPercent: Math.round((segmentDurationMinutes / sessionDuration) * 1000) / 10 // Round to 1 decimal place
         };
       });
 
@@ -214,7 +221,7 @@ export default function SessionBarchart({
         index: index + 1,
         durationMinutes: sessionDuration,
         segments,
-        barWidthPercent: (sessionDuration / axisDurationMinutes) * 100
+        barWidthPercent: Math.round((sessionDuration / axisDurationMinutes) * 1000) / 10 // Round to 1 decimal place for consistency
       };
     });
     // Debug logs removed
@@ -234,8 +241,7 @@ export default function SessionBarchart({
 
   return (
     <View
-      className="self-start pl-10"
-      style={{ width, alignSelf: 'flex-start' }}
+      style={{ width: responsiveWidth }}
     >
 
       <ScrollView
@@ -260,25 +266,31 @@ export default function SessionBarchart({
                   {/* Session Bar Container */}
                   <View
                     className="flex-1 ml-2"
-                    style={{ paddingRight: axisPadding }}
                   >
                     <View 
-                      className="h-5 flex-row rounded overflow-hidden items-center"
+                      className="h-5 flex-row items-center"
                       style={{ 
-                        width: `${session.barWidthPercent}%`,
-                        minWidth: 20 // Ensure very short sessions are still visible
+                        width: `${Math.max(session.barWidthPercent, 2)}%`, // Minimum 2% width for visibility
+                        minWidth: 10, // Ensure very short sessions are still visible
+                        borderRadius: 2, // Always use consistent border radius
+                        overflow: 'hidden'
                       }}
                     >
-                      {session.segments.map((segment, segmentIndex) => (
-                        <View
-                          key={segmentIndex}
-                          className={segment.categoryName === 'Break' ? 'h-3' : 'h-full'}
-                          style={{
-                            width: `${segment.widthPercent}%`,
-                            backgroundColor: segment.color,
-                          }}
-                        />
-                      ))}
+                      {session.segments.map((segment, segmentIndex) => {
+                        const isFirst = segmentIndex === 0;
+                        const isLast = segmentIndex === session.segments.length - 1;
+                        
+                        return (
+                          <View
+                            key={segmentIndex}
+                            className={segment.categoryName === 'Break' ? 'h-3' : 'h-full'}
+                            style={{
+                              flex: segment.durationMinutes, // Use flex to fill proportionally
+                              backgroundColor: segment.color,
+                            }}
+                          />
+                        );
+                      })}
                     </View>
                   </View>
                 </View>

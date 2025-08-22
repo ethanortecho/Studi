@@ -1,8 +1,9 @@
 import React from 'react';
 import { View, ScrollView, Text } from 'react-native';
-import MultiChartContainer from '@/components/analytics/MultiChartContainer';
-import MonthlyHeatmap from '@/components/analytics/charts/MonthlyHeatmap';
 import { CategoryMetadata } from '@/types/api';
+import DashboardKPIs from '@/components/analytics/DashboardKPIs';
+import MultiChartContainerV2 from '@/components/analytics/MultiChartContainerV2';
+import { DashboardData } from '@/types/charts';
 
 interface MonthlyDashboardProps {
   totalHours: number;
@@ -41,32 +42,41 @@ export default function MonthlyDashboard({
     );
   }
 
+  // Prepare dashboard data in the normalized format
+  const dashboardData: DashboardData = {
+    timeframe: 'monthly',
+    totalTime,
+    percentGoal,
+    categoryMetadata: categoryMetadata || {},
+    categoryDurations: categoryDurations || {},
+    pieChartData: pieChartData || [],
+    monthlyChartData: dailyBreakdown,
+    heatmapData: heatmapData || {},
+    monthDate,
+    isEmpty
+  };
+
   return (
     <ScrollView 
       className="flex-1" 
       contentContainerStyle={{ paddingBottom: 30 }}
       showsVerticalScrollIndicator={false}
     >
-      <View className="mx-4 mb-4">
-        <MultiChartContainer 
-          timeframe="monthly"
-          categoryMetadata={categoryMetadata || {}}
-          categoryDurations={categoryDurations || {}}
-          pieChartData={pieChartData || []}
-          monthlyChartData={dailyBreakdown}
+      {/* High-level KPIs */}
+      {!isEmpty && (
+        <DashboardKPIs 
           totalTime={totalTime}
           percentGoal={percentGoal}
-          isEmpty={isEmpty}
-          showTitle={false}
+          flowScore={7}  // TODO: Replace with actual flow score data
+          flowScoreTotal={10}
         />
-      </View>
+      )}
       
-      {/* Monthly Heatmap */}
+      {/* Multi-chart container with new architecture */}
       <View className="mx-4 mb-4">
-        <MonthlyHeatmap 
-          heatmapData={heatmapData}
-          monthDate={monthDate}
-          isEmpty={isEmpty}
+        <MultiChartContainerV2 
+          dashboardData={dashboardData}
+          showLegend={true}
         />
       </View>
       

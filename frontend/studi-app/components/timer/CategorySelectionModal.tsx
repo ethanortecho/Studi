@@ -74,12 +74,21 @@ export default function CategorySelectionModal({
     >
       {/* Backdrop */}
       <Pressable 
-        className="flex-1 bg-transparent justify-end"
+        className="flex-1 justify-end"
+        style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
         onPress={handleModalClose}
       >
-        {/* Modal Content */}
+        {/* Modal Content - Glassmorphic */}
         <Pressable
-          className="bg-surface rounded-t-3xl max-h-[70vh]"
+          className="rounded-t-3xl max-h-[70vh]"
+          style={{ 
+            backgroundColor: 'rgba(33, 32, 48, 0.85)',
+            borderTopWidth: 1,
+            borderLeftWidth: 1,
+            borderRightWidth: 1,
+            borderColor: 'rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(20px)',
+          }}
           onPress={() => {}} // Prevent modal close when tapping content
         >
           {/* Handle Bar */}
@@ -120,22 +129,32 @@ export default function CategorySelectionModal({
                 
                 {/* Action Buttons */}
                 <View className="space-y-3">
-                  {/* Create Categories Button */}
+                  {/* Create Categories Button - Glassmorphic */}
                   <Pressable
                     onPress={handleCreateCategories}
-                    className="bg-blue-600 py-4 px-6 rounded-xl"
+                    className="py-4 px-6 rounded-xl mb-3"
+                    style={{ 
+                      backgroundColor: 'rgba(93, 62, 218, 0.2)',
+                      borderWidth: 1,
+                      borderColor: 'rgba(93, 62, 218, 0.3)',
+                    }}
                   >
                     <Text className="text-white font-semibold text-center text-base">
                       Create My First Subject
                     </Text>
                   </Pressable>
                   
-                  {/* Cancel Session Button */}
+                  {/* Cancel Session Button - Glassmorphic */}
                   <Pressable
                     onPress={handleCancelSession}
-                    className="bg-gray-100 py-4 px-6 rounded-xl"
+                    className="py-4 px-6 rounded-xl"
+                    style={{ 
+                      backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                      borderWidth: 1,
+                      borderColor: 'rgba(255, 255, 255, 0.1)',
+                    }}
                   >
-                    <Text className="text-gray-700 font-semibold text-center text-base">
+                    <Text className="text-white/70 font-semibold text-center text-base">
                       Cancel & Go Back
                     </Text>
                   </Pressable>
@@ -151,15 +170,16 @@ export default function CategorySelectionModal({
                     key={category.id}
                     onPress={() => handleCategoryPress(category.id)}
                     onPressIn={() => handleCategoryPreview(category.id)}
-                    className={`p-4 rounded-xl mb-3 flex-row items-center justify-between ${isSelected ? 'border-2' : 'border border-gray-200'}`}
+                    className={`p-4 rounded-xl mb-3 flex-row items-center justify-between`}
                     style={{ 
-                      backgroundColor: isSelected ? `${category.color}20` : 'rgb(var(--color-surface))',
-                      borderColor: isSelected ? category.color : 'rgb(var(--color-border) / 0.2)',
+                      backgroundColor: isSelected ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.08)',
+                      borderWidth: 1,
+                      borderColor: isSelected ? category.color : 'rgba(255, 255, 255, 0.1)',
                       shadowColor: '#000',
-                      shadowOffset: { width: 0, height: 1 },
-                      shadowOpacity: 0.1,
-                      shadowRadius: 2,
-                      elevation: 2
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.15,
+                      shadowRadius: 4,
+                      elevation: 3
                     }}
                   >
                     <View className="flex-row items-center">

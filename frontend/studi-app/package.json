@@ -17,6 +17,7 @@
   "dependencies": {
     "@expo-google-fonts/poppins": "^0.4.0",
     "@expo/vector-icons": "^14.0.2",
+    "@react-native-async-storage/async-storage": "2.1.2",
     "@react-navigation/bottom-tabs": "^7.2.0",
     "@react-navigation/native": "^7.0.14",
     "@shopify/react-native-skia": "^2.0.0-next.4",
@@ -32,6 +33,7 @@
     "expo-status-bar": "~2.2.3",
     "expo-symbols": "^0.4.4",
     "expo-system-ui": "~5.0.7",
+    "expo-updates": "~0.28.17",
     "expo-web-browser": "~14.1.6",
     "nativewind": "^4.1.23",
     "react": "19.0.0",
@@ -47,8 +49,7 @@
     "react-native-web": "^0.20.0",
     "react-native-webview": "^13.13.5",
     "tailwindcss": "^3.3.0",
-    "victory-native": "^41.17.1",
-    "@react-native-async-storage/async-storage": "2.1.2"
+    "victory-native": "^41.19.2"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

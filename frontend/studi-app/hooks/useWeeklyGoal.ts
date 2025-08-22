@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import { getApiUrl } from '@/config/api';
 import { formatDateForAPI } from '@/utils/dateUtils';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { apiClient } from '@/utils/apiClient';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface WeeklyGoal {
   id: number;
@@ -32,111 +32,25 @@ function getCurrentMonday(date: Date = new Date()): Date {
 
 export type { WeeklyGoal };
 
-/**
- * AUTHENTICATION HELPER FOR GOAL API
- * 
- * Similar to our other API files, this makes authenticated requests
- * with automatic token refresh when needed.
- */
-async function makeAuthenticatedGoalRequest(url: string, options: RequestInit = {}): Promise<Response> {
-  // Get current access token
-  const accessToken = await AsyncStorage.getItem('accessToken');
-  
-  if (!accessToken) {
-    throw new Error('User not authenticated - please login');
-  }
-
-  // Make first attempt with current token
-  let response = await fetch(url, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`,
-      ...options.headers,
-    },
-  });
-
-  // If token expired (401), try to refresh and retry
-  if (response.status === 401) {
-    console.log('🔄 useWeeklyGoal: Access token expired, attempting refresh...');
-    
-    const refreshSuccessful = await refreshGoalToken();
-    
-    if (refreshSuccessful) {
-      // Get new access token and retry
-      const newAccessToken = await AsyncStorage.getItem('accessToken');
-      if (newAccessToken) {
-        console.log('🔄 useWeeklyGoal: Retrying request with new token...');
-        response = await fetch(url, {
-          ...options,
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${newAccessToken}`,
-            ...options.headers,
-          },
-        });
-      }
-    } else {
-      throw new Error('Authentication expired - please login again');
-    }
-  }
-
-  return response;
-}
-
-/**
- * Token refresh helper for goal API
- */
-async function refreshGoalToken(): Promise<boolean> {
-  try {
-    const refreshToken = await AsyncStorage.getItem('refreshToken');
-    
-    if (!refreshToken) {
-      console.log('❌ useWeeklyGoal: No refresh token available');
-      return false;
-    }
-
-    const response = await fetch(getApiUrl('/auth/refresh/'), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ refresh: refreshToken }),
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      
-      // Store new access token
-      await AsyncStorage.setItem('accessToken', data.access);
-      
-      // Store new refresh token if provided (token rotation)
-      if (data.refresh) {
-        await AsyncStorage.setItem('refreshToken', data.refresh);
-      }
-      
-      console.log('✅ useWeeklyGoal: Token refresh successful');
-      return true;
-    } else {
-      console.log('❌ useWeeklyGoal: Refresh token expired');
-      // Clear all auth data
-      await AsyncStorage.multiRemove(['accessToken', 'refreshToken', 'user']);
-      return false;
-    }
-  } catch (error) {
-    console.error('❌ useWeeklyGoal: Token refresh failed:', error);
-    await AsyncStorage.multiRemove(['accessToken', 'refreshToken', 'user']);
-    return false;
-  }
-}
-
 export function useWeeklyGoal(): WeeklyGoalState {
   const [goal, setGoal] = useState<WeeklyGoal | null>(null);
   const [loading, setLoading] = useState(true);
   const [missing, setMissing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Get authentication state
+  const { user, isLoading: authLoading } = useAuth();
 
   const fetchGoal = useCallback(async () => {
+    // Don't fetch if not authenticated
+    if (!user) {
+      console.log('⏸️ useWeeklyGoal: Skipping fetch - user not authenticated');
+      setLoading(false);
+      setMissing(false);
+      setGoal(null);
+      return;
+    }
+
     setLoading(true);
     setMissing(false);
     setError(null);
@@ -146,21 +60,27 @@ export function useWeeklyGoal(): WeeklyGoalState {
     try {
       console.log('📅 useWeeklyGoal: Fetching goal for week:', weekStartParam);
       
-      // JWT tokens contain user identity - no need for username parameter
-      const url = getApiUrl(`/goals/weekly/?week_start=${weekStartParam}`);
-      const response = await makeAuthenticatedGoalRequest(url);
+      // Use the new API client
+      const response = await apiClient.get<WeeklyGoal>(
+        `/goals/weekly/?week_start=${weekStartParam}`
+      );
       
       if (response.status === 404) {
         console.log('📅 useWeeklyGoal: No goal found for this week');
         setMissing(true);
         setGoal(null);
-      } else if (!response.ok) {
-        const txt = await response.text();
-        throw new Error(`Error ${response.status}: ${txt}`);
-      } else {
-        const data = (await response.json()) as WeeklyGoal;
-        console.log('✅ useWeeklyGoal: Goal fetched successfully:', data);
-        setGoal(data);
+      } else if (response.error) {
+        // Handle API errors
+        if (response.error.code === 'AUTH_EXPIRED') {
+          // Auth expired is handled by API client, just log it
+          console.log('🔐 useWeeklyGoal: Authentication expired');
+          setError('Please log in again');
+        } else {
+          throw new Error(response.error.message);
+        }
+      } else if (response.data) {
+        console.log('✅ useWeeklyGoal: Goal fetched successfully:', response.data);
+        setGoal(response.data);
       }
     } catch (err: any) {
       console.error('❌ useWeeklyGoal: Failed to fetch weekly goal', err);
@@ -168,11 +88,21 @@ export function useWeeklyGoal(): WeeklyGoalState {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
-    fetchGoal();
-  }, [fetchGoal]);
+    // Wait for auth to load, then fetch if user exists
+    if (!authLoading) {
+      if (user) {
+        fetchGoal();
+      } else {
+        // User not authenticated, set appropriate state
+        setLoading(false);
+        setMissing(false);
+        setGoal(null);
+      }
+    }
+  }, [fetchGoal, authLoading, user]);
 
   return { goal, loading, missing, error, refetch: fetchGoal };
 } 

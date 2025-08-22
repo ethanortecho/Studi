@@ -14,10 +14,13 @@ export default function Legend({ category_durations, category_metadata }: Legend
         .filter(([_, duration]) => duration > 0)
         .map(([categoryName, _]) => categoryName);
 
+    if (categoriesWithData.length === 0) {
+        return null;
+    }
 
     return (
-        <View>
-            <View className="flex-row flex-wrap px-5 justify-left gap-4">
+        <View style={{ width: '100%' }}>
+            <View className="flex-row flex-wrap justify-center gap-3 px-2">
                 {categoriesWithData.map((categoryName) => {
                     // Find the metadata for this category by name
                     const categoryMeta = Object.values(category_metadata).find(

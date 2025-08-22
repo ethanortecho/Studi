@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Category } from '@/utils/studySession';
@@ -11,6 +11,14 @@ export default function CategoryList() {
     const [editModalVisible, setEditModalVisible] = useState(false);
     const [addModalVisible, setAddModalVisible] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+
+    // Fetch categories when the component mounts if not already loaded
+    useEffect(() => {
+        if (categories.length === 0) {
+            console.log("CategoryList: No categories loaded, fetching...");
+            refreshCategories();
+        }
+    }, []);
 
     const handleCategoryPress = (category: Category) => {
         setSelectedCategory(category);

@@ -11,17 +11,27 @@ export default function PomoDisplay({ formatTime, pomoBlockStatus, pomoBlocksRem
   return (
     <View className="items-center">
       {/* Pomodoro Status */}
-      <View className="mb-4">
-        <Text className={`text-center text-xl font-medium ${pomoBlockStatus === 'work' ? 'text-red-200' : 'text-green-200'}`}>
-          {pomoBlockStatus === 'work' ? '🍅 Focus Time' : '☕ Break Time'}
+      <View className="mb-6">
+        <Text className={`text-center text-xl font-medium ${pomoBlockStatus === 'work' ? 'text-white/60' : 'text-white/60'}`}>
+          {pomoBlockStatus === 'work' ? 'Focus Time' : 'Break Time'}
         </Text>
-        <Text className="text-center text-sm text-white opacity-80">
+        <Text className="text-center text-sm text-white/50 mt-1">
           {pomoBlocksRemaining} blocks remaining
         </Text>
       </View>
       
-      {/* Timer Display */}
-      <Text className="text-6xl font-bold text-white">{formatTime()}</Text>
+      {/* Timer Display - Much larger with Inter font */}
+      <Text 
+        className="text-white font-bold tracking-tight"
+        style={{ 
+          fontSize: 96,
+          fontFamily: 'Inter',
+          fontWeight: '700',
+          letterSpacing: -2
+        }}
+      >
+        {formatTime()}
+      </Text>
     </View>
   );
-} 
+}

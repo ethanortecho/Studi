@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 
 /**
  * A single day timeline row visualising study sessions along a 24-hour baseline.
@@ -42,16 +42,22 @@ interface Props {
 const DEFAULT_TIMELINE_WIDTH = 256;
 const DEFAULT_BAR_HEIGHT = 8;
 
-const TIMELINE_COLOR = '#3A3D4D';
+const TIMELINE_COLOR = '#2D2E6F';
 
 const DayTimeline: React.FC<Props> = ({
   dayLabel,
   sessions,
   timeWindow,
   onBarPress,
-  timelineWidth = DEFAULT_TIMELINE_WIDTH,
+  timelineWidth,
   barHeight = DEFAULT_BAR_HEIGHT,
 }) => {
+  // Calculate responsive timeline width with proper padding (matching MonthlyHeatmap)
+  const screenWidth = Dimensions.get('window').width;
+  const containerPadding = 32; // 16px on each side
+  const dayLabelWidth = 60; // Width for day label (Mon, Tue, etc.)
+  const availableWidth = screenWidth - containerPadding - dayLabelWidth;
+  const responsiveTimelineWidth = timelineWidth || Math.max(200, Math.min(availableWidth, 320));
   /* ---------------------------------- helpers --------------------------------- */
   /**
    * Merge overlapping sessions so they render as a single, wider bar.
@@ -94,7 +100,7 @@ const DayTimeline: React.FC<Props> = ({
       <Text style={styles.dayLabel}>{dayLabel}</Text>
 
       {/* Timeline container */}
-      <View style={[styles.timelineContainer, { width: timelineWidth, height: barHeight }]}>        
+      <View style={[styles.timelineContainer, { width: responsiveTimelineWidth, height: barHeight }]}>        
         {/* Baseline line */}
         <View style={[styles.baseline, { backgroundColor: TIMELINE_COLOR }]} />
 
@@ -132,11 +138,10 @@ const styles = StyleSheet.create({
   rowContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20, // space between rows (tighten density)
+    marginBottom: 16, // space between rows (tighten density)
   },
   dayLabel: {
-    width: 48, // fixed column width (~"Mon" text width + padding)
-    marginRight: 12,
+    width: 56, // fixed column width (~"Mon" text width + padding)
     fontSize: 10,
     fontWeight: '400',
     color: '#FFFFFF',

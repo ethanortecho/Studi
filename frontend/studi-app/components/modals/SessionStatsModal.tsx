@@ -71,28 +71,42 @@ export default function SessionStatsModal({
       onRequestClose={handleDismiss}
     >
       <Pressable 
-        className="flex-1 bg-black/50 justify-center items-center px-6"
+        className="flex-1 justify-center items-center px-6"
+        style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)' }}
         onPress={canDismiss ? handleDismiss : undefined}
       >
         <Pressable 
-          className="bg-white rounded-3xl p-8 w-full max-w-sm"
+          className="rounded-3xl p-8 w-full max-w-sm"
+          style={{ 
+            backgroundColor: 'rgba(33, 32, 48, 0.9)',
+            borderWidth: 1,
+            borderColor: 'rgba(255, 255, 255, 0.15)',
+            backdropFilter: 'blur(20px)',
+          }}
           onPress={() => {}} // Prevent dismiss when tapping modal content
         >
           <View className="items-center">
-            {/* Completion Icon */}
-            <View className="w-16 h-16 bg-green-100 rounded-full items-center justify-center mb-4">
+            {/* Completion Icon - Glassmorphic */}
+            <View 
+              className="w-16 h-16 rounded-full items-center justify-center mb-4"
+              style={{ 
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                borderWidth: 1,
+                borderColor: 'rgba(255, 255, 255, 0.15)',
+              }}
+            >
               <Text className="text-3xl">{isSubmitted ? '✓' : '🎯'}</Text>
             </View>
             
             {/* Title */}
-            <Text className="text-xl font-bold text-gray-900 mb-4">
+            <Text className="text-xl font-bold text-white mb-4">
               {isSubmitted ? 'Thanks for your feedback!' : 'Session Complete!'}
             </Text>
             
             {/* Rating Section */}
             {!isSubmitted && (
               <View className="mb-6 w-full">
-                <Text className="text-lg text-gray-700 mb-4 text-center font-medium">
+                <Text className="text-lg text-white/80 mb-4 text-center font-medium">
                   Rate your productivity:
                 </Text>
                 
@@ -106,15 +120,22 @@ export default function SessionStatsModal({
                         key={option.value}
                         onPress={() => handleRatingSelect(option.value)}
                         disabled={isSubmitting}
-                        className={`items-center p-3 rounded-2xl border-2 min-w-[60px] ${
-                          isSelected 
-                            ? 'bg-purple-600 border-purple-600' 
-                            : 'border-gray-300 bg-gray-50'
-                        } ${isSubmitting ? 'opacity-70' : ''}`}
+                        className={`items-center p-3 rounded-2xl min-w-[60px] ${
+                          isSubmitting ? 'opacity-70' : ''
+                        }`}
+                        style={{ 
+                          backgroundColor: isSelected 
+                            ? 'rgba(93, 62, 218, 0.3)' 
+                            : 'rgba(255, 255, 255, 0.08)',
+                          borderWidth: 1,
+                          borderColor: isSelected 
+                            ? 'rgba(93, 62, 218, 0.5)' 
+                            : 'rgba(255, 255, 255, 0.1)',
+                        }}
                       >
                         <Text className="text-2xl mb-1">{option.emoji}</Text>
                         <Text className={`text-xs font-medium ${
-                          isSelected ? 'text-white' : 'text-gray-600'
+                          isSelected ? 'text-white' : 'text-white/60'
                         }`}>
                           {option.text}
                         </Text>
@@ -130,16 +151,16 @@ export default function SessionStatsModal({
             
             {/* Duration - shown after rating submission */}
             {isSubmitted && (
-              <Text className="text-lg text-gray-600 mb-6 text-center">
+              <Text className="text-lg text-white/70 mb-6 text-center">
                 You studied for{' '}
-                <Text className="font-semibold text-purple-600">
+                <Text className="font-semibold text-purple-400">
                   {formatDurationFromMinutes(sessionDuration)}
                 </Text>
               </Text>
             )}
             
             {/* Instructions */}
-            <Text className="text-sm text-gray-400 text-center">
+            <Text className="text-sm text-white/40 text-center">
               {isSubmitted 
                 ? 'Tap anywhere to continue' 
                 : 'Select a rating above to continue'

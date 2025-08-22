@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json.schemastore.org/eas.json",
+  "cli": {
+    "version": ">= 16.0.0"
+  },
+  "build": {
+    "base": {
+      "node": "20.15.0",
+      "env": {
+        "NODE_ENV": "production"
+      },
+      "ios": {
+        "image": "macos-sonoma-14.6-xcode-16.1"
+      }
+    },
+    "development": {
+      "extends": "base",
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "ENVIRONMENT": "development"
+      },
+      "ios": {
+        "simulator": true
+      }
+    },
+    "preview": {
+      "extends": "base",
+      "distribution": "internal",
+      "channel": "preview",
+      "env": {
+        "EXPO_PUBLIC_ENVIRONMENT": "staging"
+      },
+      "ios": {
+        "resourceClass": "m-medium"
+      }
+    },
+    "production": {
+      "extends": "base",
+      "channel": "production", 
+      "env": {
+        "ENVIRONMENT": "production"
+      },
+      "ios": {
+        "resourceClass": "m-medium"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "your-apple-id@example.com",
+        "ascAppId": "placeholder-will-be-generated",
+        "appleTeamId": "placeholder-from-developer-account"
+      }
+    }
+  }
+}

@@ -79,7 +79,7 @@ export default function SettingsScreen() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       {/* Header */}
       <View className="items-center px-4 pt-4 mb-3 bg-background">
         <Text className="text-2xl font-bold text-primaryText">Settings</Text>

@@ -8,16 +8,12 @@ export default function PomoSessionScreen() {
     // Get pomodoro config from route params (passed from modal)
     const { pomodoroBlocks, pomodoroWorkDuration, pomodoroBreakDuration, selectedCategoryId } = useLocalSearchParams();
     
-    console.log('Pomo screen received params:', { pomodoroBlocks, pomodoroWorkDuration, pomodoroBreakDuration });
-    
     const pomoConfig: PomoConfig = {
         pomodoroBlocks: pomodoroBlocks ? parseInt(pomodoroBlocks as string) : 4, // Default to 4 blocks
         pomodoroWorkDuration: pomodoroWorkDuration ? parseInt(pomodoroWorkDuration as string) : 25, // Default to 25 minutes
         pomodoroBreakDuration: pomodoroBreakDuration ? parseInt(pomodoroBreakDuration as string) : 5, // Default to 5 minutes
         selectedCategoryId: selectedCategoryId as string
     };
-
-    console.log('Pomo screen final config:', pomoConfig);
     
     const timerHook = usePomo(pomoConfig);
 

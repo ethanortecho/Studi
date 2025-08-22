@@ -124,7 +124,8 @@ export default function SetWeeklyGoalScreen() {
           />
         </View>
 
-        {/* Carry-over toggle */}
+        {/* Carry-over toggle - Temporarily disabled for MVP */}
+        {/*
         <View className="flex-row items-center justify-between mb-8 px-1">
           <Text className="text-gray-100 text-lg">Carry over overtime</Text>
           <Switch
@@ -134,6 +135,7 @@ export default function SetWeeklyGoalScreen() {
             thumbColor="#fff"
           />
         </View>
+        */}
 
         {/* Study Days Selection */}
         <View className="mb-8">

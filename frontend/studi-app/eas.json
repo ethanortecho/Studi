@@ -44,6 +44,17 @@
       "ios": {
         "resourceClass": "m-medium"
       }
+    },
+    "production-test": {
+      "extends": "base",
+      "distribution": "internal",
+      "channel": "production-test",
+      "env": {
+        "EXPO_PUBLIC_ENVIRONMENT": "production"
+      },
+      "ios": {
+        "resourceClass": "m-medium"
+      }
     }
   },
   "submit": {

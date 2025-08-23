@@ -68,9 +68,9 @@ class StudySessionSerializer(serializers.ModelSerializer):
         instance.end_time = validated_data.get('end_time')
         instance.status = validated_data.get('status', 'completed')
         
-        # Update productivity rating if provided
-        if 'productivity_rating' in validated_data:
-            instance.productivity_rating = validated_data.get('productivity_rating')
+        # Update focus rating if provided
+        if 'focus_rating' in validated_data:
+            instance.focus_rating = validated_data.get('focus_rating')
             
         instance.save()
         return instance

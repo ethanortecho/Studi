@@ -270,30 +270,30 @@ class UpdateSessionRating(APIView):
                     "error": "Can only update rating for completed sessions"
                 }, status=status.HTTP_400_BAD_REQUEST)
             
-            # Validate productivity rating
-            productivity_rating = request.data.get('productivity_rating')
-            if not productivity_rating:
+            # Validate focus rating (still accept productivity_rating for backward compatibility)
+            focus_rating = request.data.get('focus_rating') or request.data.get('productivity_rating')
+            if not focus_rating:
                 return Response({
-                    "error": "productivity_rating is required"
+                    "error": "focus_rating is required"
                 }, status=status.HTTP_400_BAD_REQUEST)
             
             try:
-                rating_value = int(productivity_rating)
+                rating_value = int(focus_rating)
                 if rating_value < 1 or rating_value > 5:
                     raise ValueError()
             except (ValueError, TypeError):
                 return Response({
-                    "error": "productivity_rating must be an integer between 1 and 5"
+                    "error": "focus_rating must be an integer between 1 and 5"
                 }, status=status.HTTP_400_BAD_REQUEST)
             
-            # Update only the productivity rating
-            session.productivity_rating = str(rating_value)
+            # Update only the focus rating
+            session.focus_rating = str(rating_value)
             session.save()
             
             return Response({
                 "message": "Session rating updated successfully",
                 "session_id": session.id,
-                "productivity_rating": session.productivity_rating
+                "focus_rating": session.focus_rating
             }, status=status.HTTP_200_OK)
             
         except StudySession.DoesNotExist:

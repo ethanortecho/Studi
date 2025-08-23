@@ -1,7 +1,7 @@
 import Constants from 'expo-constants';
 
 // Environment-based API configuration
-const LOCAL_IP = '192.168.4.68'; // Your computer's local IP - update this!
+const LOCAL_IP = '192.168.86.31'; // Your computer's local IP - update this!
 const LOCAL_PORT = '8000';
 
 // Environment-based URL selection

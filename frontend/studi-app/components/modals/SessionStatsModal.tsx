@@ -23,11 +23,11 @@ export default function SessionStatsModal({
 
   // Rating options with emoji and text
   const ratingOptions = [
-    { value: 1, emoji: '😞', text: 'Poor' },
-    { value: 2, emoji: '😐', text: 'Fair' },
-    { value: 3, emoji: '🙂', text: 'Good' },
-    { value: 4, emoji: '😊', text: 'Great' },
-    { value: 5, emoji: '🤩', text: 'Excellent' },
+    { value: 1, emoji: '😵', text: 'Distracted' },
+    { value: 2, emoji: '😐', text: 'Scattered' },
+    { value: 3, emoji: '🙂', text: 'Moderate' },
+    { value: 4, emoji: '😊', text: 'Focused' },
+    { value: 5, emoji: '🎯', text: 'Deep Focus' },
   ];
   
 
@@ -107,7 +107,7 @@ export default function SessionStatsModal({
             {!isSubmitted && (
               <View className="mb-6 w-full">
                 <Text className="text-lg text-white/80 mb-4 text-center font-medium">
-                  Rate your productivity:
+                  Rate your focus:
                 </Text>
                 
                 <View className="flex-row justify-between px-2">

@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE_URL } from '../config/api';
+import { networkErrorManager } from './networkErrorManager';
 
 // =============================================
 // TYPE DEFINITIONS
@@ -197,6 +198,18 @@ class ApiClient {
     endpoint: string,
     config: ApiRequestConfig = {}
   ): Promise<ApiResponse<T>> {
+    // Check if we're in backoff period
+    if (!networkErrorManager.shouldAllowRequest()) {
+      return {
+        error: {
+          message: 'Too many network errors. Please wait before trying again.',
+          code: 'BACKOFF',
+          retryable: false,
+        },
+        status: 0,
+      };
+    }
+    
     const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
     
     // Default retry configuration

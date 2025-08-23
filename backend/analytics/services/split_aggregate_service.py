@@ -168,16 +168,22 @@ class SplitAggregateUpdateService:
                 if block.duration and block.duration > 0:
                     category_durations[block.category.name] += block.duration
         
-        # Calculate weighted productivity score
+        # Calculate weighted focus score for flow calculation
+        # Only include sessions >= 25 minutes (1500 seconds) for scoring
+        MIN_SESSION_LENGTH_FOR_SCORING = 1500  # 25 minutes in seconds
         total_weighted_score = 0
         total_rated_duration = 0
         sessions_with_ratings = 0
         
         for session in valid_sessions:
-            if session.productivity_rating:
+            # Skip sessions shorter than 25 minutes
+            if session.total_duration < MIN_SESSION_LENGTH_FOR_SCORING:
+                continue
+                
+            if session.focus_rating:
                 try:
                     # Convert rating string to integer (1-5)
-                    rating = int(session.productivity_rating)
+                    rating = int(session.focus_rating)
                     # Convert to percentage: 1=20%, 2=40%, 3=60%, 4=80%, 5=100%
                     score = rating * 20
                     # Weight by session duration
@@ -186,7 +192,7 @@ class SplitAggregateUpdateService:
                     sessions_with_ratings += 1
                 except (ValueError, TypeError):
                     # Skip sessions with invalid ratings
-                    print(f"Invalid productivity rating for session {session.id}: {session.productivity_rating}")
+                    print(f"Invalid focus rating for session {session.id}: {session.focus_rating}")
                     continue
         
         # Calculate final productivity score (weighted average)

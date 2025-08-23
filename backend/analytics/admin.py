@@ -4,8 +4,8 @@ from django.utils.timezone import localtime
 
 @admin.register(StudySession)
 class StudySessionAdmin(admin.ModelAdmin):
-    list_display = ('user', 'formatted_start_time', 'formatted_end_time', 'total_duration', 'status', 'productivity_rating')
-    list_filter = ('status', 'productivity_rating', 'start_time')
+    list_display = ('user', 'formatted_start_time', 'formatted_end_time', 'total_duration', 'status', 'focus_rating')
+    list_filter = ('status', 'focus_rating', 'start_time')
     search_fields = ('user__username',)
     ordering = ('-start_time',)  # Most recent first
 

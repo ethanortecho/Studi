@@ -58,8 +58,7 @@ export default function DailyDashboard({
         <DashboardKPIs 
           totalTime={totalTime}
           percentGoal={percentGoal}
-          flowScore={7}  // TODO: Replace with actual flow score data
-          flowScoreTotal={10}
+          flowScore={productivityScore ? productivityScore * 10 : undefined}  // Scale 0-100 to 0-1000
         />
       )}
       

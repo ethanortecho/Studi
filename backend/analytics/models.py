@@ -45,18 +45,13 @@ class StudySession(models.Model):
         ("paused", "Paused"),
         ("interrupted", "Interrupted")
     ]
-    PRODUCTIVITY_RATING_CHOICES = [
-        ("productive", "Productive"),
-        ("neutral", "Neutral"),
-        ("distracting", "Distracting"),
-    ]
 
 
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField(null=True, blank=True)
     total_duration = models.IntegerField(null=True, blank=True)  # Duration in seconds
-    productivity_rating = models.CharField(null=True, blank=True, max_length=50)
+    focus_rating = models.CharField(null=True, blank=True, max_length=50, help_text="User's self-rated focus level (1-5)")
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default="active")
 
     objects = StudySessionManager()

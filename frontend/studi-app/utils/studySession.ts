@@ -117,8 +117,8 @@ export const createStudySession = async (startTime: Date) => {
     return response.data;
   };
   
-export const endStudySession = async (sessionId: string, endTime: Date, productivityRating?: number) => {
-    console.log("API: endStudySession called with", sessionId, endTime, productivityRating);
+export const endStudySession = async (sessionId: string, endTime: Date, focusRating?: number) => {
+    console.log("API: endStudySession called with", sessionId, endTime, focusRating);
     console.log("API: Sending UTC end time to server:", endTime.toISOString());
     
     const requestBody: any = {
@@ -126,9 +126,9 @@ export const endStudySession = async (sessionId: string, endTime: Date, producti
       status: "completed"
     };
     
-    // Add productivity rating if provided (1-5)
-    if (productivityRating !== undefined && productivityRating >= 1 && productivityRating <= 5) {
-      requestBody.productivity_rating = productivityRating.toString();
+    // Add focus rating if provided (1-5)
+    if (focusRating !== undefined && focusRating >= 1 && focusRating <= 5) {
+      requestBody.focus_rating = focusRating.toString();
     }
     
     const response = await apiClient.put(`/end-session/${sessionId}/`, requestBody);
@@ -140,11 +140,11 @@ export const endStudySession = async (sessionId: string, endTime: Date, producti
     return response.data;
   };
 
-export const updateSessionRating = async (sessionId: string, productivityRating: number) => {
-    console.log("API: updateSessionRating called with", sessionId, productivityRating);
+export const updateSessionRating = async (sessionId: string, focusRating: number) => {
+    console.log("API: updateSessionRating called with", sessionId, focusRating);
     
     const response = await apiClient.put(`/update-session-rating/${sessionId}/`, {
-      productivity_rating: productivityRating
+      focus_rating: focusRating
     });
     
     if (response.error) {

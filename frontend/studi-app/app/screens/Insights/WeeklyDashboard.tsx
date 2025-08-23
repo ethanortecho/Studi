@@ -1,5 +1,5 @@
-import React from 'react';
-import { ScrollView, View, Text } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { ScrollView, View, Text, RefreshControl } from 'react-native';
 import { CategoryMetadata } from '../../../types/api';
 import DashboardKPIs from '../../../components/analytics/DashboardKPIs';
 import MultiChartContainerV2 from '../../../components/analytics/MultiChartContainerV2';
@@ -34,6 +34,19 @@ export default function WeeklyDashboard({
   loading,
   isEmpty
 }: WeeklyDashboardProps) {
+  const [refreshing, setRefreshing] = useState(false);
+  
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    // Clear cache for current data to force refresh
+    const { clearDashboardCache } = await import('../../../utils/fetchApi');
+    clearDashboardCache();
+    
+    // Wait a bit for data to reload
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1500);
+  }, []);
   if (loading) {
     return (
       <View className="flex-1 justify-center items-center">
@@ -60,6 +73,15 @@ export default function WeeklyDashboard({
       className="flex-1" 
       contentContainerStyle={{ paddingBottom: 30 }}
       showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor="#9333ea"
+          colors={['#9333ea']}
+          progressBackgroundColor="#1f1f2e"
+        />
+      }
     >
       {/* High-level KPIs */}
       {!isEmpty && (

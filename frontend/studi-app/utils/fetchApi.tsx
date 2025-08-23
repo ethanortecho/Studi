@@ -7,6 +7,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const apiCache = new Map<string, any>();
 // Track ongoing requests to prevent duplicates
 const ongoingRequests = new Map<string, Promise<any>>();
+// Track failed endpoints to prevent infinite retry loops
+const failedEndpoints = new Set<string>();
 
 // Cache management
 const MAX_CACHE_SIZE = 50; // Keep last 50 API responses
@@ -92,6 +94,13 @@ export default function useAggregateData(time_frame: string,
 
     useEffect(() => {
         const fetchData = async() => {
+            // Check if this endpoint has already failed - prevent infinite loops
+            if (failedEndpoints.has(cacheKey)) {
+                setError('Network error - pull to refresh');
+                setLoading(false);
+                return;
+            }
+            
             // Check if authenticated via API client
             const isAuthenticated = await apiClient.isAuthenticated();
             
@@ -187,11 +196,18 @@ export default function useAggregateData(time_frame: string,
                         if (response.error.code === 'AUTH_EXPIRED') {
                             throw new Error('Your session has expired. Please log in again.');
                         }
+                        // For network errors during backoff, throw to stop retrying
+                        if (response.error.code === 'BACKOFF') {
+                            throw new Error('Network temporarily unavailable. Please try again later.');
+                        }
                         throw new Error(response.error.message);
                     }
                     
                     const json = response.data;
                     // Data retrieved from API
+                    
+                    // Success! Clear any failed endpoint tracking
+                    failedEndpoints.delete(cacheKey);
                     
                     // Debug timezone data if needed
                     
@@ -214,7 +230,12 @@ export default function useAggregateData(time_frame: string,
                     return json;
                 } catch (error) {
                     const errorTime = performance.now() - overallStart;
-                    console.error(`❌ fetchApi: Error after ${errorTime.toFixed(2)}ms for ${cacheKey}:`, error);
+                    // Mark this endpoint as failed to prevent infinite loops
+                    failedEndpoints.add(cacheKey);
+                    // Don't log network errors - they're handled by the error system
+                    if (!(error instanceof Error && error.message.includes('Network'))) {
+                        console.error(`❌ fetchApi: Error after ${errorTime.toFixed(2)}ms for ${cacheKey}:`, error);
+                    }
                     throw error;
                 } finally {
                     // Remove from ongoing requests
@@ -237,10 +258,22 @@ export default function useAggregateData(time_frame: string,
             }
         };
 
-        fetchData();
-    }, [cacheKey, userId]);
+        // Only fetch if we have a valid cache key
+        if (cacheKey) {
+            fetchData();
+        }
+    }, [cacheKey]); // Remove userId from dependencies to prevent re-fetching
         
     return { data, loading, error };
+}
+
+/**
+ * Clear failed endpoints to allow retry
+ * Called when user pulls to refresh
+ */
+export function clearFailedEndpoints() {
+    console.log('🔄 Clearing failed endpoints for retry');
+    failedEndpoints.clear();
 }
 
 /**
@@ -248,6 +281,8 @@ export default function useAggregateData(time_frame: string,
  * Used when session ends to ensure fresh data is fetched
  */
 export function clearDashboardCache() {
+    // Also clear failed endpoints when clearing cache
+    clearFailedEndpoints();
     const today = new Date();
     const localToday = new Date(today.getTime() - (today.getTimezoneOffset() * 60000))
         .toISOString().split('T')[0];

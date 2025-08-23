@@ -178,34 +178,31 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
       try {
         console.log('Hook: Checking for hanging sessions on app startup...');
         
-        // Call backend endpoint to check for and cleanup hanging sessions
-        // Use JWT authentication like our other API calls
-        const accessToken = await AsyncStorage.getItem('accessToken');
+        // Import apiClient dynamically to avoid circular dependency
+        const { apiClient } = await import('../utils/apiClient');
         
-        if (!accessToken) {
-          console.log('Hook: No access token available, skipping hanging session cleanup');
+        // Check if authenticated first
+        const isAuthenticated = await apiClient.isAuthenticated();
+        if (!isAuthenticated) {
+          console.log('Hook: Not authenticated, skipping hanging session cleanup');
           return;
         }
-
-        const response = await fetch(`${API_BASE_URL}/cleanup-hanging-sessions/`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${accessToken}`
-          }
-        });
         
-        if (response.ok) {
-          const result = await response.json();
-          if (result.cleaned_sessions > 0) {
-            console.log(`Hook: Cleaned up ${result.cleaned_sessions} hanging session(s) on startup`);
+        const response = await apiClient.post('/cleanup-hanging-sessions/');
+        
+        if (!response.error && response.data) {
+          if (response.data.cleaned_sessions > 0) {
+            console.log(`Hook: Cleaned up ${response.data.cleaned_sessions} hanging session(s) on startup`);
           }
-        } else {
-          console.warn('Hook: Failed to check for hanging sessions:', response.status);
+        } else if (response.error) {
+          // Don't log network errors, they'll be handled by the toast system
+          if (response.error.code !== 'NETWORK_ERROR' && response.error.code !== 'BACKOFF') {
+            console.warn('Hook: Failed to check for hanging sessions:', response.error.message);
+          }
         }
       } catch (error) {
-        console.error('Hook: Error checking for hanging sessions:', error);
-        // Don't throw - this shouldn't break app startup
+        // Silently fail - this is not critical functionality
+        console.log('Hook: Could not check for hanging sessions');
       }
     };
     

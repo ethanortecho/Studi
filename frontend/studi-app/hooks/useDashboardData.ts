@@ -4,6 +4,7 @@ import { parseCategoryDurations, ParseStudyTrends, secondsToHours, secondsToHour
 import { DailyInsightsResponse, WeeklyInsightsResponse, MonthlyInsightsResponse } from '../types/api';
 import { formatDateForAPI, getWeekEnd, getWeekStart, navigateDate, getWeekDays, getMonthStart, getMonthEnd } from '../utils/dateUtils';
 import { useGoalForWeek } from './useGoalForWeek';
+import { useApiWithToast } from './useApiWithToast';
 
 interface UseDashboardDataParams {
     dailyDate?: Date;
@@ -42,9 +43,14 @@ export function useDashboardData({ dailyDate, weeklyDate, monthlyDate }: UseDash
     DEBUG_DASHBOARD && console.log('📅 useDashboardData: Formatted dates:', { dailyDateStr, weeklyStartStr, weeklyEndStr, monthlyStartStr, monthlyEndStr });
 
     // Fetch data for daily, weekly, and monthly dashboards
-    const { data: dailyResponse, loading: dailyLoading } = useAggregateData('daily', dailyDateStr, undefined);
-    const { data: weeklyResponse, loading: weeklyLoading } = useAggregateData('weekly', weeklyStartStr, weeklyEndStr);
-    const { data: monthlyResponse, loading: monthlyLoading } = useAggregateData('monthly', monthlyStartStr, monthlyEndStr);
+    const { data: dailyResponse, loading: dailyLoading, error: dailyError } = useAggregateData('daily', dailyDateStr, undefined);
+    const { data: weeklyResponse, loading: weeklyLoading, error: weeklyError } = useAggregateData('weekly', weeklyStartStr, weeklyEndStr);
+    const { data: monthlyResponse, loading: monthlyLoading, error: monthlyError } = useAggregateData('monthly', monthlyStartStr, monthlyEndStr);
+    
+    // Show toast notifications for errors
+    useApiWithToast(dailyError, dailyLoading);
+    useApiWithToast(weeklyError, weeklyLoading);
+    useApiWithToast(monthlyError, monthlyLoading);
 
     // Prefetch adjacent dates for smoother navigation
     const currentDaily = dailyDate || new Date();

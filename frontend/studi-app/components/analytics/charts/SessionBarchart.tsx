@@ -196,7 +196,7 @@ export default function SessionBarchart({
       const sessionDuration = sessionDurations[index];
       
       // Process segments within this session
-      const breakdowns = session.breakdowns || session.category_blocks || [];
+      const breakdowns = session.breakdowns || [];
       const segments = breakdowns.map(breakdown => {
         const categoryName = breakdown.category; // breakdown.category is already the category name
         const categoryInfo = categoryNameToMeta[categoryName];
@@ -209,7 +209,7 @@ export default function SessionBarchart({
         }
         
         return {
-          categoryId: categoryName,
+          categoryId: String(categoryName),
           categoryName: categoryInfo?.name || 'Unknown',
           color,
           durationMinutes: segmentDurationMinutes,

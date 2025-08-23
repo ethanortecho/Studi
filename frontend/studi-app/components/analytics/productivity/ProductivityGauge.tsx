@@ -77,7 +77,7 @@ export default function ProductivityGauge({
   if (score === null) {
     return (
       <View className="items-center justify-center" style={{ width: size, height: size }}>
-        <Text className="text-secondaryText text-base">No productivity data</Text>
+        <Text className="text-secondaryText text-base">No flow score data</Text>
         <Text className="text-secondaryText text-sm mt-1">Complete a session to start tracking</Text>
       </View>
     );
@@ -166,12 +166,12 @@ export default function ProductivityGauge({
       {/* Center text */}
       <View className="absolute inset-0 items-center justify-center">
         <Text className="text-4xl font-bold text-primaryText">
-          {Math.round(score)}%
+          {Math.round(score * 10)}
         </Text>
-        <Text className="text-sm text-secondaryText mt-1">Productivity</Text>
+        <Text className="text-sm text-secondaryText mt-1">Flow Score</Text>
         {allTimeAverage !== null && (
           <Text className="text-xs text-secondaryText opacity-70 mt-1">
-            Avg: {Math.round(allTimeAverage)}%
+            Avg: {Math.round(allTimeAverage * 10)}
           </Text>
         )}
       </View>

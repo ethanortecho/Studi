@@ -21,14 +21,8 @@ export default function SessionStatsModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  // Rating options with emoji and text
-  const ratingOptions = [
-    { value: 1, emoji: '😵', text: 'Distracted' },
-    { value: 2, emoji: '😐', text: 'Scattered' },
-    { value: 3, emoji: '🙂', text: 'Moderate' },
-    { value: 4, emoji: '😊', text: 'Focused' },
-    { value: 5, emoji: '🎯', text: 'Deep Focus' },
-  ];
+  // Rating options - just numbers
+  const ratingOptions = [1, 2, 3, 4, 5];
   
 
   const handleRatingSelect = async (rating: number) => {
@@ -110,41 +104,51 @@ export default function SessionStatsModal({
                   Rate your focus:
                 </Text>
                 
-                <View className="flex-row justify-between px-2">
-                  {ratingOptions.map((option) => {
-                    const isSelected = selectedRating === option.value;
-                    const isCurrentlySubmitting = isSubmitting && isSelected;
-                    
-                    return (
-                      <Pressable
-                        key={option.value}
-                        onPress={() => handleRatingSelect(option.value)}
-                        disabled={isSubmitting}
-                        className={`items-center p-3 rounded-2xl min-w-[60px] ${
-                          isSubmitting ? 'opacity-70' : ''
-                        }`}
-                        style={{ 
-                          backgroundColor: isSelected 
-                            ? 'rgba(93, 62, 218, 0.3)' 
-                            : 'rgba(255, 255, 255, 0.08)',
-                          borderWidth: 1,
-                          borderColor: isSelected 
-                            ? 'rgba(93, 62, 218, 0.5)' 
-                            : 'rgba(255, 255, 255, 0.1)',
-                        }}
-                      >
-                        <Text className="text-2xl mb-1">{option.emoji}</Text>
-                        <Text className={`text-xs font-medium ${
-                          isSelected ? 'text-white' : 'text-white/60'
-                        }`}>
-                          {option.text}
-                        </Text>
-                        {isCurrentlySubmitting && (
-                          <Text className="text-xs text-white mt-1">...</Text>
-                        )}
-                      </Pressable>
-                    );
-                  })}
+                <View>
+                  {/* Number scale */}
+                  <View className="flex-row justify-between px-4 mb-2">
+                    {ratingOptions.map((rating) => {
+                      const isSelected = selectedRating === rating;
+                      const isCurrentlySubmitting = isSubmitting && isSelected;
+                      
+                      return (
+                        <Pressable
+                          key={rating}
+                          onPress={() => handleRatingSelect(rating)}
+                          disabled={isSubmitting}
+                          className={`items-center justify-center rounded-2xl ${
+                            isSubmitting ? 'opacity-70' : ''
+                          }`}
+                          style={{ 
+                            width: 48,
+                            height: 48,
+                            backgroundColor: isSelected 
+                              ? 'rgba(93, 62, 218, 0.3)' 
+                              : 'rgba(255, 255, 255, 0.08)',
+                            borderWidth: 1,
+                            borderColor: isSelected 
+                              ? 'rgba(93, 62, 218, 0.5)' 
+                              : 'rgba(255, 255, 255, 0.1)',
+                          }}
+                        >
+                          <Text className={`text-xl font-semibold ${
+                            isSelected ? 'text-white' : 'text-white/70'
+                          }`}>
+                            {rating}
+                          </Text>
+                          {isCurrentlySubmitting && (
+                            <Text className="text-xs text-white absolute bottom-1">...</Text>
+                          )}
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                  
+                  {/* End labels */}
+                  <View className="flex-row justify-between px-4">
+                    <Text className="text-xs text-white/50">Distracted</Text>
+                    <Text className="text-xs text-white/50">Deep Focus</Text>
+                  </View>
                 </View>
               </View>
             )}

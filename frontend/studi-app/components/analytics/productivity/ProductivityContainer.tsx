@@ -18,8 +18,8 @@ export default function ProductivityContainer({
     <DashboardCard className="bg-background border border-accent rounded-[35px] mx-4 p-6">
       {/* Header */}
       <View className="mb-8">
-        <Text className="text-lg font-semibold text-primaryText">Your Focus Flow</Text>
-        <Text className="text-sm text-secondaryText mt-1">How productive were your sessions today?</Text>
+        <Text className="text-lg font-semibold text-primaryText">Your Flow Score</Text>
+        <Text className="text-sm text-secondaryText mt-1">Learning quality based on session focus and duration</Text>
       </View>
       
       {/* Gauge Chart */}

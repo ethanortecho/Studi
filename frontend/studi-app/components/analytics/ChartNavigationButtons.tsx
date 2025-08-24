@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { ChartConfig } from '../../types/charts';
+import { usePremium } from '../../contexts/PremiumContext';
 
 interface ChartNavigationButtonsProps {
   charts: ChartConfig[];
@@ -13,6 +14,8 @@ export default function ChartNavigationButtons({
   activeIndex, 
   onChartSelect 
 }: ChartNavigationButtonsProps) {
+  const { isPremium } = usePremium();
+  
   return (
     <>
       {/* Segmented top line - each button gets its own section */}
@@ -48,13 +51,18 @@ export default function ChartNavigationButtons({
               accessibilityLabel={`View ${chart.label} chart`}
             >
               <View style={{ width: 80 }} className="items-center">
-                <Text 
-                  className={`text-base font-medium ${
-                    isActive ? 'text-primaryText' : 'text-secondaryText'
-                  }`}
-                >
-                  {chart.label}
-                </Text>
+                <View className="flex-row items-center">
+                  <Text 
+                    className={`text-base font-medium ${
+                      isActive ? 'text-primaryText' : 'text-secondaryText'
+                    }`}
+                  >
+                    {chart.label}
+                  </Text>
+                  {chart.requiresPremium && !isPremium && (
+                    <Text className="text-xs ml-1">🔒</Text>
+                  )}
+                </View>
               </View>
             </TouchableOpacity>
           );

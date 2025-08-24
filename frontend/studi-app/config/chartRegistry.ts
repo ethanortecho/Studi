@@ -80,12 +80,13 @@ const sessionsChartConfig: ChartConfig<SessionsChartData> = {
 };
 
 /**
- * Daily Map Chart Configuration (Hour Bars)
+ * Daily Map Chart Configuration (Hour Bars) - PREMIUM
  */
 const dailyMapChartConfig: ChartConfig<DailyMapChartData> = {
   id: 'map',
   label: 'Map',
   component: DailyMapChart,
+  requiresPremium: true,
   isAvailable: (data: DashboardData) => {
     return Boolean(
       data.timeframe === 'daily' &&
@@ -107,12 +108,13 @@ const dailyMapChartConfig: ChartConfig<DailyMapChartData> = {
 };
 
 /**
- * Weekly Map Chart Configuration (Session Timeline)
+ * Weekly Map Chart Configuration (Session Timeline) - PREMIUM
  */
 const weeklyMapChartConfig: ChartConfig<WeeklyMapChartData> = {
   id: 'map',
   label: 'Map',
   component: WeeklyMapChart,
+  requiresPremium: true,
   isAvailable: (data: DashboardData) => {
     return Boolean(
       data.timeframe === 'weekly' &&

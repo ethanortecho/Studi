@@ -235,7 +235,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = CustomUser
-        fields = ['id', 'username', 'email', 'timezone', 'date_joined']
+        fields = ['id', 'username', 'email', 'timezone', 'date_joined', 'is_premium']
         read_only_fields = ['id', 'username', 'email', 'date_joined']
     
     def validate_timezone(self, value):

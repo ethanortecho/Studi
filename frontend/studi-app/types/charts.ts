@@ -64,9 +64,10 @@ export type ChartData =
 export interface ChartConfig<T extends ChartData = ChartData> {
   id: ChartId;
   label: string;
-  component: React.ComponentType<T>;
+  component: React.ComponentType<ChartComponentProps<T>>;
   isAvailable: (data: DashboardData) => boolean;
   getData: (data: DashboardData) => T | null;
+  requiresPremium?: boolean;
 }
 
 // Dashboard data structure (normalized from API responses)

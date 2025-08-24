@@ -33,6 +33,7 @@ import { useColorScheme } from '../hooks/useColorScheme';
 import { GoalRedirectWrapper } from '../components/GoalRedirectWrapper';
 import { ToastProvider } from '../components/error/ToastProvider';
 import { ErrorBoundary } from '../components/error/ErrorBoundary';
+import { PremiumProvider } from '../contexts/PremiumContext';
 
 // Fix SafeAreaView compatibility with NativeWind
 cssInterop(SafeAreaView, { className: "style" });
@@ -97,13 +98,14 @@ export default function RootLayout() {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <StudySessionProvider>
-          <ToastProvider>
-            <GoalRedirectWrapper>
-              <NavigationThemeProvider value={themeMode === 'dark' ? DarkTheme : DefaultTheme}>
-                <ThemeContext.Provider value={{ mode: themeMode, toggle: toggleTheme }}>
-                  <SafeAreaView edges={['left', 'right']} style={[{ flex: 1 }, themeStyles]}>
-                    <Stack>
+        <PremiumProvider>
+          <StudySessionProvider>
+            <ToastProvider>
+              <GoalRedirectWrapper>
+                <NavigationThemeProvider value={themeMode === 'dark' ? DarkTheme : DefaultTheme}>
+                  <ThemeContext.Provider value={{ mode: themeMode, toggle: toggleTheme }}>
+                    <SafeAreaView edges={['left', 'right']} style={[{ flex: 1 }, themeStyles]}>
+                      <Stack>
                   {/* Authentication Routes */}
                   <Stack.Screen name="auth/login" options={{ headerShown: false }} />
                   <Stack.Screen name="auth/register" options={{ headerShown: false }} />
@@ -124,6 +126,7 @@ export default function RootLayout() {
             </GoalRedirectWrapper>
           </ToastProvider>
         </StudySessionProvider>
+      </PremiumProvider>
       </AuthProvider>
     </ErrorBoundary>
   );

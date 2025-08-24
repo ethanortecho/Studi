@@ -26,6 +26,12 @@ class CustomUser(AbstractUser):
         default='UTC',
         help_text='User timezone (e.g., America/New_York, Europe/London)'
     )
+    
+    # Premium status
+    is_premium = models.BooleanField(
+        default=False,
+        help_text='Whether the user has premium access'
+    )
 
 class StudySessionManager(models.Manager):
     def active_sessions(self):

@@ -38,7 +38,13 @@ interface TimelineData {
   start_time: string;
   end_time: string;
   breaks: any[];
-  breakdowns: {
+  category_blocks?: {  // This is what the API actually sends
+    category: number;
+    start_time: string;
+    end_time: string;
+    duration: number;
+  }[];
+  breakdowns?: {  // Keep for backwards compatibility
     category: number;
     start_time: string;
     end_time: string;
@@ -79,6 +85,11 @@ export default function SessionBarchart({
   rightPadding = 16,
   isEmpty = false,
 }: SessionBarchartProps) {
+  console.log('SessionBarchart raw props:', {
+    timelineDataSample: timelineData?.[0],
+    categoryMetadataSample: Object.entries(categoryMetadata || {}).slice(0, 2)
+  });
+  
   // Don't render if no data available
   if (isEmpty) {
     return null;
@@ -196,7 +207,8 @@ export default function SessionBarchart({
       const sessionDuration = sessionDurations[index];
       
       // Process segments within this session
-      const breakdowns = session.breakdowns || [];
+      // API sends 'category_blocks' not 'breakdowns'
+      const breakdowns = session.category_blocks || session.breakdowns || [];
       const segments = breakdowns.map(breakdown => {
         const categoryName = breakdown.category; // breakdown.category is already the category name
         const categoryInfo = categoryNameToMeta[categoryName];
@@ -234,8 +246,21 @@ export default function SessionBarchart({
 
   const { sessions, axisDurationMinutes, timeMarkers } = processSessionData();
 
-
-  // Debug logs removed
+  console.log('SessionBarchart processed data:', {
+    sessionsCount: sessions.length,
+    sessions: sessions.map(s => ({
+      index: s.index,
+      duration: s.durationMinutes,
+      segmentsCount: s.segments.length,
+      segments: s.segments.map(seg => ({
+        name: seg.categoryName,
+        color: seg.color,
+        duration: seg.durationMinutes,
+        widthPercent: seg.widthPercent
+      })),
+      barWidthPercent: s.barWidthPercent
+    }))
+  });
 
   const axisPadding = rightPadding; // alias for clarity
 

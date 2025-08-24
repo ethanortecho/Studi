@@ -4,6 +4,7 @@ import { CategoryMetadata } from '../../../types/api';
 import DashboardKPIs from '../../../components/analytics/DashboardKPIs';
 import MultiChartContainerV2 from '../../../components/analytics/MultiChartContainerV2';
 import { DashboardData } from '../../../types/charts';
+import { PremiumGate } from '../../../components/premium/PremiumGate';
 
 interface MonthlyDashboardProps {
   totalHours: number;
@@ -70,39 +71,44 @@ export default function MonthlyDashboard({
   };
 
   return (
-    <ScrollView 
-      className="flex-1" 
-      contentContainerStyle={{ paddingBottom: 30 }}
-      showsVerticalScrollIndicator={false}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          tintColor="#9333ea"
-          colors={['#9333ea']}
-          progressBackgroundColor="#1f1f2e"
-        />
-      }
+    <PremiumGate
+      feature="monthly_dashboard"
+      showUpgradePrompt={true}
     >
-      {/* High-level KPIs */}
-      {!isEmpty && (
-        <DashboardKPIs 
-          totalTime={totalTime}
-          percentGoal={percentGoal}
-          flowScore={7}  // TODO: Replace with actual flow score data
-          flowScoreTotal={10}
-        />
-      )}
-      
-      {/* Multi-chart container with new architecture */}
-      <View className="mx-4 mb-4">
-        <MultiChartContainerV2 
-          dashboardData={dashboardData}
-          showLegend={true}
-        />
-      </View>
-      
-    </ScrollView>
+      <ScrollView 
+        className="flex-1" 
+        contentContainerStyle={{ paddingBottom: 30 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#9333ea"
+            colors={['#9333ea']}
+            progressBackgroundColor="#1f1f2e"
+          />
+        }
+      >
+        {/* High-level KPIs */}
+        {!isEmpty && (
+          <DashboardKPIs 
+            totalTime={totalTime}
+            percentGoal={percentGoal}
+            flowScore={7}  // TODO: Replace with actual flow score data
+            flowScoreTotal={10}
+          />
+        )}
+        
+        {/* Multi-chart container with new architecture */}
+        <View className="mx-4 mb-4">
+          <MultiChartContainerV2 
+            dashboardData={dashboardData}
+            showLegend={true}
+          />
+        </View>
+        
+      </ScrollView>
+    </PremiumGate>
   );
 }
 

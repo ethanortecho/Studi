@@ -13,6 +13,7 @@ interface User {
   first_name: string;
   last_name: string;
   timezone: string;
+  is_premium: boolean;
 }
 
 // Registration form data

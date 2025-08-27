@@ -290,10 +290,19 @@ class UpdateSessionRating(APIView):
             session.focus_rating = str(rating_value)
             session.save()
             
+            # Recalculate flow score with the new focus rating
+            try:
+                flow_score = session.calculate_flow_score()
+                print(f"Recalculated flow score for session {session.id} with new focus rating: {flow_score}")
+            except Exception as e:
+                print(f"Failed to recalculate flow score for session {session.id}: {str(e)}")
+                # Don't fail the rating update if flow score calculation fails
+            
             return Response({
                 "message": "Session rating updated successfully",
                 "session_id": session.id,
-                "focus_rating": session.focus_rating
+                "focus_rating": session.focus_rating,
+                "flow_score": session.flow_score
             }, status=status.HTTP_200_OK)
             
         except StudySession.DoesNotExist:

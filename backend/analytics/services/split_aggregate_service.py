@@ -88,6 +88,8 @@ class SplitAggregateUpdateService:
                 'timeline_data': aggregate_data['timeline_data'],
                 'productivity_score': aggregate_data.get('productivity_score'),
                 'productivity_sessions_count': aggregate_data.get('productivity_sessions_count', 0),
+                'flow_score': aggregate_data.get('flow_score'),
+                'flow_score_details': aggregate_data.get('flow_score_details'),
                 'is_final': is_final
             }
         )
@@ -175,6 +177,11 @@ class SplitAggregateUpdateService:
         total_rated_duration = 0
         sessions_with_ratings = 0
         
+        # Flow score aggregation
+        total_weighted_flow_score = 0
+        total_flow_duration = 0
+        flow_scores = []
+        
         for session in valid_sessions:
             # Skip sessions shorter than 25 minutes
             if session.total_duration < MIN_SESSION_LENGTH_FOR_SCORING:
@@ -194,11 +201,36 @@ class SplitAggregateUpdateService:
                     # Skip sessions with invalid ratings
                     print(f"Invalid focus rating for session {session.id}: {session.focus_rating}")
                     continue
+            
+            # Aggregate flow scores (duration-weighted average)
+            if session.flow_score is not None:
+                total_weighted_flow_score += session.flow_score * session.total_duration
+                total_flow_duration += session.total_duration
+                flow_scores.append(session.flow_score)
         
         # Calculate final productivity score (weighted average)
         productivity_score = None
         if total_rated_duration > 0:
             productivity_score = total_weighted_score / total_rated_duration
+        
+        # Calculate flow score metrics
+        flow_score = None
+        flow_score_details = None
+        if total_flow_duration > 0:
+            flow_score = total_weighted_flow_score / total_flow_duration
+            flow_score_details = {
+                'min': min(flow_scores) if flow_scores else None,
+                'max': max(flow_scores) if flow_scores else None,
+                'avg': flow_score,
+                'count': len(flow_scores),
+                'distribution': {
+                    'excellent': len([s for s in flow_scores if s >= 850]),  # 850-1000
+                    'great': len([s for s in flow_scores if 700 <= s < 850]),  # 700-849
+                    'good': len([s for s in flow_scores if 550 <= s < 700]),   # 550-699
+                    'fair': len([s for s in flow_scores if 400 <= s < 550]),   # 400-549
+                    'poor': len([s for s in flow_scores if s < 400])           # 0-399
+                }
+            }
         
         # Build timeline data for API
         timeline_data = []
@@ -235,7 +267,9 @@ class SplitAggregateUpdateService:
             'break_count': break_count,
             'timeline_data': timeline_data,
             'productivity_score': productivity_score,
-            'productivity_sessions_count': sessions_with_ratings
+            'productivity_sessions_count': sessions_with_ratings,
+            'flow_score': flow_score,
+            'flow_score_details': flow_score_details
         }
     
     @staticmethod
@@ -277,6 +311,19 @@ class SplitAggregateUpdateService:
         total_duration = sum(d.total_duration for d in daily_aggregates)
         session_count = sum(d.session_count for d in daily_aggregates)
         break_count = sum(d.break_count for d in daily_aggregates)
+        
+        # Aggregate flow scores (average of daily scores, not weighted)
+        daily_flow_scores = [d.flow_score for d in daily_aggregates if d.flow_score is not None]
+        flow_score = None
+        flow_score_details = None
+        if daily_flow_scores:
+            flow_score = sum(daily_flow_scores) / len(daily_flow_scores)
+            flow_score_details = {
+                'min': min(daily_flow_scores),
+                'max': max(daily_flow_scores),
+                'avg': flow_score,
+                'daily_count': len(daily_flow_scores)
+            }
         
         # Aggregate category durations
         category_durations = defaultdict(int)
@@ -329,6 +376,8 @@ class SplitAggregateUpdateService:
                 'break_count': break_count,
                 'daily_breakdown': daily_breakdown,
                 'session_times': session_times,
+                'flow_score': flow_score,
+                'flow_score_details': flow_score_details,
                 'is_final': is_final
             }
         )
@@ -376,6 +425,19 @@ class SplitAggregateUpdateService:
         session_count = sum(d.session_count for d in daily_aggregates)
         break_count = sum(d.break_count for d in daily_aggregates)
         
+        # Aggregate flow scores (average of daily scores, not weighted)
+        daily_flow_scores = [d.flow_score for d in daily_aggregates if d.flow_score is not None]
+        flow_score = None
+        flow_score_details = None
+        if daily_flow_scores:
+            flow_score = sum(daily_flow_scores) / len(daily_flow_scores)
+            flow_score_details = {
+                'min': min(daily_flow_scores),
+                'max': max(daily_flow_scores),
+                'avg': flow_score,
+                'daily_count': len(daily_flow_scores)
+            }
+        
         # Aggregate category durations
         category_durations = defaultdict(int)
         for daily in daily_aggregates:
@@ -418,6 +480,8 @@ class SplitAggregateUpdateService:
                 'break_count': break_count,
                 'daily_breakdown': daily_breakdown,
                 'heatmap_data': heatmap_data,
+                'flow_score': flow_score,
+                'flow_score_details': flow_score_details,
                 'is_final': is_final
             }
         )

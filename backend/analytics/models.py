@@ -59,6 +59,10 @@ class StudySession(models.Model):
     total_duration = models.IntegerField(null=True, blank=True)  # Duration in seconds
     focus_rating = models.CharField(null=True, blank=True, max_length=50, help_text="User's self-rated focus level (1-5)")
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default="active")
+    
+    # Flow Score fields
+    flow_score = models.IntegerField(null=True, blank=True, help_text="Flow score (0-1000)")
+    flow_components = models.JSONField(null=True, blank=True, help_text="Flow score component breakdown")
 
     objects = StudySessionManager()
 
@@ -70,6 +74,80 @@ class StudySession(models.Model):
             duration = self.end_time - self.start_time
             self.total_duration = round(duration.total_seconds())
         super().save(*args, **kwargs)
+    
+    def calculate_flow_score(self):
+        """
+        Calculate and store the flow score for this session.
+        Should be called when session is completed.
+        """
+        from analytics.flow_score import calculate_flow_score
+        
+        if not self.end_time or not self.start_time:
+            return None
+        
+        # Get all category blocks for this session
+        blocks = self.categoryblock_set.all().order_by('start_time')
+        
+        # Format blocks for flow score calculation
+        category_blocks = []
+        for block in blocks:
+            # Check if it's a break category
+            is_break = (
+                block.category.name.lower() == 'break' or 
+                block.category.category_type == 'break'
+            )
+            
+            category_blocks.append({
+                'category_id': block.category.id,
+                'category_name': block.category.name,
+                'start_time': block.start_time,
+                'end_time': block.end_time or self.end_time,
+                'duration': block.duration or 0,
+                'is_break': is_break
+            })
+        
+        # Convert focus rating from 1-5 to 1-10 scale
+        focus_rating = None
+        if self.focus_rating:
+            try:
+                rating_5 = int(self.focus_rating)
+                # Convert: 1→1, 2→3.25, 3→5.5, 4→7.75, 5→10
+                focus_rating = (rating_5 - 1) * 2.25 + 1
+            except (ValueError, TypeError):
+                focus_rating = 6  # Default
+        
+        # Calculate flow score
+        result = calculate_flow_score(
+            start_time=self.start_time,
+            end_time=self.end_time,
+            focus_rating=focus_rating,
+            category_blocks=category_blocks,
+            user_timezone=self.user.timezone
+        )
+        
+        # Store the results
+        self.flow_score = result.score
+        self.flow_components = {
+            'focus': result.components.focus,
+            'duration': result.components.duration,
+            'breaks': result.components.breaks,
+            'deep_work': result.components.deep_work,
+            'time_multiplier': result.components.time_multiplier,
+            'details': {
+                'total_minutes': result.details.total_minutes,
+                'focus_minutes': result.details.focus_minutes,
+                'break_minutes': result.details.break_minutes,
+                'subject_count': result.details.subject_count,
+                'avg_block_length': result.details.avg_block_length,
+                'start_hour': result.details.start_hour
+            },
+            'coaching_message': result.coaching_message
+        }
+        
+        # Save the updated scores
+        super().save(update_fields=['flow_score', 'flow_components'])
+        
+        return self.flow_score
 
 
 class Categories(models.Model):
@@ -118,6 +196,10 @@ class DailyAggregate(models.Model):
     productivity_score = models.FloatField(null=True, blank=True)  # 0-100 percentage
     productivity_sessions_count = models.IntegerField(default=0)  # Number of sessions with ratings
     
+    # Flow Score metrics
+    flow_score = models.FloatField(null=True, blank=True)  # Duration-weighted average (0-1000)
+    flow_score_details = models.JSONField(null=True, blank=True)  # Min/max/avg/distribution
+    
     # Pre-computed JSON data for API responses
     category_durations = models.JSONField(default=dict)  # {category_name: seconds}
     timeline_data = models.JSONField(default=list)  # Complete session timeline for API
@@ -146,6 +228,10 @@ class WeeklyAggregate(models.Model):
     session_count = models.IntegerField(default=0)
     break_count = models.IntegerField(default=0)
     
+    # Flow Score metrics
+    flow_score = models.FloatField(null=True, blank=True)  # Average of daily scores
+    flow_score_details = models.JSONField(null=True, blank=True)  # Statistics
+    
     # Pre-computed JSON data for API responses
     category_durations = models.JSONField(default=dict)  # {category_name: seconds}
     daily_breakdown = models.JSONField(default=dict)  # {day_code: {total, categories}}
@@ -173,6 +259,10 @@ class MonthlyAggregate(models.Model):
     total_duration = models.IntegerField(default=0)  # seconds
     session_count = models.IntegerField(default=0)
     break_count = models.IntegerField(default=0)
+    
+    # Flow Score metrics
+    flow_score = models.FloatField(null=True, blank=True)  # Average of daily scores
+    flow_score_details = models.JSONField(null=True, blank=True)  # Statistics
     
     # Pre-computed JSON data for API responses
     category_durations = models.JSONField(default=dict)  # {category_name: seconds}

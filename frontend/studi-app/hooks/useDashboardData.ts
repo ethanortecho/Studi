@@ -225,7 +225,9 @@ export function useDashboardData({ dailyDate, weeklyDate, monthlyDate }: UseDash
             goalMinutes,
             percentGoal,
             productivityScore: dailyData.aggregate?.productivity_score ?? null,
-            allTimeAvgProductivity: dailyData.all_time_avg_productivity ?? null
+            allTimeAvgProductivity: dailyData.all_time_avg_productivity ?? null,
+            flowScore: dailyData.aggregate?.flow_score ?? null,
+            flowScoreDetails: dailyData.aggregate?.flow_score_details ?? null
         };
         
         const end = performance.now();

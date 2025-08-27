@@ -8,7 +8,7 @@ interface SessionStatsModalProps {
   visible: boolean;
   sessionDuration: number; // in minutes
   onDismiss: () => void;
-  onRatingSubmit: (rating: number) => Promise<void>;
+  onRatingSubmit: (rating: number) => Promise<any>;
 }
 
 export default function SessionStatsModal({ 
@@ -20,6 +20,8 @@ export default function SessionStatsModal({
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [flowScore, setFlowScore] = useState<number | null>(null);
+  const [coachingMessage, setCoachingMessage] = useState<string | null>(null);
 
   // Rating options - just numbers
   const ratingOptions = [1, 2, 3, 4, 5];
@@ -32,12 +34,23 @@ export default function SessionStatsModal({
     setIsSubmitting(true);
     
     try {
-      await onRatingSubmit(rating);
+      const response = await onRatingSubmit(rating);
+      
+      // Extract flow score from response if available
+      if (response?.flow_score !== undefined) {
+        setFlowScore(response.flow_score);
+      }
+      
+      // Extract coaching message if available (might be in flow_components)
+      if (response?.flow_components?.coaching_message) {
+        setCoachingMessage(response.flow_components.coaching_message);
+      }
+      
       setIsSubmitted(true);
-      // Auto-dismiss after brief delay to show success
+      // Auto-dismiss after longer delay to show flow score
       setTimeout(() => {
         handleDismiss();
-      }, 1000);
+      }, 3000);
     } catch (error) {
       console.error('Failed to submit rating:', error);
       setIsSubmitting(false);
@@ -51,6 +64,8 @@ export default function SessionStatsModal({
     setSelectedRating(null);
     setIsSubmitting(false);
     setIsSubmitted(false);
+    setFlowScore(null);
+    setCoachingMessage(null);
     onDismiss(); // Close the modal first
     router.replace('/(tabs)/home'); // Then navigate to home
   };
@@ -153,14 +168,28 @@ export default function SessionStatsModal({
               </View>
             )}
             
-            {/* Duration - shown after rating submission */}
+            {/* Flow Score and Duration - shown after rating submission */}
             {isSubmitted && (
-              <Text className="text-lg text-white/70 mb-6 text-center">
-                You studied for{' '}
-                <Text className="font-semibold text-purple-400">
-                  {formatDurationFromMinutes(sessionDuration)}
+              <>
+                {flowScore !== null && (
+                  <View className="mb-4">
+                    <Text className="text-2xl text-white font-bold text-center mb-2">
+                      Flow Score: {Math.round(flowScore)}
+                    </Text>
+                    {coachingMessage && (
+                      <Text className="text-sm text-white/60 text-center px-4 mb-4">
+                        {coachingMessage}
+                      </Text>
+                    )}
+                  </View>
+                )}
+                <Text className="text-lg text-white/70 mb-6 text-center">
+                  You studied for{' '}
+                  <Text className="font-semibold text-purple-400">
+                    {formatDurationFromMinutes(sessionDuration)}
+                  </Text>
                 </Text>
-              </Text>
+              </>
             )}
             
             {/* Instructions */}

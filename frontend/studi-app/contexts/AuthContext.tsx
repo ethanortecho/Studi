@@ -44,7 +44,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // API configuration
-import { API_BASE_URL } from '../config/api';
+import { getEffectiveApiUrl } from '../config/api';
 
 // =============================================
 // AUTH PROVIDER - The main authentication logic
@@ -174,7 +174,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log('🔐 AuthContext: Attempting login for:', email);
       
       // Call your backend's login endpoint
-      const response = await fetch(`${API_BASE_URL}/auth/login/`, {
+      const response = await fetch(`${getEffectiveApiUrl()}/auth/login/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -214,7 +214,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       console.log('📝 AuthContext: Attempting registration for:', userData.email);
       
-      const response = await fetch(`${API_BASE_URL}/auth/register/`, {
+      const response = await fetch(`${getEffectiveApiUrl()}/auth/register/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -262,7 +262,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       console.log('🔄 AuthContext: Refreshing access token');
       
-      const response = await fetch(`${API_BASE_URL}/auth/refresh/`, {
+      const response = await fetch(`${getEffectiveApiUrl()}/auth/refresh/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -312,7 +312,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       // Tell backend to blacklist the refresh token
       if (refreshToken && accessToken) {
-        await fetch(`${API_BASE_URL}/auth/logout/`, {
+        await fetch(`${getEffectiveApiUrl()}/auth/logout/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

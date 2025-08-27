@@ -19,6 +19,8 @@ interface DailyDashboardProps {
   isEmpty?: boolean;
   productivityScore?: number | null;
   allTimeAvgProductivity?: number | null;
+  flowScore?: number | null;
+  flowScoreDetails?: any;
 }
 
 export default function DailyDashboard({
@@ -33,7 +35,9 @@ export default function DailyDashboard({
   loading,
   isEmpty,
   productivityScore,
-  allTimeAvgProductivity
+  allTimeAvgProductivity,
+  flowScore,
+  flowScoreDetails
 }: DailyDashboardProps) {
   const [refreshing, setRefreshing] = useState(false);
   
@@ -80,7 +84,7 @@ export default function DailyDashboard({
         <DashboardKPIs 
           totalTime={totalTime}
           percentGoal={percentGoal}
-          flowScore={productivityScore ? productivityScore * 10 : undefined}  // Scale 0-100 to 0-1000
+          flowScore={flowScore ?? undefined}
         />
       )}
       
@@ -92,11 +96,11 @@ export default function DailyDashboard({
         />
       </View>
       
-      {/* Productivity Gauge Container */}
+      {/* Flow Score Gauge Container */}
       {!isEmpty && (
         <View className="mb-4">
           <ProductivityContainer 
-            productivityScore={productivityScore ?? null}
+            productivityScore={flowScore ?? null}
             allTimeAverage={allTimeAvgProductivity ?? null}
             loading={loading}
           />

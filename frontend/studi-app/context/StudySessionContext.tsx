@@ -6,7 +6,7 @@ import SessionStatsModal from '../components/modals/SessionStatsModal';
 import { detectUserTimezone } from '../utils/timezoneUtils';
 import { clearDashboardCache } from '../utils/fetchApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { API_BASE_URL } from '../config/api';
+import { getEffectiveApiUrl } from '../config/api';
 
 
 interface StudySessionContextType {

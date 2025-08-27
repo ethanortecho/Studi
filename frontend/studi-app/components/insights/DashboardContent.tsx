@@ -112,6 +112,8 @@ export default function DashboardContent({
                     isEmpty={daily.isEmpty}
                     productivityScore={daily.productivityScore}
                     allTimeAvgProductivity={daily.allTimeAvgProductivity}
+                    flowScore={daily.flowScore}
+                    flowScoreDetails={daily.flowScoreDetails}
                 />
             );
             DEBUG_DASHBOARD && console.log(`⏱️ DashboardContent: Daily dashboard render took ${(performance.now() - renderStart).toFixed(2)}ms`);

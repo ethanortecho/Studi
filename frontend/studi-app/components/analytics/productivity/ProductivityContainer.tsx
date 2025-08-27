@@ -22,7 +22,7 @@ export default function ProductivityContainer({
         <DashboardCard className="bg-background border border-accent rounded-[35px] mx-4 p-6">
           <View className="mb-8">
             <Text className="text-lg font-semibold text-primaryText">Your Flow Score</Text>
-            <Text className="text-sm text-secondaryText mt-1">Learning quality based on session focus and duration</Text>
+            <Text className="text-sm text-secondaryText mt-1">Learning quality based on focus, duration, breaks, and deep work</Text>
           </View>
           <PremiumGate feature="productivity_chart" showUpgradePrompt={true}>
             <View />
@@ -34,7 +34,7 @@ export default function ProductivityContainer({
         {/* Header */}
         <View className="mb-8">
           <Text className="text-lg font-semibold text-primaryText">Your Flow Score</Text>
-          <Text className="text-sm text-secondaryText mt-1">Learning quality based on session focus and duration</Text>
+          <Text className="text-sm text-secondaryText mt-1">Learning quality based on focus, duration, breaks, and deep work</Text>
         </View>
         
         {/* Gauge Chart */}

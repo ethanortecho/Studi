@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { API_BASE_URL } from '../config/api';
+import { getEffectiveApiUrl } from '../config/api';
 
 // =============================================
 // TYPE DEFINITIONS
@@ -96,7 +96,7 @@ async function refreshAccessToken(): Promise<boolean> {
 
       console.log('🔄 API Client: Starting token refresh...');
       
-      const response = await fetch(`${API_BASE_URL}/auth/refresh/`, {
+      const response = await fetch(`${getEffectiveApiUrl()}/auth/refresh/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -181,7 +181,7 @@ class ApiClient {
     endpoint: string,
     config: ApiRequestConfig = {}
   ): Promise<ApiResponse<T>> {
-    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
+    const url = endpoint.startsWith('http') ? endpoint : `${getEffectiveApiUrl()}${endpoint}`;
     
     // No retries - fail immediately and let user pull to refresh
     const maxRetries = config.maxRetries ?? 0;

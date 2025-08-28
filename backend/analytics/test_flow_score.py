@@ -4,12 +4,12 @@ Run with: python backend/analytics/test_flow_score.py
 """
 
 from datetime import datetime, timedelta
-from flow_score import (
+from .flow_score import (
     calculate_flow_score,
     create_test_blocks,
     FlowScoreResult
 )
-
+#fart
 
 def run_test(name: str, description: str, start_time: datetime, end_time: datetime,
              focus_rating: int, blocks_data: list, expected_range: tuple) -> dict:

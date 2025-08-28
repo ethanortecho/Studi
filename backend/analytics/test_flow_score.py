@@ -4,7 +4,7 @@ Run with: python backend/analytics/test_flow_score.py
 """
 
 from datetime import datetime, timedelta
-from flow_score import (
+from .flow_score import (
     calculate_flow_score,
     create_test_blocks,
     FlowScoreResult

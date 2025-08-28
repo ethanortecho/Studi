@@ -1,4 +1,4 @@
-import DailyDashboard from "@/app/screens/Insights/DailyDashboard";
+import DailyDashboard from '../app/screens/Insights/DailyDashboard';
 
 // Filter out Break category from categoryDurations for visual displays
 export function filterBreakCategory(categoryDurations: { [key: string]: number }) {
@@ -59,7 +59,7 @@ export function secondsToHoursAndMinutes(apiData: any): { hours: number; minutes
     return { hours, minutes };
 }
 
-import { formatDuration as standardFormatDuration } from '@/utils/timeFormatting';
+import { formatDuration as standardFormatDuration } from './timeFormatting';
 
 export function formatDuration(seconds: number): string {
     return standardFormatDuration(seconds);

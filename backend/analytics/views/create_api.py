@@ -270,30 +270,39 @@ class UpdateSessionRating(APIView):
                     "error": "Can only update rating for completed sessions"
                 }, status=status.HTTP_400_BAD_REQUEST)
             
-            # Validate productivity rating
-            productivity_rating = request.data.get('productivity_rating')
-            if not productivity_rating:
+            # Validate focus rating (still accept productivity_rating for backward compatibility)
+            focus_rating = request.data.get('focus_rating') or request.data.get('productivity_rating')
+            if not focus_rating:
                 return Response({
-                    "error": "productivity_rating is required"
+                    "error": "focus_rating is required"
                 }, status=status.HTTP_400_BAD_REQUEST)
             
             try:
-                rating_value = int(productivity_rating)
+                rating_value = int(focus_rating)
                 if rating_value < 1 or rating_value > 5:
                     raise ValueError()
             except (ValueError, TypeError):
                 return Response({
-                    "error": "productivity_rating must be an integer between 1 and 5"
+                    "error": "focus_rating must be an integer between 1 and 5"
                 }, status=status.HTTP_400_BAD_REQUEST)
             
-            # Update only the productivity rating
-            session.productivity_rating = str(rating_value)
+            # Update only the focus rating
+            session.focus_rating = str(rating_value)
             session.save()
+            
+            # Recalculate flow score with the new focus rating
+            try:
+                flow_score = session.calculate_flow_score()
+                print(f"Recalculated flow score for session {session.id} with new focus rating: {flow_score}")
+            except Exception as e:
+                print(f"Failed to recalculate flow score for session {session.id}: {str(e)}")
+                # Don't fail the rating update if flow score calculation fails
             
             return Response({
                 "message": "Session rating updated successfully",
                 "session_id": session.id,
-                "productivity_rating": session.productivity_rating
+                "focus_rating": session.focus_rating,
+                "flow_score": session.flow_score
             }, status=status.HTTP_200_OK)
             
         except StudySession.DoesNotExist:

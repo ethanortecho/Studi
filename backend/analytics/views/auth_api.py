@@ -142,6 +142,7 @@ def custom_token_obtain_pair(request):
             'first_name': user.first_name,
             'last_name': user.last_name,
             'timezone': user.timezone,
+            'is_premium': user.is_premium,
         }
     }, status=status.HTTP_200_OK)
 

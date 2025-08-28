@@ -9,12 +9,14 @@
 
 import React from 'react';
 import { View, Text, Dimensions } from 'react-native';
-import DashboardCard from '@/components/insights/DashboardContainer';
-import Legend from '@/components/analytics/DashboardLegend';
+import DashboardCard from '../insights/DashboardContainer';
+import Legend from './DashboardLegend';
 import ChartNavigationButtons from './ChartNavigationButtons';
-import { DashboardData } from '@/types/charts';
-import { getChartsForTimeframe } from '@/config/chartRegistry';
-import { useChartNavigation } from '@/hooks/useChartNavigation';
+import { DashboardData } from '../../types/charts';
+import { getChartsForTimeframe } from '../../config/chartRegistry';
+import { useChartNavigation } from '../../hooks/useChartNavigation';
+import { usePremium } from '../../contexts/PremiumContext';
+import { PremiumGate } from '../premium/PremiumGate';
 
 interface MultiChartContainerV2Props {
   dashboardData: DashboardData;
@@ -25,6 +27,8 @@ export default function MultiChartContainerV2({
   dashboardData,
   showLegend = true
 }: MultiChartContainerV2Props) {
+  const { isPremium } = usePremium();
+  
   // Get available charts for the current timeframe
   const chartsForTimeframe = getChartsForTimeframe(dashboardData.timeframe);
   
@@ -86,13 +90,42 @@ export default function MultiChartContainerV2({
         className="items-center justify-center" 
         style={{ height: chartHeight, width: PAGE_WIDTH }}
       >
-        {activeChart && activeChart.component && activeChartData && (
-          <activeChart.component 
-            data={activeChartData} 
-            width={PAGE_WIDTH - 40} 
-            height={chartHeight}
-          />
-        )}
+        {(() => {
+          if (activeChart?.id === 'sessions') {
+            console.log('Sessions chart debug:', {
+              hasActiveChart: !!activeChart,
+              hasComponent: !!activeChart?.component,
+              hasData: !!activeChartData,
+              dataKeys: activeChartData ? Object.keys(activeChartData) : null,
+              timelineLength: activeChartData?.timelineData?.length
+            });
+          }
+          
+          if (activeChart && activeChart.requiresPremium && !isPremium) {
+            return (
+              <PremiumGate 
+                feature={`${activeChart.id}_chart_${dashboardData.timeframe}`}
+                showUpgradePrompt={true}
+              >
+                {/* This won't render for non-premium users */}
+                <View />
+              </PremiumGate>
+            );
+          }
+          
+          if (activeChart && activeChart.component && activeChartData) {
+            const ChartComponent = activeChart.component;
+            return (
+              <ChartComponent 
+                data={activeChartData} 
+                width={PAGE_WIDTH - 40} 
+                height={chartHeight}
+              />
+            );
+          }
+          
+          return null;
+        })()}
       </View>
 
       {/* Legend - show for charts with category-specific data based on timeframe */}

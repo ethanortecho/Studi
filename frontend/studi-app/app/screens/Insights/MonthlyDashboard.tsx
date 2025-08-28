@@ -1,9 +1,10 @@
-import React from 'react';
-import { View, ScrollView, Text } from 'react-native';
-import { CategoryMetadata } from '@/types/api';
-import DashboardKPIs from '@/components/analytics/DashboardKPIs';
-import MultiChartContainerV2 from '@/components/analytics/MultiChartContainerV2';
-import { DashboardData } from '@/types/charts';
+import React, { useState, useCallback } from 'react';
+import { View, ScrollView, Text, RefreshControl } from 'react-native';
+import { CategoryMetadata } from '../../../types/api';
+import DashboardKPIs from '../../../components/analytics/DashboardKPIs';
+import MultiChartContainerV2 from '../../../components/analytics/MultiChartContainerV2';
+import { DashboardData } from '../../../types/charts';
+import { PremiumGate } from '../../../components/premium/PremiumGate';
 
 interface MonthlyDashboardProps {
   totalHours: number;
@@ -18,6 +19,7 @@ interface MonthlyDashboardProps {
   rawData?: any;
   loading: boolean;
   isEmpty: boolean;
+  flowScore?: number | null;
 }
 
 export default function MonthlyDashboard({
@@ -32,8 +34,22 @@ export default function MonthlyDashboard({
   monthDate,
   rawData,
   loading,
-  isEmpty
+  isEmpty,
+  flowScore
 }: MonthlyDashboardProps) {
+  const [refreshing, setRefreshing] = useState(false);
+  
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    // Clear cache for current data to force refresh
+    const { clearDashboardCache } = await import('../../../utils/fetchApi');
+    clearDashboardCache();
+    
+    // Wait a bit for data to reload
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1500);
+  }, []);
   if (loading) {
     return (
       <View className="flex-1 justify-center items-center">
@@ -57,30 +73,43 @@ export default function MonthlyDashboard({
   };
 
   return (
-    <ScrollView 
-      className="flex-1" 
-      contentContainerStyle={{ paddingBottom: 30 }}
-      showsVerticalScrollIndicator={false}
+    <PremiumGate
+      feature="monthly_dashboard"
+      showUpgradePrompt={true}
     >
-      {/* High-level KPIs */}
-      {!isEmpty && (
-        <DashboardKPIs 
-          totalTime={totalTime}
-          percentGoal={percentGoal}
-          flowScore={7}  // TODO: Replace with actual flow score data
-          flowScoreTotal={10}
-        />
-      )}
-      
-      {/* Multi-chart container with new architecture */}
-      <View className="mx-4 mb-4">
-        <MultiChartContainerV2 
-          dashboardData={dashboardData}
-          showLegend={true}
-        />
-      </View>
-      
-    </ScrollView>
+      <ScrollView 
+        className="flex-1" 
+        contentContainerStyle={{ paddingBottom: 30 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#9333ea"
+            colors={['#9333ea']}
+            progressBackgroundColor="#1f1f2e"
+          />
+        }
+      >
+        {/* High-level KPIs */}
+        {!isEmpty && (
+          <DashboardKPIs 
+            totalTime={totalTime}
+            percentGoal={percentGoal}
+            flowScore={flowScore ?? undefined}
+          />
+        )}
+        
+        {/* Multi-chart container with new architecture */}
+        <View className="mx-4 mb-4">
+          <MultiChartContainerV2 
+            dashboardData={dashboardData}
+            showLegend={true}
+          />
+        </View>
+        
+      </ScrollView>
+    </PremiumGate>
   );
 }
 

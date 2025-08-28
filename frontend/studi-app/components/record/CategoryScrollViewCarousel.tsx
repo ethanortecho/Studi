@@ -8,7 +8,7 @@ import Animated, {
   Extrapolation,
   runOnJS,
 } from 'react-native-reanimated';
-import { StudySessionContext } from '@/context/StudySessionContext';
+import { StudySessionContext } from '../../context/StudySessionContext';
 
 const CONTAINER_HEIGHT = 180;
 const ITEM_HEIGHT = 50;

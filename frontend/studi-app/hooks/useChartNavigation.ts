@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { ChartConfig, DashboardData } from '@/types/charts';
+import { ChartConfig, DashboardData } from '../types/charts';
 
 /**
  * Custom hook for managing chart navigation state

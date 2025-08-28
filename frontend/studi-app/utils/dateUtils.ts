@@ -104,28 +104,37 @@ export function navigateDate(currentDate: Date, direction: 'prev' | 'next', type
   return newDate;
 }
 
-export function canNavigate(currentDate: Date, direction: 'prev' | 'next', type: 'daily' | 'weekly'): boolean {
+export function canNavigate(currentDate: Date, direction: 'prev' | 'next', type: 'daily' | 'weekly' | 'monthly', isPremium: boolean = false): boolean {
   const today = new Date();
-  const thirtyDaysAgo = new Date(today);
-  thirtyDaysAgo.setDate(today.getDate() - 30);
+  const dayLimit = isPremium ? 365 : 14; // Premium: 1 year, Free: 14 days
+  const limitDate = new Date(today);
+  limitDate.setDate(today.getDate() - dayLimit);
   
   if (direction === 'next') {
-    // Can't navigate beyond today/current week
+    // Can't navigate beyond today/current week/month
     if (type === 'daily') {
       return currentDate < today;
-    } else {
+    } else if (type === 'weekly') {
       const currentWeekStart = getWeekStart(today);
       const targetWeekStart = getWeekStart(currentDate);
       return targetWeekStart < currentWeekStart;
+    } else { // monthly
+      const currentMonthStart = getMonthStart(today);
+      const targetMonthStart = getMonthStart(currentDate);
+      return targetMonthStart < currentMonthStart;
     }
   } else {
-    // Can't navigate beyond 30 days ago
+    // Can't navigate beyond limit (14 days for free, 1 year for premium)
     if (type === 'daily') {
-      return currentDate > thirtyDaysAgo;
-    } else {
+      return currentDate > limitDate;
+    } else if (type === 'weekly') {
       const targetWeekStart = getWeekStart(currentDate);
-      const limitWeekStart = getWeekStart(thirtyDaysAgo);
+      const limitWeekStart = getWeekStart(limitDate);
       return targetWeekStart > limitWeekStart;
+    } else { // monthly
+      const targetMonthStart = getMonthStart(currentDate);
+      const limitMonthStart = getMonthStart(limitDate);
+      return targetMonthStart > limitMonthStart;
     }
   }
 }

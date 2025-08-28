@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { Text, View, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useThemeMode } from '@/app/_layout';
-import { dark } from '@/theme/dark';
-import { light } from '@/theme/light';
-import { ThemedView } from '@/components/ThemedView';
+import { useThemeMode } from '../_layout';
+import { dark } from '../../theme/dark';
+import { light } from '../../theme/light';
+import { ThemedView } from '../../components/ThemedView';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import TimerConfigModal, { TimerConfig } from '@/components/timerconfig/TimerConfigModal';
-import { useAuth } from '@/contexts/AuthContext';
+import TimerConfigModal, { TimerConfig } from '../../components/timerconfig/TimerConfigModal';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function HomeScreen() {
     const [modalVisible, setModalVisible] = useState(false);

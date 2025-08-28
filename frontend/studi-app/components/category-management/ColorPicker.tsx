@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Pressable } from 'react-native';
-import { CATEGORY_COLORS } from '@/constants/Colors';
+import { CATEGORY_COLORS } from '../../constants/Colors';
 
 interface ColorPickerProps {
   selectedColor: string;

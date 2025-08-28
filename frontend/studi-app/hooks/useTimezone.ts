@@ -1,11 +1,11 @@
 import { useContext } from 'react';
-import { StudySessionContext } from '@/context/StudySessionContext';
+import { StudySessionContext } from '../context/StudySessionContext';
 import { 
   formatTimeInUserTimezone, 
   formatDateTimeInUserTimezone, 
   getChartTimeLabel,
   convertUTCToUserTimezone
-} from '@/utils/timezoneUtils';
+} from '../utils/timezoneUtils';
 
 /**
  * Custom hook for timezone-aware time formatting
@@ -68,7 +68,7 @@ export const useTimezone = () => {
       const seconds = Math.floor(durationMs / 1000);
       
       // Use centralized formatting utility
-      const { formatDuration } = require('@/utils/timeFormatting');
+      const { formatDuration } = require('../utils/timeFormatting');
       return formatDuration(seconds);
     },
 

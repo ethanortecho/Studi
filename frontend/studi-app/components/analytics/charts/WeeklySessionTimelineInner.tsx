@@ -1,8 +1,8 @@
 import React, { useMemo, useContext } from 'react';
 import { View, Text, Dimensions } from 'react-native';
 import DayTimeline, { DaySession, TimeWindow } from '../DayTimeline';
-import { StudySessionContext } from '@/context/StudySessionContext';
-import { getLocalDateComponents } from '@/utils/timezoneUtils';
+import { StudySessionContext } from '../../../context/StudySessionContext';
+import { getLocalDateComponents } from '../../../utils/timezoneUtils';
 
 interface SessionTime {
   start_time: string;

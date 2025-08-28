@@ -33,6 +33,20 @@ export interface DailyInsightsResponse {
     last_updated: string;
     productivity_score?: number | null;
     productivity_sessions_count?: number;
+    flow_score?: number | null;
+    flow_score_details?: {
+      min: number;
+      max: number;
+      avg: number;
+      count: number;
+      distribution: {
+        excellent: number;
+        great: number;
+        good: number;
+        fair: number;
+        poor: number;
+      };
+    } | null;
   };
   timeline_data: TimelineSession[];
   category_metadata: { [key: string]: CategoryMetadata };
@@ -56,6 +70,13 @@ export interface WeeklyInsightsResponse {
     user: number;
     is_final: boolean;
     last_updated: string;
+    flow_score?: number | null;
+    flow_score_details?: {
+      min: number;
+      max: number;
+      avg: number;
+      daily_count: number;
+    } | null;
   };
   daily_breakdown: {
     [date: string]: {
@@ -93,6 +114,13 @@ export interface MonthlyInsightsResponse {
     user: number;
     is_final: boolean;
     last_updated: string;
+    flow_score?: number | null;
+    flow_score_details?: {
+      min: number;
+      max: number;
+      avg: number;
+      daily_count: number;
+    } | null;
   } | null;
   daily_breakdown: Array<{
     date: string;

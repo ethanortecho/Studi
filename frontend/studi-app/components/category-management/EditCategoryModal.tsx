@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Pressable, Modal, Alert } from 'react-native';
 import ColorPicker from './ColorPicker';
-import { Category, updateCategory, deleteCategory } from '@/utils/studySession';
+import { Category, updateCategory, deleteCategory } from '../../utils/studySession';
 
 interface EditCategoryModalProps {
     visible: boolean;

@@ -1,8 +1,8 @@
 import React from 'react';
-import { useCountdown, CountdownConfig } from '@/hooks/timer';
+import { useCountdown, CountdownConfig } from '../../../hooks/timer';
 import { useLocalSearchParams } from 'expo-router';
-import TimerScreen from '@/components/timer/shared/TimerScreen';
-import CountdownDisplay from '@/components/timer/displays/CountdownDisplay';
+import TimerScreen from '../../../components/timer/shared/TimerScreen';
+import CountdownDisplay from '../../../components/timer/displays/CountdownDisplay';
 
 export default function CountdownSessionScreen() {
     // Get countdown duration from route params (passed from modal)

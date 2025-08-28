@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import useAggregateData from '@/utils/fetchApi';
-import { parseCategoryDurations, ParseStudyTrends, secondsToHours, secondsToHoursAndMinutes, filterBreakCategory, filterBreakFromDailyBreakdown } from '@/utils/parseData';
-import { DailyInsightsResponse, WeeklyInsightsResponse, MonthlyInsightsResponse } from '@/types/api';
-import { formatDateForAPI, getWeekEnd, getWeekStart, navigateDate, getWeekDays, getMonthStart, getMonthEnd } from '@/utils/dateUtils';
-import { useGoalForWeek } from '@/hooks/useGoalForWeek';
+import useAggregateData from '../utils/fetchApi';
+import { parseCategoryDurations, ParseStudyTrends, secondsToHours, secondsToHoursAndMinutes, filterBreakCategory, filterBreakFromDailyBreakdown } from '../utils/parseData';
+import { DailyInsightsResponse, WeeklyInsightsResponse, MonthlyInsightsResponse } from '../types/api';
+import { formatDateForAPI, getWeekEnd, getWeekStart, navigateDate, getWeekDays, getMonthStart, getMonthEnd } from '../utils/dateUtils';
+import { useGoalForWeek } from './useGoalForWeek';
+import { useApiWithToast } from './useApiWithToast';
 
 interface UseDashboardDataParams {
     dailyDate?: Date;
@@ -42,9 +43,14 @@ export function useDashboardData({ dailyDate, weeklyDate, monthlyDate }: UseDash
     DEBUG_DASHBOARD && console.log('📅 useDashboardData: Formatted dates:', { dailyDateStr, weeklyStartStr, weeklyEndStr, monthlyStartStr, monthlyEndStr });
 
     // Fetch data for daily, weekly, and monthly dashboards
-    const { data: dailyResponse, loading: dailyLoading } = useAggregateData('daily', dailyDateStr, undefined);
-    const { data: weeklyResponse, loading: weeklyLoading } = useAggregateData('weekly', weeklyStartStr, weeklyEndStr);
-    const { data: monthlyResponse, loading: monthlyLoading } = useAggregateData('monthly', monthlyStartStr, monthlyEndStr);
+    const { data: dailyResponse, loading: dailyLoading, error: dailyError } = useAggregateData('daily', dailyDateStr, undefined);
+    const { data: weeklyResponse, loading: weeklyLoading, error: weeklyError } = useAggregateData('weekly', weeklyStartStr, weeklyEndStr);
+    const { data: monthlyResponse, loading: monthlyLoading, error: monthlyError } = useAggregateData('monthly', monthlyStartStr, monthlyEndStr);
+    
+    // Show toast notifications for errors
+    useApiWithToast(dailyError, dailyLoading);
+    useApiWithToast(weeklyError, weeklyLoading);
+    useApiWithToast(monthlyError, monthlyLoading);
 
     // Prefetch adjacent dates for smoother navigation
     const currentDaily = dailyDate || new Date();
@@ -102,6 +108,9 @@ export function useDashboardData({ dailyDate, weeklyDate, monthlyDate }: UseDash
     useEffect(() => {
         if (dailyResponse) {
             DEBUG_DASHBOARD && console.log('📈 useDashboardData: Daily response received, updating state');
+            console.log('DEBUG: Daily response aggregate:', dailyResponse.aggregate);
+            console.log('DEBUG: Daily flow_score:', dailyResponse.aggregate?.flow_score);
+            console.log('DEBUG: Daily flow_score_details:', dailyResponse.aggregate?.flow_score_details);
             setDailyData(dailyResponse);
         }
     }, [dailyResponse]);
@@ -219,7 +228,9 @@ export function useDashboardData({ dailyDate, weeklyDate, monthlyDate }: UseDash
             goalMinutes,
             percentGoal,
             productivityScore: dailyData.aggregate?.productivity_score ?? null,
-            allTimeAvgProductivity: dailyData.all_time_avg_productivity ?? null
+            allTimeAvgProductivity: dailyData.all_time_avg_productivity ?? null,
+            flowScore: dailyData.aggregate?.flow_score ?? null,
+            flowScoreDetails: dailyData.aggregate?.flow_score_details ?? null
         };
         
         const end = performance.now();
@@ -281,7 +292,9 @@ export function useDashboardData({ dailyDate, weeklyDate, monthlyDate }: UseDash
             isEmpty: isWeeklyEmpty,
             goal: weeklyGoal,
             goalMinutes: weekGoalMinutes,
-            percentGoal: weekPercentGoal
+            percentGoal: weekPercentGoal,
+            flowScore: weeklyData.aggregate?.flow_score ?? null,
+            flowScoreDetails: weeklyData.aggregate?.flow_score_details ?? null
         };
         
         const end = performance.now();
@@ -351,7 +364,9 @@ export function useDashboardData({ dailyDate, weeklyDate, monthlyDate }: UseDash
             heatmapData: monthlyData.heatmap_data || {},
             rawData: monthlyData,
             isEmpty: isMonthlyEmpty,
-            percentGoal: null // Monthly goals not implemented yet
+            percentGoal: null, // Monthly goals not implemented yet
+            flowScore: aggregate?.flow_score ?? null,
+            flowScoreDetails: aggregate?.flow_score_details ?? null
         };
         
         const end = performance.now();

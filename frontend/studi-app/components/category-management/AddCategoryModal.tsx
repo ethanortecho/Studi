@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable, Modal, Alert } from 'react-native';
 import ColorPicker from './ColorPicker';
-import { createCategory } from '@/utils/studySession';
-import { CATEGORY_COLORS } from '@/constants/Colors';
+import { createCategory } from '../../utils/studySession';
+import { CATEGORY_COLORS } from '../../constants/Colors';
 
 interface AddCategoryModalProps {
   visible: boolean;

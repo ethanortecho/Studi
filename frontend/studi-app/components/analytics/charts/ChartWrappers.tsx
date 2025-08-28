@@ -19,7 +19,7 @@ import {
   MonthlyMapChartData,
   TrendsChartData,
   ChartComponentProps 
-} from '@/types/charts';
+} from '../../../types/charts';
 import WeeklyBarchart from './WeeklyBarchart';
 
 /**

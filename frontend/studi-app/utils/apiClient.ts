@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { API_BASE_URL } from '../config/api';
+import { getEffectiveApiUrl } from '../config/api';
 
 // =============================================
 // TYPE DEFINITIONS
@@ -96,7 +96,7 @@ async function refreshAccessToken(): Promise<boolean> {
 
       console.log('🔄 API Client: Starting token refresh...');
       
-      const response = await fetch(`${API_BASE_URL}/auth/refresh/`, {
+      const response = await fetch(`${getEffectiveApiUrl()}/auth/refresh/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -152,22 +152,6 @@ function getRequestKey(url: string, config?: ApiRequestConfig): string {
 // EXPONENTIAL BACKOFF RETRY LOGIC
 // =============================================
 
-/**
- * Calculate delay for exponential backoff
- * @param attempt Current attempt number (0-indexed)
- * @param baseDelay Base delay in milliseconds
- * @returns Delay in milliseconds with jitter
- */
-function getRetryDelay(attempt: number, baseDelay: number = 1000): number {
-  // Exponential backoff: 1s, 2s, 4s, 8s...
-  const exponentialDelay = baseDelay * Math.pow(2, attempt);
-  
-  // Add jitter (±20%) to prevent thundering herd
-  const jitter = exponentialDelay * 0.2 * (Math.random() - 0.5);
-  
-  // Cap at 30 seconds
-  return Math.min(exponentialDelay + jitter, 30000);
-}
 
 // =============================================
 // MAIN API CLIENT
@@ -197,12 +181,10 @@ class ApiClient {
     endpoint: string,
     config: ApiRequestConfig = {}
   ): Promise<ApiResponse<T>> {
-    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
+    const url = endpoint.startsWith('http') ? endpoint : `${getEffectiveApiUrl()}${endpoint}`;
     
-    // Default retry configuration
-    const maxRetries = config.maxRetries ?? (
-      config.method === 'GET' ? 3 : 1  // More retries for read operations
-    );
+    // No retries - fail immediately and let user pull to refresh
+    const maxRetries = config.maxRetries ?? 0;
     
     // Temporarily disabled deduplication due to issues
     // TODO: Re-implement properly later
@@ -223,16 +205,27 @@ class ApiClient {
           headers = { ...headers, ...authHeaders };
         }
 
-        // Create the fetch promise
+        // Create an AbortController for timeout
+        const controller = new AbortController();
+        const timeoutMs = 30000; // 30 second timeout
+        
+        const timeoutId = setTimeout(() => {
+          controller.abort();
+        }, timeoutMs);
+
+        // Create the fetch promise with abort signal
         const fetchPromise = fetch(url, {
           ...config,
           headers,
+          signal: controller.signal,
         });
 
-        const response = await fetchPromise;
+        try {
+          const response = await fetchPromise;
+          clearTimeout(timeoutId);
 
-        // Handle 401 Unauthorized - try token refresh once
-        if (response.status === 401 && !config.skipAuth && attempt === 0) {
+          // Handle 401 Unauthorized - try token refresh once
+          if (response.status === 401 && !config.skipAuth && attempt === 0) {
           console.log('🔐 API Client: Got 401, attempting token refresh...');
           const refreshSuccess = await refreshAccessToken();
           
@@ -285,8 +278,6 @@ class ApiClient {
 
         // Server error (5xx) - might retry
         if (isRetryableError(response.status) && attempt < maxRetries) {
-          const delay = getRetryDelay(attempt);
-          console.log(`⏳ API Client: Server error ${response.status}, retrying in ${delay}ms...`);
           
           lastError = {
             message: ERROR_MESSAGES[response.status] || 'Server error',
@@ -308,12 +299,37 @@ class ApiClient {
           },
           status: response.status,
         };
+        
+        } catch (error: any) {
+          clearTimeout(timeoutId);
+          
+          // Check if it's an abort error (timeout)
+          if (error.name === 'AbortError') {
+            lastError = {
+              message: 'Request timed out. Please try again.',
+              code: 'TIMEOUT',
+              retryable: true,
+            };
+          } else {
+            // Other network errors - use log instead of error to avoid Expo overlay
+            lastError = {
+              message: 'Network error. Please check your connection.',
+              code: 'NETWORK_ERROR',
+              retryable: true,
+            };
+          }
+          
+          // If we're not retrying, return the error immediately
+          if (attempt >= maxRetries) {
+            return {
+              error: lastError,
+              status: 0,
+            };
+          }
+        }
 
       } catch (error: any) {
-        // Network error or timeout
-        console.error(`❌ API Client: Network error on attempt ${attempt + 1}:`, error.message);
-        
-        // Deduplication temporarily disabled
+        // This should never happen now since we handle errors inside
 
         lastError = {
           message: 'Network error. Please check your connection.',
@@ -322,8 +338,6 @@ class ApiClient {
         };
 
         if (attempt < maxRetries) {
-          const delay = getRetryDelay(attempt);
-          console.log(`⏳ API Client: Retrying after network error in ${delay}ms...`);
           await new Promise(resolve => setTimeout(resolve, delay));
           attempt++;
           continue;
@@ -412,7 +426,6 @@ export const apiClient = new ApiClient();
 
 // Export for testing
 export const testHelpers = {
-  getRetryDelay,
   isRetryableError,
   getRequestKey,
 };

@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import ProductivityGauge from './ProductivityGauge';
-import DashboardCard from '@/components/insights/DashboardContainer';
+import DashboardCard from '../../insights/DashboardContainer';
+import { PremiumGate } from '../../premium/PremiumGate';
 
 interface ProductivityContainerProps {
   productivityScore: number | null;
@@ -15,27 +16,41 @@ export default function ProductivityContainer({
   loading = false
 }: ProductivityContainerProps) {
   return (
-    <DashboardCard className="bg-background border border-accent rounded-[35px] mx-4 p-6">
-      {/* Header */}
-      <View className="mb-8">
-        <Text className="text-lg font-semibold text-primaryText">Your Focus Flow</Text>
-        <Text className="text-sm text-secondaryText mt-1">How productive were your sessions today?</Text>
-      </View>
-      
-      {/* Gauge Chart */}
-      <View className="items-center">
-        {loading ? (
-          <View className="h-[180px] items-center justify-center">
-            <Text className="text-secondaryText">Loading...</Text>
+    <PremiumGate
+      feature="productivity_chart"
+      fallback={
+        <DashboardCard className="bg-background border border-accent rounded-[35px] mx-4 p-6">
+          <View className="mb-8">
+            <Text className="text-lg font-semibold text-primaryText">Your Flow Score</Text>
+            <Text className="text-sm text-secondaryText mt-1">Learning quality based on focus, duration, breaks, and deep work</Text>
           </View>
-        ) : (
-          <ProductivityGauge 
-            score={productivityScore}
-            allTimeAverage={allTimeAverage}
-            size={200}
-          />
-        )}
-      </View>
+          <PremiumGate feature="productivity_chart" showUpgradePrompt={true}>
+            <View />
+          </PremiumGate>
+        </DashboardCard>
+      }
+    >
+      <DashboardCard className="bg-background border border-accent rounded-[35px] mx-4 p-6">
+        {/* Header */}
+        <View className="mb-8">
+          <Text className="text-lg font-semibold text-primaryText">Your Flow Score</Text>
+          <Text className="text-sm text-secondaryText mt-1">Learning quality based on focus, duration, breaks, and deep work</Text>
+        </View>
+        
+        {/* Gauge Chart */}
+        <View className="items-center">
+          {loading ? (
+            <View className="h-[180px] items-center justify-center">
+              <Text className="text-secondaryText">Loading...</Text>
+            </View>
+          ) : (
+            <ProductivityGauge 
+              score={productivityScore}
+              allTimeAverage={allTimeAverage}
+              size={200}
+            />
+          )}
+        </View>
       
       {/* Legend (if we have data) */}
       {productivityScore !== null && !loading && (
@@ -53,5 +68,6 @@ export default function ProductivityContainer({
         </View>
       )}
     </DashboardCard>
+    </PremiumGate>
   );
 }

@@ -47,7 +47,7 @@ class StudySessionSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudySession
         fields = '__all__'
-        read_only_fields = ['id','user', 'total_duration']
+        read_only_fields = ['id','user', 'total_duration', 'flow_score', 'flow_components']
     
     def validate(self, data):
         start_time = data.get('start_time')
@@ -68,11 +68,21 @@ class StudySessionSerializer(serializers.ModelSerializer):
         instance.end_time = validated_data.get('end_time')
         instance.status = validated_data.get('status', 'completed')
         
-        # Update productivity rating if provided
-        if 'productivity_rating' in validated_data:
-            instance.productivity_rating = validated_data.get('productivity_rating')
+        # Update focus rating if provided
+        if 'focus_rating' in validated_data:
+            instance.focus_rating = validated_data.get('focus_rating')
             
         instance.save()
+        
+        # Calculate flow score after saving (needs complete session data)
+        if instance.status == 'completed':
+            try:
+                flow_score = instance.calculate_flow_score()
+                print(f"Calculated flow score for session {instance.id}: {flow_score}")
+            except Exception as e:
+                print(f"Failed to calculate flow score for session {instance.id}: {str(e)}")
+                # Don't fail the session completion if flow score calculation fails
+        
         return instance
 
         ...
@@ -186,6 +196,8 @@ class DailyAggregateSerializer(serializers.ModelSerializer):
             'break_count',
             'category_durations',
             'timeline_data',
+            'flow_score',
+            'flow_score_details',
             'is_final',
             'last_updated'
         ]
@@ -205,6 +217,8 @@ class WeeklyAggregateSerializer(serializers.ModelSerializer):
             'category_durations',
             'daily_breakdown',
             'session_times',
+            'flow_score',
+            'flow_score_details',
             'is_final',
             'last_updated'
         ]
@@ -224,6 +238,8 @@ class MonthlyAggregateSerializer(serializers.ModelSerializer):
             'category_durations',
             'daily_breakdown',
             'heatmap_data',
+            'flow_score',
+            'flow_score_details',
             'is_final',
             'last_updated'
         ]
@@ -235,7 +251,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = CustomUser
-        fields = ['id', 'username', 'email', 'timezone', 'date_joined']
+        fields = ['id', 'username', 'email', 'timezone', 'date_joined', 'is_premium']
         read_only_fields = ['id', 'username', 'email', 'date_joined']
     
     def validate_timezone(self, value):

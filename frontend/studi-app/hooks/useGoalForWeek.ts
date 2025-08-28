@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { getApiUrl } from '@/config/api';
-import { formatDateForAPI } from '@/utils/dateUtils';
+import { getApiUrl } from '../config/api';
+import { formatDateForAPI } from '../utils/dateUtils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // --- Types ----------------------------------------------------

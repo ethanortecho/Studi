@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import { formatDateForAPI } from '@/utils/dateUtils';
-import { apiClient } from '@/utils/apiClient';
-import { useAuth } from '@/contexts/AuthContext';
+import { formatDateForAPI } from '../utils/dateUtils';
+import { apiClient } from '../utils/apiClient';
+import { useAuth } from '../contexts/AuthContext';
 
 interface WeeklyGoal {
   id: number;

@@ -4,10 +4,22 @@ from django.utils.timezone import localtime
 
 @admin.register(StudySession)
 class StudySessionAdmin(admin.ModelAdmin):
-    list_display = ('user', 'formatted_start_time', 'formatted_end_time', 'total_duration', 'status', 'productivity_rating')
-    list_filter = ('status', 'productivity_rating', 'start_time')
+    list_display = ('user', 'formatted_start_time', 'formatted_end_time', 'total_duration', 'status', 'focus_rating', 'flow_score')
+    list_filter = ('status', 'focus_rating', 'start_time')
     search_fields = ('user__username',)
     ordering = ('-start_time',)  # Most recent first
+    readonly_fields = ('flow_components',)  # Make flow_components read-only since it's JSON
+    
+    # Add fieldsets for better organization
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('user', 'status', 'start_time', 'end_time', 'total_duration')
+        }),
+        ('Ratings & Scores', {
+            'fields': ('focus_rating', 'flow_score', 'flow_components'),
+            'description': 'Flow score is calculated automatically based on session metrics. Set to null for sessions < 15 minutes.'
+        }),
+    )
 
     def formatted_start_time(self, obj):
         return localtime(obj.start_time).strftime("%b %d, %Y, %I:%M %p")
@@ -52,10 +64,11 @@ class UserGoalsAdmin(admin.ModelAdmin):
 
 @admin.register(DailyAggregate)
 class DailyAggregateAdmin(admin.ModelAdmin):
-    list_display = ('user', 'date', 'total_duration', 'session_count', 'break_count', 'is_final')
+    list_display = ('user', 'date', 'total_duration', 'session_count', 'break_count', 'flow_score', 'is_final')
     list_filter = ('date', 'user', 'is_final')
     search_fields = ('user__username',)
     ordering = ('-date',)
+    readonly_fields = ('flow_score_details',)
 
     def total_duration_hours(self, obj):
         return f"{obj.total_duration / 3600:.2f}h"
@@ -63,10 +76,11 @@ class DailyAggregateAdmin(admin.ModelAdmin):
 
 @admin.register(WeeklyAggregate)
 class WeeklyAggregateAdmin(admin.ModelAdmin):
-    list_display = ('user', 'week_start', 'total_duration', 'session_count', 'break_count', 'is_final')
+    list_display = ('user', 'week_start', 'total_duration', 'session_count', 'break_count', 'flow_score', 'is_final')
     list_filter = ('week_start', 'user', 'is_final')
     search_fields = ('user__username',)
     ordering = ('-week_start',)
+    readonly_fields = ('flow_score_details',)
 
     def total_duration_hours(self, obj):
         return f"{obj.total_duration / 3600:.2f}h"
@@ -74,10 +88,11 @@ class WeeklyAggregateAdmin(admin.ModelAdmin):
 
 @admin.register(MonthlyAggregate)
 class MonthlyAggregateAdmin(admin.ModelAdmin):
-    list_display = ('user', 'month_start', 'total_duration', 'session_count', 'break_count', 'is_final')
+    list_display = ('user', 'month_start', 'total_duration', 'session_count', 'break_count', 'flow_score', 'is_final')
     list_filter = ('month_start', 'user', 'is_final')
     search_fields = ('user__username',)
     ordering = ('-month_start',)
+    readonly_fields = ('flow_score_details',)
 
     def total_duration_hours(self, obj):
         return f"{obj.total_duration / 3600:.2f}h"

@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Text, View, Pressable } from 'react-native';
 import DashboardContent from './DashboardContent';
 import PeriodNavigator from './PeriodNavigator';
-import { getDefaultDate, getWeekStart, navigateWeek, getMonthStart } from '@/utils/dateUtils';
-import { useDashboardData } from '@/hooks/useDashboardData';
+import { getDefaultDate, getWeekStart, navigateWeek, getMonthStart } from '../../utils/dateUtils';
+import { useDashboardData } from '../../hooks/useDashboardData';
+import { usePremium } from '../../contexts/PremiumContext';
 
 interface DashboardTabsProps {
     onDataChange?: (data: { totalTime?: { hours: number; minutes: number }, totalHours?: string }) => void;
@@ -12,6 +13,7 @@ interface DashboardTabsProps {
 export default function DashboardTabs({ onDataChange }: DashboardTabsProps) {
     const [selectedTab, setSelectedTab] = useState('weekly'); // Default to weekly to match your usage
     const today = new Date();
+    const { isPremium } = usePremium();
 
     // Unified date state for all timeframes
     const [dailyDate, setDailyDate] = useState<Date>(today);
@@ -85,9 +87,14 @@ export default function DashboardTabs({ onDataChange }: DashboardTabsProps) {
                         onPress={() => setSelectedTab('monthly')} 
                         className={`flex-1 items-center py-2 px-4 rounded-2xl ${selectedTab === 'monthly' ? 'bg-accent' : ''}`}
                     >
-                        <Text className={`font-bold text-xl ${selectedTab === 'monthly' ? 'text-primaryText' : 'text-secondaryText'}`}>
-                            Monthly
-                        </Text>
+                        <View className="flex-row items-center">
+                            <Text className={`font-bold text-xl ${selectedTab === 'monthly' ? 'text-primaryText' : 'text-secondaryText'}`}>
+                                Monthly
+                            </Text>
+                            {!isPremium && (
+                                <Text className="text-xs ml-1">🔒</Text>
+                            )}
+                        </View>
                     </Pressable>
                 </View>
             </View>

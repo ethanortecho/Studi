@@ -6,9 +6,9 @@ import Animated, {
     withTiming,
     Easing 
 } from 'react-native-reanimated';
-import DailyDashboard from '@/app/screens/Insights/DailyDashboard';
-import WeeklyDashboard from '@/app/screens/Insights/WeeklyDashboard';
-import MonthlyDashboard from '@/app/screens/Insights/MonthlyDashboard';
+import DailyDashboard from '../../app/screens/Insights/DailyDashboard';
+import WeeklyDashboard from '../../app/screens/Insights/WeeklyDashboard';
+import MonthlyDashboard from '../../app/screens/Insights/MonthlyDashboard';
 import { DashboardSkeleton } from './SkeletonLoader';
 
 interface DashboardContentProps {
@@ -112,6 +112,8 @@ export default function DashboardContent({
                     isEmpty={daily.isEmpty}
                     productivityScore={daily.productivityScore}
                     allTimeAvgProductivity={daily.allTimeAvgProductivity}
+                    flowScore={daily.flowScore}
+                    flowScoreDetails={daily.flowScoreDetails}
                 />
             );
             DEBUG_DASHBOARD && console.log(`⏱️ DashboardContent: Daily dashboard render took ${(performance.now() - renderStart).toFixed(2)}ms`);
@@ -131,6 +133,7 @@ export default function DashboardContent({
                     loading={false}
                     percentGoal={weekly.percentGoal}
                     isEmpty={weekly.isEmpty}
+                    flowScore={weekly.flowScore}
                 />
             );
             DEBUG_DASHBOARD && console.log(`⏱️ DashboardContent: Weekly dashboard render took ${(performance.now() - renderStart).toFixed(2)}ms`);
@@ -150,6 +153,7 @@ export default function DashboardContent({
                     loading={false}
                     percentGoal={monthly.percentGoal}
                     isEmpty={monthly.isEmpty}
+                    flowScore={monthly.flowScore}
                 />
             );
             DEBUG_DASHBOARD && console.log(`⏱️ DashboardContent: Monthly dashboard render took ${(performance.now() - renderStart).toFixed(2)}ms`);

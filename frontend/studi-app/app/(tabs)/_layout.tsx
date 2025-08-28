@@ -3,10 +3,10 @@ import React from 'react';
 import { Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-import { HapticTab } from '@/components/HapticTab';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import AuthGuard from '@/components/auth/AuthGuard';
+import { HapticTab } from '../../components/HapticTab';
+import { Colors } from '../../constants/Colors';
+import { useColorScheme } from '../../hooks/useColorScheme';
+import AuthGuard from '../../components/auth/AuthGuard';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();

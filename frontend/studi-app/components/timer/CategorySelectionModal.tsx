@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { View, Text, Modal, Pressable, ScrollView } from 'react-native';
-import { StudySessionContext } from '@/context/StudySessionContext';
+import { StudySessionContext } from '../../context/StudySessionContext';
 import { router } from 'expo-router';
 
 interface CategorySelectionModalProps {

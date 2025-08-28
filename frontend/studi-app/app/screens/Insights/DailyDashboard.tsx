@@ -1,10 +1,10 @@
-import React from 'react';
-import { ScrollView, View, Text } from 'react-native';
-import { CategoryMetadata, TimelineSession } from '@/types/api';
-import DashboardKPIs from '@/components/analytics/DashboardKPIs';
-import MultiChartContainerV2 from '@/components/analytics/MultiChartContainerV2';
-import ProductivityContainer from '@/components/analytics/productivity/ProductivityContainer';
-import { DashboardData } from '@/types/charts';
+import React, { useState, useCallback } from 'react';
+import { ScrollView, View, Text, RefreshControl } from 'react-native';
+import { CategoryMetadata, TimelineSession } from '../../../types/api';
+import DashboardKPIs from '../../../components/analytics/DashboardKPIs';
+import MultiChartContainerV2 from '../../../components/analytics/MultiChartContainerV2';
+import ProductivityContainer from '../../../components/analytics/productivity/ProductivityContainer';
+import { DashboardData } from '../../../types/charts';
 
 interface DailyDashboardProps {
   totalHours: string;
@@ -19,6 +19,8 @@ interface DailyDashboardProps {
   isEmpty?: boolean;
   productivityScore?: number | null;
   allTimeAvgProductivity?: number | null;
+  flowScore?: number | null;
+  flowScoreDetails?: any;
 }
 
 export default function DailyDashboard({
@@ -33,8 +35,23 @@ export default function DailyDashboard({
   loading,
   isEmpty,
   productivityScore,
-  allTimeAvgProductivity
+  allTimeAvgProductivity,
+  flowScore,
+  flowScoreDetails
 }: DailyDashboardProps) {
+  const [refreshing, setRefreshing] = useState(false);
+  
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    // Clear cache for current data to force refresh
+    const { clearDashboardCache } = await import('../../../utils/fetchApi');
+    clearDashboardCache();
+    
+    // Wait a bit for data to reload
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1500);
+  }, []);
   // Prepare dashboard data in the normalized format
   const dashboardData: DashboardData = {
     timeframe: 'daily',
@@ -52,14 +69,22 @@ export default function DailyDashboard({
       className="flex-1 " 
       contentContainerStyle={{ paddingBottom: 30 }}
       showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor="#9333ea"
+          colors={['#9333ea']}
+          progressBackgroundColor="#1f1f2e"
+        />
+      }
     >
       {/* High-level KPIs */}
       {!isEmpty && (
         <DashboardKPIs 
           totalTime={totalTime}
           percentGoal={percentGoal}
-          flowScore={7}  // TODO: Replace with actual flow score data
-          flowScoreTotal={10}
+          flowScore={flowScore !== null ? flowScore : undefined}
         />
       )}
       
@@ -71,11 +96,11 @@ export default function DailyDashboard({
         />
       </View>
       
-      {/* Productivity Gauge Container */}
+      {/* Flow Score Gauge Container */}
       {!isEmpty && (
         <View className="mb-4">
           <ProductivityContainer 
-            productivityScore={productivityScore ?? null}
+            productivityScore={flowScore ?? null}
             allTimeAverage={allTimeAvgProductivity ?? null}
             loading={loading}
           />

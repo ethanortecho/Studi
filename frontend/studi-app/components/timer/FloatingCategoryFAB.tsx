@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { View, Pressable, Text } from 'react-native';
-import { StudySessionContext } from '@/context/StudySessionContext';
+import { StudySessionContext } from '../../context/StudySessionContext';
 
 interface FloatingCategoryFABProps {
   onPress: () => void;

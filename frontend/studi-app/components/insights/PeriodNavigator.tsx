@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getWeekStart, navigateWeek, getMonthStart, canNavigate } from '@/utils/dateUtils';
+import { getWeekStart, navigateWeek, getMonthStart, canNavigate } from '../../utils/dateUtils';
+import { usePremium } from '../../contexts/PremiumContext';
 
 type Timeframe = 'daily' | 'weekly' | 'monthly';
 
@@ -12,6 +13,8 @@ interface PeriodNavigatorProps {
 }
 
 export default function PeriodNavigator({ timeframe, selectedDate, onSelect }: PeriodNavigatorProps) {
+    const { isPremium } = usePremium();
+    
     const handleNavigation = (direction: 'prev' | 'next') => {
         let newDate: Date;
         
@@ -68,8 +71,8 @@ export default function PeriodNavigator({ timeframe, selectedDate, onSelect }: P
         }
     };
 
-    const canGoPrev = canNavigate(selectedDate, 'prev', timeframe);
-    const canGoNext = canNavigate(selectedDate, 'next', timeframe);
+    const canGoPrev = canNavigate(selectedDate, 'prev', timeframe, isPremium);
+    const canGoNext = canNavigate(selectedDate, 'next', timeframe, isPremium);
 
     return (
         <View className="px-5 py-4">

@@ -6,14 +6,12 @@ interface DashboardKPIsProps {
   totalTime?: { hours: number; minutes: number };
   percentGoal?: number | null;
   flowScore?: number;
-  flowScoreTotal?: number;
 }
 
 export default function DashboardKPIs({ 
   totalTime,
   percentGoal,
-  flowScore,
-  flowScoreTotal = 10
+  flowScore
 }: DashboardKPIsProps) {
   // Calculate the circle progress for goal percentage
   const radius = 32;  // Scaled down from 35
@@ -28,9 +26,9 @@ export default function DashboardKPIs({
       {flowScore !== undefined && (
         <View className="flex-1">
           <Text className="text-primaryText text-2xl font-bold text-center">
-            {flowScore}/{flowScoreTotal}
+            {Math.round(flowScore)}
           </Text>
-          <Text className="text-secondaryText text-base mt-1 text-center">Flow score</Text>
+          <Text className="text-secondaryText text-base mt-1 text-center">Flow Score</Text>
         </View>
       )}
 

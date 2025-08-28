@@ -1,7 +1,7 @@
 import { useBaseTimer } from './useBaseTimer';
 import { useStudySession } from '../useStudySession';
 import { useContext } from 'react';
-import { StudySessionContext } from '@/context/StudySessionContext';
+import { StudySessionContext } from '../../context/StudySessionContext';
 
 export interface StopwatchConfig {
     selectedCategoryId?: string; // Category to start with

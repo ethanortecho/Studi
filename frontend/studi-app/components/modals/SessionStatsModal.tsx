@@ -171,7 +171,17 @@ export default function SessionStatsModal({
             {/* Flow Score and Duration - shown after rating submission */}
             {isSubmitted && (
               <>
-                {flowScore !== null && (
+                {/* Show flow score if available, or message if session too short */}
+                {sessionDuration < 15 ? (
+                  <View className="mb-4">
+                    <Text className="text-lg text-white/70 text-center px-4 mb-2">
+                      Study for 15+ minutes to receive a flow score! 📚
+                    </Text>
+                    <Text className="text-sm text-white/50 text-center px-4">
+                      Longer sessions help us better analyze your study patterns
+                    </Text>
+                  </View>
+                ) : flowScore !== null ? (
                   <View className="mb-4">
                     <Text className="text-2xl text-white font-bold text-center mb-2">
                       Flow Score: {Math.round(flowScore)}
@@ -182,7 +192,8 @@ export default function SessionStatsModal({
                       </Text>
                     )}
                   </View>
-                )}
+                ) : null}
+                
                 <Text className="text-lg text-white/70 mb-6 text-center">
                   You studied for{' '}
                   <Text className="font-semibold text-purple-400">

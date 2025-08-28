@@ -133,6 +133,7 @@ export default function DashboardContent({
                     loading={false}
                     percentGoal={weekly.percentGoal}
                     isEmpty={weekly.isEmpty}
+                    flowScore={weekly.flowScore}
                 />
             );
             DEBUG_DASHBOARD && console.log(`⏱️ DashboardContent: Weekly dashboard render took ${(performance.now() - renderStart).toFixed(2)}ms`);
@@ -152,6 +153,7 @@ export default function DashboardContent({
                     loading={false}
                     percentGoal={monthly.percentGoal}
                     isEmpty={monthly.isEmpty}
+                    flowScore={monthly.flowScore}
                 />
             );
             DEBUG_DASHBOARD && console.log(`⏱️ DashboardContent: Monthly dashboard render took ${(performance.now() - renderStart).toFixed(2)}ms`);

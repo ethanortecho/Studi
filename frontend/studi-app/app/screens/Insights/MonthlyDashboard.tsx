@@ -19,6 +19,7 @@ interface MonthlyDashboardProps {
   rawData?: any;
   loading: boolean;
   isEmpty: boolean;
+  flowScore?: number | null;
 }
 
 export default function MonthlyDashboard({
@@ -33,7 +34,8 @@ export default function MonthlyDashboard({
   monthDate,
   rawData,
   loading,
-  isEmpty
+  isEmpty,
+  flowScore
 }: MonthlyDashboardProps) {
   const [refreshing, setRefreshing] = useState(false);
   
@@ -94,8 +96,7 @@ export default function MonthlyDashboard({
           <DashboardKPIs 
             totalTime={totalTime}
             percentGoal={percentGoal}
-            flowScore={7}  // TODO: Replace with actual flow score data
-            flowScoreTotal={10}
+            flowScore={flowScore ?? undefined}
           />
         )}
         

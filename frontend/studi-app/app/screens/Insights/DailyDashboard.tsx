@@ -84,7 +84,7 @@ export default function DailyDashboard({
         <DashboardKPIs 
           totalTime={totalTime}
           percentGoal={percentGoal}
-          flowScore={flowScore ?? undefined}
+          flowScore={flowScore !== null ? flowScore : undefined}
         />
       )}
       

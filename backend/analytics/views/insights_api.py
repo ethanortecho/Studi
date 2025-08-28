@@ -76,6 +76,8 @@ class DailyInsights(APIView):
         try:
             daily_aggregate = DailyAggregate.objects.get(user=user, date=date)
             print(f"Found DailyAggregate for {date}")
+            print(f"DEBUG: Daily aggregate flow_score = {daily_aggregate.flow_score}")
+            print(f"DEBUG: Daily aggregate flow_score_details = {daily_aggregate.flow_score_details}")
             
             # Calculate all-time average productivity score
             all_time_avg_productivity = None
@@ -96,12 +98,15 @@ class DailyInsights(APIView):
                     'break_count': daily_aggregate.break_count,
                     'is_final': daily_aggregate.is_final,
                     'productivity_score': daily_aggregate.productivity_score,
-                    'productivity_sessions_count': daily_aggregate.productivity_sessions_count
+                    'productivity_sessions_count': daily_aggregate.productivity_sessions_count,
+                    'flow_score': daily_aggregate.flow_score,  # Add flow score
+                    'flow_score_details': daily_aggregate.flow_score_details  # Add flow score details
                 },
                 'timeline_data': daily_aggregate.timeline_data,  # Precomputed!
                 'category_metadata': category_data,
                 'all_time_avg_productivity': all_time_avg_productivity
             }
+            print(f"DEBUG: Response data aggregate flow_score = {response_data['aggregate']['flow_score']}")
             
         except DailyAggregate.DoesNotExist:
             print(f"No DailyAggregate found for {date}, falling back to old method")

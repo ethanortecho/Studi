@@ -108,6 +108,9 @@ export function useDashboardData({ dailyDate, weeklyDate, monthlyDate }: UseDash
     useEffect(() => {
         if (dailyResponse) {
             DEBUG_DASHBOARD && console.log('📈 useDashboardData: Daily response received, updating state');
+            console.log('DEBUG: Daily response aggregate:', dailyResponse.aggregate);
+            console.log('DEBUG: Daily flow_score:', dailyResponse.aggregate?.flow_score);
+            console.log('DEBUG: Daily flow_score_details:', dailyResponse.aggregate?.flow_score_details);
             setDailyData(dailyResponse);
         }
     }, [dailyResponse]);
@@ -289,7 +292,9 @@ export function useDashboardData({ dailyDate, weeklyDate, monthlyDate }: UseDash
             isEmpty: isWeeklyEmpty,
             goal: weeklyGoal,
             goalMinutes: weekGoalMinutes,
-            percentGoal: weekPercentGoal
+            percentGoal: weekPercentGoal,
+            flowScore: weeklyData.aggregate?.flow_score ?? null,
+            flowScoreDetails: weeklyData.aggregate?.flow_score_details ?? null
         };
         
         const end = performance.now();
@@ -359,7 +364,9 @@ export function useDashboardData({ dailyDate, weeklyDate, monthlyDate }: UseDash
             heatmapData: monthlyData.heatmap_data || {},
             rawData: monthlyData,
             isEmpty: isMonthlyEmpty,
-            percentGoal: null // Monthly goals not implemented yet
+            percentGoal: null, // Monthly goals not implemented yet
+            flowScore: aggregate?.flow_score ?? null,
+            flowScoreDetails: aggregate?.flow_score_details ?? null
         };
         
         const end = performance.now();

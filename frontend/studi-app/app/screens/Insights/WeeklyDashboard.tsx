@@ -18,6 +18,7 @@ interface WeeklyDashboardProps {
   rawData?: any;
   loading: boolean;
   isEmpty?: boolean;
+  flowScore?: number | null;
 }
 
 export default function WeeklyDashboard({
@@ -32,7 +33,8 @@ export default function WeeklyDashboard({
   dailyBreakdown,
   rawData,
   loading,
-  isEmpty
+  isEmpty,
+  flowScore
 }: WeeklyDashboardProps) {
   const [refreshing, setRefreshing] = useState(false);
   
@@ -88,8 +90,7 @@ export default function WeeklyDashboard({
         <DashboardKPIs 
           totalTime={totalTime}
           percentGoal={percentGoal}
-          flowScore={7}  // TODO: Replace with actual flow score data
-          flowScoreTotal={10}
+          flowScore={flowScore ?? undefined}
         />
       )}
       

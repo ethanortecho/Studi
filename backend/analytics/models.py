@@ -27,10 +27,10 @@ class CustomUser(AbstractUser):
         help_text='User timezone (e.g., America/New_York, Europe/London)'
     )
     
-    # Premium status
+    # Premium status (defaulting to True for testing phase)
     is_premium = models.BooleanField(
-        default=False,
-        help_text='Whether the user has premium access'
+        default=True,  # Changed to True for testing phase - revert to False for production
+        help_text='Whether the user has premium access (currently defaults to True for testing)'
     )
 
 class StudySessionManager(models.Manager):
@@ -79,10 +79,19 @@ class StudySession(models.Model):
         """
         Calculate and store the flow score for this session.
         Should be called when session is completed.
+        Minimum session length: 15 minutes (900 seconds)
         """
         from analytics.flow_score import calculate_flow_score
         
         if not self.end_time or not self.start_time:
+            return None
+        
+        # Check minimum session length (15 minutes)
+        if self.total_duration and self.total_duration < 900:
+            # Session too short for flow score
+            self.flow_score = None
+            self.flow_components = None
+            super().save(update_fields=['flow_score', 'flow_components'])
             return None
         
         # Get all category blocks for this session

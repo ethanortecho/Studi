@@ -171,8 +171,8 @@ class SplitAggregateUpdateService:
                     category_durations[block.category.name] += block.duration
         
         # Calculate weighted focus score for flow calculation
-        # Only include sessions >= 25 minutes (1500 seconds) for scoring
-        MIN_SESSION_LENGTH_FOR_SCORING = 1500  # 25 minutes in seconds
+        # Only include sessions >= 15 minutes (900 seconds) for scoring
+        MIN_SESSION_LENGTH_FOR_SCORING = 900  # 15 minutes in seconds
         total_weighted_score = 0
         total_rated_duration = 0
         sessions_with_ratings = 0

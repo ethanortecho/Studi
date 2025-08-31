@@ -1,5 +1,5 @@
 import React from 'react';
-import { useCountdown, CountdownConfig } from '../../../hooks/timer';
+import { useCountdown, CountdownConfig, useTimerRecovery } from '../../../hooks/timer';
 import { useLocalSearchParams } from 'expo-router';
 import TimerScreen from '../../../components/timer/shared/TimerScreen';
 import CountdownDisplay from '../../../components/timer/displays/CountdownDisplay';
@@ -16,6 +16,9 @@ export default function CountdownSessionScreen() {
     };
     
     const timerHook = useCountdown(countdownConfig);
+    
+    // Handle recovery using shared hook
+    useTimerRecovery(timerHook, 'countdown');
 
     return (
         <TimerScreen

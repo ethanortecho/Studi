@@ -30,6 +30,7 @@ interface StudySessionContextType {
   };
   // Recovery state
   recoveredTimerState: TimerRecoveryState | null;
+  clearRecoveredState: () => void;
   startSession: () => Promise<{ id: number }>;
   stopSession: () => Promise<void>;
   pauseSession: () => Promise<void>;
@@ -61,6 +62,7 @@ export const StudySessionContext = createContext<StudySessionContextType>({
     sessionDuration: 0,
   },
   recoveredTimerState: null,
+  clearRecoveredState: () => {},
   startSession: () => Promise.resolve({ id: 0 }),
   stopSession: () => Promise.resolve(),
   pauseSession: () => Promise.resolve(),
@@ -540,6 +542,10 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
     return null; // Return null to let TimerScreen use theme background
   };
 
+  const clearRecoveredState = () => {
+    setRecoveredTimerState(null);
+  };
+
   return (
     <StudySessionContext.Provider value={{
       sessionId,
@@ -553,6 +559,7 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
       userTimezone,
       sessionStatsModal,
       recoveredTimerState,
+      clearRecoveredState,
       startSession,
       stopSession,
       pauseSession,

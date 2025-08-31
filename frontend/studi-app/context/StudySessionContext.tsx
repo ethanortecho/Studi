@@ -182,8 +182,8 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
               pathname: '/screens/timer/pomo',
               params: {
                 pomodoroBlocks: String(state.pomoBlocks || 4),
-                pomodoroWorkDuration: '25',
-                pomodoroBreakDuration: '5',
+                pomodoroWorkDuration: String(Math.floor((state.pomoWorkDuration || 1500) / 60)),
+                pomodoroBreakDuration: String(Math.floor((state.pomoBreakDuration || 300) / 60)),
                 selectedCategoryId: String(categoryId || ''),
                 recovered: 'true'
               }

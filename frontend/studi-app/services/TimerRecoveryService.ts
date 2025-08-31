@@ -20,9 +20,11 @@ export interface TimerRecoveryState {
   // Timer type specific
   timerType: 'stopwatch' | 'countdown' | 'pomodoro';
   totalDuration?: number; // for countdown (in seconds)
-  pomoBlocks?: number; // for pomodoro
-  pomoBlocksRemaining?: number;
-  pomoStatus?: 'work' | 'break';
+  pomoBlocks?: number; // for pomodoro - total blocks
+  pomoBlocksRemaining?: number; // current blocks left
+  pomoStatus?: 'work' | 'break'; // current phase
+  pomoWorkDuration?: number; // work phase duration in seconds
+  pomoBreakDuration?: number; // break phase duration in seconds
   
   // Metadata
   lastSaved: string; // ISO timestamp

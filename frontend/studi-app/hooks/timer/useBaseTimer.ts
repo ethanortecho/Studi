@@ -22,6 +22,8 @@ export interface BaseTimerConfig {
     pomoBlocks?: number; // for pomodoro
     pomoBlocksRemaining?: number;
     pomoStatus?: 'work' | 'break';
+    pomoWorkDuration?: number; // for pomodoro
+    pomoBreakDuration?: number; // for pomodoro
 }
 
 export function useBaseTimer(config?: BaseTimerConfig) {
@@ -52,6 +54,8 @@ export function useBaseTimer(config?: BaseTimerConfig) {
             pomoBlocks: config.pomoBlocks,
             pomoBlocksRemaining: config.pomoBlocksRemaining,
             pomoStatus: config.pomoStatus,
+            pomoWorkDuration: config.pomoWorkDuration,
+            pomoBreakDuration: config.pomoBreakDuration,
         };
     }, [startTime, pausedTime, status, config]);
    

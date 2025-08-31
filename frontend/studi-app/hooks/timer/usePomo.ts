@@ -35,6 +35,8 @@ export function usePomo(config: PomoConfig) {
         pomoBlocks: config.pomodoroBlocks,
         pomoBlocksRemaining,
         pomoStatus: pomoBlockStatus,
+        pomoWorkDuration,
+        pomoBreakDuration,
         onStart: async () => {
             // Always create a new session when timer starts (atomic operation)
             const sessionResult = await startSession();
@@ -117,6 +119,21 @@ export function usePomo(config: PomoConfig) {
         return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
     };
 
+    // Custom recovery handler that restores pomodoro-specific state
+    const recoverFromState = (state: any, elapsed: number) => {
+        // First recover the base timer state
+        baseTimer.recoverFromState(state, elapsed);
+        
+        // Then restore pomodoro-specific state
+        if (state.pomoBlocksRemaining !== undefined) {
+            setPomoBlocksRemaining(state.pomoBlocksRemaining);
+        }
+        if (state.pomoStatus) {
+            setPomoBlockStatus(state.pomoStatus);
+        }
+        console.log('Pomodoro: Restored blocks remaining:', state.pomoBlocksRemaining, 'status:', state.pomoStatus);
+    };
+
     return {
         // State
         startTime: baseTimer.startTime,
@@ -137,6 +154,6 @@ export function usePomo(config: PomoConfig) {
         
         // Utilities
         formatTime,
-        recoverFromState: baseTimer.recoverFromState,
+        recoverFromState,
     };
 }

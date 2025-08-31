@@ -208,6 +208,7 @@ class DailyAggregate(models.Model):
     # Flow Score metrics
     flow_score = models.FloatField(null=True, blank=True)  # Duration-weighted average (0-1000)
     flow_score_details = models.JSONField(null=True, blank=True)  # Min/max/avg/distribution
+    flow_coaching_message = models.TextField(null=True, blank=True)  # Personalized advice
     
     # Pre-computed JSON data for API responses
     category_durations = models.JSONField(default=dict)  # {category_name: seconds}
@@ -240,6 +241,7 @@ class WeeklyAggregate(models.Model):
     # Flow Score metrics
     flow_score = models.FloatField(null=True, blank=True)  # Average of daily scores
     flow_score_details = models.JSONField(null=True, blank=True)  # Statistics
+    flow_coaching_message = models.TextField(null=True, blank=True)  # Personalized advice
     
     # Pre-computed JSON data for API responses
     category_durations = models.JSONField(default=dict)  # {category_name: seconds}
@@ -272,6 +274,7 @@ class MonthlyAggregate(models.Model):
     # Flow Score metrics
     flow_score = models.FloatField(null=True, blank=True)  # Average of daily scores
     flow_score_details = models.JSONField(null=True, blank=True)  # Statistics
+    flow_coaching_message = models.TextField(null=True, blank=True)  # Personalized advice
     
     # Pre-computed JSON data for API responses
     category_durations = models.JSONField(default=dict)  # {category_name: seconds}

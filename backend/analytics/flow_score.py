@@ -362,3 +362,73 @@ def create_test_blocks(blocks_data: List[Tuple[str, int, bool]]) -> List[Dict]:
         current_time = end
     
     return blocks
+
+
+def get_aggregate_coaching_message(
+    flow_score: Optional[float],
+    flow_details: Optional[Dict],
+    timeframe: str = 'daily'
+) -> str:
+    """
+    Generate coaching message for aggregate flow scores.
+    
+    Args:
+        flow_score: Average flow score for the period (0-1000)
+        flow_details: Dictionary with min, max, avg, count/daily_count, and distribution (daily only)
+        timeframe: 'daily', 'weekly', or 'monthly'
+    
+    Returns:
+        Personalized coaching message
+    """
+    # No data case
+    if not flow_score or not flow_details:
+        return "Start a study session to build your flow score!"
+    
+    # Extract details
+    min_score = flow_details.get('min', 0)
+    max_score = flow_details.get('max', 0)
+    score_range = max_score - min_score
+    
+    # For daily, we have distribution data
+    distribution = flow_details.get('distribution', {})
+    total_sessions = sum(distribution.values()) if distribution else 0
+    
+    # Determine consistency
+    is_consistent = score_range < 200
+    
+    # Calculate percentages for daily
+    if distribution and total_sessions > 0:
+        poor_percent = ((distribution.get('poor', 0) + distribution.get('fair', 0)) / total_sessions) * 100
+        excellent_percent = (distribution.get('excellent', 0) / total_sessions) * 100
+    else:
+        poor_percent = 0
+        excellent_percent = 0
+    
+    # Generate message based on score tier and patterns
+    if flow_score >= 850:
+        if excellent_percent > 50:
+            return "🔥 Peak performance! You're consistently in deep flow."
+        else:
+            return "Outstanding work! Maintain your best session patterns."
+    
+    elif flow_score >= 700:
+        if not is_consistent:
+            return f"Great progress! Your flow varies by {int(score_range)} points. Focus on consistency."
+        elif poor_percent > 20:
+            return f"Strong performance! {int(poor_percent)}% of sessions need better focus."
+        else:
+            return "You're in the zone! Try extending sessions to 45-60 minutes."
+    
+    elif flow_score >= 500:
+        if score_range > 300:
+            return f"Good momentum! Identify what works in your {int(max_score)}+ sessions."
+        elif min_score < 300:
+            return "Building nicely! Use Do Not Disturb mode to eliminate distractions."
+        else:
+            return "Solid foundation! Minimize context switching between subjects."
+    
+    else:
+        if poor_percent > 50:
+            return "Getting started! Focus on eliminating distractions first."
+        else:
+            return "Keep pushing! Try 25-minute focused blocks (Pomodoro technique)."

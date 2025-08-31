@@ -47,6 +47,7 @@ export interface DailyInsightsResponse {
         poor: number;
       };
     } | null;
+    flow_coaching_message?: string | null;
   };
   timeline_data: TimelineSession[];
   category_metadata: { [key: string]: CategoryMetadata };
@@ -77,6 +78,7 @@ export interface WeeklyInsightsResponse {
       avg: number;
       daily_count: number;
     } | null;
+    flow_coaching_message?: string | null;
   };
   daily_breakdown: {
     [date: string]: {
@@ -121,6 +123,7 @@ export interface MonthlyInsightsResponse {
       avg: number;
       daily_count: number;
     } | null;
+    flow_coaching_message?: string | null;
   } | null;
   daily_breakdown: Array<{
     date: string;

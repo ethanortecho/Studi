@@ -100,7 +100,8 @@ class DailyInsights(APIView):
                     'productivity_score': daily_aggregate.productivity_score,
                     'productivity_sessions_count': daily_aggregate.productivity_sessions_count,
                     'flow_score': daily_aggregate.flow_score,  # Add flow score
-                    'flow_score_details': daily_aggregate.flow_score_details  # Add flow score details
+                    'flow_score_details': daily_aggregate.flow_score_details,  # Add flow score details
+                    'flow_coaching_message': daily_aggregate.flow_coaching_message  # Add coaching message
                 },
                 'timeline_data': daily_aggregate.timeline_data,  # Precomputed!
                 'category_metadata': category_data,
@@ -234,7 +235,10 @@ class WeeklyInsights(APIView):
                     'category_durations': weekly_aggregate.category_durations,
                     'session_count': weekly_aggregate.session_count,
                     'break_count': weekly_aggregate.break_count,
-                    'is_final': weekly_aggregate.is_final
+                    'is_final': weekly_aggregate.is_final,
+                    'flow_score': weekly_aggregate.flow_score,
+                    'flow_score_details': weekly_aggregate.flow_score_details,
+                    'flow_coaching_message': weekly_aggregate.flow_coaching_message
                 },
                 'category_metadata': category_data,
                 'daily_breakdown': weekly_aggregate.daily_breakdown,  # Precomputed!
@@ -344,7 +348,10 @@ class MonthlyInsights(APIView):
                     'category_durations': monthly_aggregate.category_durations,
                     'session_count': monthly_aggregate.session_count,
                     'break_count': monthly_aggregate.break_count,
-                    'is_final': monthly_aggregate.is_final
+                    'is_final': monthly_aggregate.is_final,
+                    'flow_score': monthly_aggregate.flow_score,
+                    'flow_score_details': monthly_aggregate.flow_score_details,
+                    'flow_coaching_message': monthly_aggregate.flow_coaching_message
                 },
                 'daily_breakdown': monthly_aggregate.daily_breakdown,  # Precomputed!
                 'heatmap_data': monthly_aggregate.heatmap_data,       # Precomputed!

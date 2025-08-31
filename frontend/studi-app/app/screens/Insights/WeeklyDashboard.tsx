@@ -19,6 +19,8 @@ interface WeeklyDashboardProps {
   loading: boolean;
   isEmpty?: boolean;
   flowScore?: number | null;
+  flowCoachingMessage?: string | null;
+  isPremium?: boolean;
 }
 
 export default function WeeklyDashboard({
@@ -34,7 +36,9 @@ export default function WeeklyDashboard({
   rawData,
   loading,
   isEmpty,
-  flowScore
+  flowScore,
+  flowCoachingMessage,
+  isPremium = false
 }: WeeklyDashboardProps) {
   const [refreshing, setRefreshing] = useState(false);
   

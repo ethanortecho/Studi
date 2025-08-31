@@ -20,6 +20,8 @@ interface MonthlyDashboardProps {
   loading: boolean;
   isEmpty: boolean;
   flowScore?: number | null;
+  flowCoachingMessage?: string | null;
+  isPremium?: boolean;
 }
 
 export default function MonthlyDashboard({
@@ -35,7 +37,9 @@ export default function MonthlyDashboard({
   rawData,
   loading,
   isEmpty,
-  flowScore
+  flowScore,
+  flowCoachingMessage,
+  isPremium = false
 }: MonthlyDashboardProps) {
   const [refreshing, setRefreshing] = useState(false);
   

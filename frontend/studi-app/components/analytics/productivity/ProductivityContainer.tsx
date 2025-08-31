@@ -8,12 +8,14 @@ interface ProductivityContainerProps {
   productivityScore: number | null;
   allTimeAverage: number | null;
   loading?: boolean;
+  coachingMessage?: string | null;
 }
 
 export default function ProductivityContainer({ 
   productivityScore,
   allTimeAverage,
-  loading = false
+  loading = false,
+  coachingMessage
 }: ProductivityContainerProps) {
   return (
     <PremiumGate
@@ -65,6 +67,15 @@ export default function ProductivityContainer({
               <Text className="text-sm font-medium text-primaryText">Your Average</Text>
             </View>
           )}
+        </View>
+      )}
+      
+      {/* Coaching Message */}
+      {coachingMessage && (
+        <View className="mt-4 px-2">
+          <Text className="text-secondaryText text-xs text-center" numberOfLines={2}>
+            {coachingMessage}
+          </Text>
         </View>
       )}
     </DashboardCard>

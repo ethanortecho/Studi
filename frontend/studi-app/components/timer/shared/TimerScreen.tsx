@@ -177,6 +177,8 @@ export default function TimerScreen({
           onStop={async () => {
             try {
               await stopTimer();
+              // Navigate back to home after successful stop
+              router.back();
             } catch (error) {
               console.error("Timer stop error:", error);
             }

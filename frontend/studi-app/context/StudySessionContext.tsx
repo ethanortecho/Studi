@@ -7,10 +7,13 @@ import { detectUserTimezone } from '../utils/timezoneUtils';
 import { clearDashboardCache } from '../utils/fetchApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getEffectiveApiUrl } from '../config/api';
+import { TimerRecoveryService, TimerRecoveryState } from '../services/TimerRecoveryService';
+import { router } from 'expo-router';
 
 
 interface StudySessionContextType {
   sessionId: number | null;
+  sessionStartTime: Date | null;
   currentCategoryBlockId: number | null;
   currentCategoryId: number | null;
   pausedCategoryId: number | null;
@@ -25,6 +28,8 @@ interface StudySessionContextType {
     sessionDuration: number; // in minutes
     completedSessionId?: string; // For updating rating after session is completed
   };
+  // Recovery state
+  recoveredTimerState: TimerRecoveryState | null;
   startSession: () => Promise<{ id: number }>;
   stopSession: () => Promise<void>;
   pauseSession: () => Promise<void>;
@@ -43,6 +48,7 @@ interface StudySessionContextType {
 
 export const StudySessionContext = createContext<StudySessionContextType>({
   sessionId: null,
+  sessionStartTime: null,
   currentCategoryBlockId: null,
   currentCategoryId: null,
   pausedCategoryId: null,
@@ -54,6 +60,7 @@ export const StudySessionContext = createContext<StudySessionContextType>({
     isVisible: false,
     sessionDuration: 0,
   },
+  recoveredTimerState: null,
   startSession: () => Promise.resolve({ id: 0 }),
   stopSession: () => Promise.resolve(),
   pauseSession: () => Promise.resolve(),
@@ -79,9 +86,8 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
   // Timezone state
   const [userTimezone, setUserTimezone] = useState<string>('UTC');
   
-  // Background session management
+  // Background session management - track for analytics only
   const [backgroundStartTime, setBackgroundStartTime] = useState<Date | null>(null);
-  const [sessionPausedDueToBackground, setSessionPausedDueToBackground] = useState(false);
 
   // Session stats modal state
   const [sessionStatsModal, setSessionStatsModal] = useState({
@@ -89,6 +95,9 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
     sessionDuration: 0,
     completedSessionId: undefined,
   });
+
+  // Store recovered timer state for timer components to use
+  const [recoveredTimerState, setRecoveredTimerState] = useState<TimerRecoveryState | null>(null);
 
   // Computed property: session is paused if we have a paused category ID
   const isSessionPaused = pausedCategoryId !== null;
@@ -99,6 +108,103 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
     const cat = categories.find(c => Number(c.id) === Number(id));
     return cat ? cat.name : 'Unknown';
   };
+
+  // Check for recoverable session on app launch
+  const checkForRecoverableSession = async () => {
+    try {
+      const recovery = await TimerRecoveryService.checkRecoveryNeeded();
+      
+      if (recovery.needed && recovery.state) {
+        console.log('📱 Found recoverable session, auto-resuming:', {
+          sessionId: recovery.state.sessionId,
+          elapsed: recovery.elapsedTime,
+          timerType: recovery.state.timerType,
+        });
+        
+        // Auto-resume without modal
+        await handleAutoRecovery(recovery.state, recovery.elapsedTime || 0);
+      }
+    } catch (error) {
+      console.error('Failed to check for recoverable session:', error);
+    }
+  };
+
+  // Auto-recovery without modal
+  const handleAutoRecovery = async (state: TimerRecoveryState, elapsedTime: number) => {
+    try {
+      console.log('🔄 Recovering session:', state.sessionId);
+      
+      // Restore all session state from the saved recovery data
+      // The backend already has these entities, we're just reconnecting to them
+      setSessionId(state.sessionId);
+      setCurrentCategoryId(state.categoryId);
+      
+      // Restore the session start time if available
+      if (state.sessionStartTime) {
+        setSessionStartTime(new Date(state.sessionStartTime));
+        console.log('🔄 Restored session start time:', state.sessionStartTime);
+      }
+      
+      // Restore the existing category block ID
+      // No need to create a new block - the backend already has one
+      if (state.categoryBlockId) {
+        setCurrentCategoryBlockId(state.categoryBlockId);
+        console.log('🔄 Restored existing category block ID:', state.categoryBlockId);
+      }
+      
+      // Store the recovered state for timer component to use
+      setRecoveredTimerState(state);
+      
+      // Refresh categories to ensure we have latest data
+      await refreshCategories();
+      
+      // Navigate to appropriate timer screen based on timer type
+      const timerType = state.timerType;
+      const categoryId = state.categoryId;
+      
+      // Small delay to ensure context is ready
+      setTimeout(() => {
+        switch (timerType) {
+          case 'countdown':
+            router.push({
+              pathname: '/screens/timer/countdown',
+              params: {
+                duration: String(Math.floor((state.totalDuration || 300) / 60)),
+                selectedCategoryId: String(categoryId || ''),
+                recovered: 'true'
+              }
+            });
+            break;
+          case 'pomodoro':
+            router.push({
+              pathname: '/screens/timer/pomo',
+              params: {
+                pomodoroBlocks: String(state.pomoBlocks || 4),
+                pomodoroWorkDuration: '25',
+                pomodoroBreakDuration: '5',
+                selectedCategoryId: String(categoryId || ''),
+                recovered: 'true'
+              }
+            });
+            break;
+          case 'stopwatch':
+          default:
+            router.push({
+              pathname: '/screens/timer/stopwatch',
+              params: {
+                selectedCategoryId: String(categoryId || ''),
+                recovered: 'true'
+              }
+            });
+            break;
+        }
+      }, 100);
+    } catch (error) {
+      console.error('Failed to auto-recover session:', error);
+    }
+  };
+
+  // Handle recovery modal actions
 
   const refreshCategories = async () => {
     try {
@@ -126,17 +232,20 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
       console.warn('⚠️ Failed to detect timezone:', error);
       setUserTimezone('UTC');
     }
+
+    // Check for recoverable timer state
+    checkForRecoverableSession();
   }, []);
 
-  // Handle app state changes with smart background session management
+  // Handle app state changes - track background time for analytics only
   useEffect(() => {
     const handleAppStateChange = (nextAppState: string) => {
       console.log('Hook: App state changed to:', nextAppState);
       
       if (nextAppState === 'background' || nextAppState === 'inactive') {
         // App going to background
-        if (sessionId && !sessionPausedDueToBackground) {
-          console.log('Hook: App going to background with active session, starting background timer');
+        if (sessionId) {
+          console.log('Hook: App going to background with active session, tracking time for analytics');
           setBackgroundStartTime(new Date());
         }
       } else if (nextAppState === 'active') {
@@ -146,18 +255,7 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
           const backgroundMinutes = backgroundDuration / (1000 * 60);
           
           console.log(`Hook: App returning to foreground after ${backgroundMinutes.toFixed(1)} minutes`);
-          
-          if (backgroundMinutes > 30 && !sessionPausedDueToBackground) {
-            // Auto-pause session due to extended background time
-            console.log('Hook: Auto-pausing session due to extended background time (>30 min)');
-            setSessionPausedDueToBackground(true);
-            // Pause the current category block but don't end the session
-            if (currentCategoryBlockId && currentCategoryId) {
-              pauseSession().catch(error => {
-                console.error('Hook: Failed to auto-pause session:', error);
-              });
-            }
-          }
+          // Just log it, don't auto-pause
         }
         
         // Clear background time when returning to active
@@ -170,7 +268,7 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       subscription?.remove();
     };
-  }, [sessionId, backgroundStartTime, sessionPausedDueToBackground, currentCategoryBlockId, currentCategoryId, pauseSession]);
+  }, [sessionId, backgroundStartTime]);
 
   // Cleanup hanging sessions on app startup
   useEffect(() => {
@@ -254,7 +352,6 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
         
         // Reset background tracking state
         setBackgroundStartTime(null);
-        setSessionPausedDueToBackground(false);
         
         // Show session stats modal for rating
         setSessionStatsModal({
@@ -309,11 +406,7 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
         setCurrentCategoryId(pausedCategoryId);
         setPausedCategoryId(null);
         
-        // Clear background pause state if resuming after background auto-pause
-        if (sessionPausedDueToBackground) {
-          setSessionPausedDueToBackground(false);
-          console.log("Hook: Cleared background pause state on manual resume");
-        }
+        // Session resumed successfully
         
         console.log("Hook: resumeSession completed, switched back to study category");
         return res;
@@ -397,7 +490,6 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
         
         // Reset background tracking state
         setBackgroundStartTime(null);
-        setSessionPausedDueToBackground(false);
         console.log("Hook: cancelSession completed");
         return res;
       } catch (error) {
@@ -451,6 +543,7 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
   return (
     <StudySessionContext.Provider value={{
       sessionId,
+      sessionStartTime,
       currentCategoryBlockId,
       currentCategoryId,
       pausedCategoryId,
@@ -459,6 +552,7 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
       isSessionPaused,
       userTimezone,
       sessionStatsModal,
+      recoveredTimerState,
       startSession,
       stopSession,
       pauseSession,

@@ -14,13 +14,27 @@ export function usePomo(config: PomoConfig) {
     // Debug logs removed for production cleanliness
     
     const { startSession, stopSession, pauseSession, resumeSession, cancelSession, switchCategory } = useStudySession();
-    const { sessionId } = useContext(StudySessionContext);
+    const { sessionId, sessionStartTime, currentCategoryId, currentCategoryBlockId, categories } = useContext(StudySessionContext);
     const [pomoBlocksRemaining, setPomoBlocksRemaining] = useState(config.pomodoroBlocks);
     const [pomoBlockStatus, setPomoBlockStatus] = useState<'work' | 'break'>('work');
     const pomoWorkDuration = config.pomodoroWorkDuration * 60;
     const pomoBreakDuration = config.pomodoroBreakDuration * 60;
 
+    // Get current category info for recovery
+    const currentCategory = categories.find(c => Number(c.id) === Number(currentCategoryId || config.selectedCategoryId));
+
     const baseTimer = useBaseTimer({
+        enableRecovery: true,
+        sessionId: sessionId || undefined,
+        sessionStartTime: sessionStartTime || undefined,
+        categoryId: currentCategoryId || (config.selectedCategoryId ? Number(config.selectedCategoryId) : null),
+        categoryBlockId: currentCategoryBlockId || undefined,
+        categoryName: currentCategory?.name,
+        categoryColor: currentCategory?.color,
+        timerType: 'pomodoro',
+        pomoBlocks: config.pomodoroBlocks,
+        pomoBlocksRemaining,
+        pomoStatus: pomoBlockStatus,
         onStart: async () => {
             // Always create a new session when timer starts (atomic operation)
             const sessionResult = await startSession();
@@ -123,5 +137,6 @@ export function usePomo(config: PomoConfig) {
         
         // Utilities
         formatTime,
+        recoverFromState: baseTimer.recoverFromState,
     };
 }

@@ -79,12 +79,12 @@ class DailyInsights(APIView):
             print(f"DEBUG: Daily aggregate flow_score = {daily_aggregate.flow_score}")
             print(f"DEBUG: Daily aggregate flow_score_details = {daily_aggregate.flow_score_details}")
             
-            # Calculate all-time average productivity score
+            # Calculate all-time average flow score
             all_time_avg_productivity = None
             historical_aggregates = DailyAggregate.objects.filter(
                 user=user,
-                productivity_score__isnull=False
-            ).values_list('productivity_score', flat=True)
+                flow_score__isnull=False
+            ).values_list('flow_score', flat=True)
             
             if historical_aggregates:
                 all_time_avg_productivity = sum(historical_aggregates) / len(historical_aggregates)
@@ -165,8 +165,8 @@ class DailyInsights(APIView):
             all_time_avg_productivity = None
             historical_aggregates = DailyAggregate.objects.filter(
                 user=user,
-                productivity_score__isnull=False
-            ).values_list('productivity_score', flat=True)
+                flow_score__isnull=False
+            ).values_list('flow_score', flat=True)
             
             if historical_aggregates:
                 all_time_avg_productivity = sum(historical_aggregates) / len(historical_aggregates)

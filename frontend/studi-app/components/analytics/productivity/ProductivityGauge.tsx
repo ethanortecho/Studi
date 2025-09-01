@@ -123,7 +123,7 @@ export default function ProductivityGauge({
         <Text className="text-4xl font-bold text-primaryText">
           {Math.round(score)}
         </Text>
-        <Text className="text-sm text-secondaryText mt-1">Flow Score</Text>
+        <Text className="text-sm text-secondaryText mt-1">out of 1000</Text>
         {allTimeAverage !== null && (
           <Text className="text-xs text-secondaryText opacity-70 mt-1">
             Avg: {Math.round(allTimeAverage)}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text } from 'react-native';
-import Svg, { Path, G, Line, Circle } from 'react-native-svg';
+import Svg, { Path, G, Line } from 'react-native-svg';
 
 interface ProductivityGaugeProps {
   score: number | null; // 0-1000 flow score or null for no data
@@ -76,13 +76,13 @@ export default function ProductivityGauge({
     <View className="items-center" style={{ width: size, height: size }}>
       <Svg width={size} height={size}>
         <G>
-          {/* Background arc (gray, thinner) */}
+          {/* Background arc (surface color, thinner) */}
           <Path
             d={createArcPath(startAngle, endAngle)}
-            stroke="#e5e7eb"
+            stroke="#262748"
             strokeWidth={strokeWidthBackground}
             fill="none"
-            strokeLinecap="round"
+            strokeLinecap="butt"
           />
           
           {/* Filled arc (score, thicker) */}
@@ -91,56 +91,30 @@ export default function ProductivityGauge({
             stroke={gaugeColor}
             strokeWidth={strokeWidthFilled}
             fill="none"
-            strokeLinecap="round"
+            strokeLinecap="butt"
           />
           
           {/* All-time average marker */}
           {avgAngle !== null && (
-            <>
-              {/* Dark gray line marker for visibility */}
-              <G>
-                {(() => {
-                  const markerStart = getPointOnArc(avgAngle, radius - strokeWidth / 2);
-                  const markerEnd = getPointOnArc(avgAngle, radius + strokeWidth / 2);
-                  return (
-                    <Line
-                      x1={markerStart.x}
-                      y1={markerStart.y}
-                      x2={markerEnd.x}
-                      y2={markerEnd.y}
-                      stroke="#374151"
-                      strokeWidth={3}
-                      strokeLinecap="round"
-                    />
-                  );
-                })()}
-              </G>
-              
-              {/* Small circle at the tip for visibility */}
-              <Circle
-                cx={getPointOnArc(avgAngle, radius).x}
-                cy={getPointOnArc(avgAngle, radius).y}
-                r={4}
-                fill="#374151"
-              />
-            </>
+            <G>
+              {(() => {
+                const markerStart = getPointOnArc(avgAngle, radius - strokeWidth / 2);
+                const markerEnd = getPointOnArc(avgAngle, radius + strokeWidth / 2);
+                return (
+                  <Line
+                    x1={markerStart.x}
+                    y1={markerStart.y}
+                    x2={markerEnd.x}
+                    y2={markerEnd.y}
+                    stroke="#B0B0B0"
+                    strokeWidth={3}
+                    strokeLinecap="butt"
+                  />
+                );
+              })()}
+            </G>
           )}
           
-          {/* End cap circles for polish */}
-          <Circle
-            cx={getPointOnArc(startAngle).x}
-            cy={getPointOnArc(startAngle).y}
-            r={strokeWidth / 2}
-            fill="#e5e7eb"
-          />
-          {score > 0 && (
-            <Circle
-              cx={getPointOnArc(scoreAngle).x}
-              cy={getPointOnArc(scoreAngle).y}
-              r={strokeWidth / 2}
-              fill={gaugeColor}
-            />
-          )}
         </G>
       </Svg>
       

@@ -63,7 +63,7 @@ export default function ProductivityContainer({
           </View>
           {allTimeAverage !== null && (
             <View className="flex-row items-center">
-              <View className="w-3 h-3 rounded-sm bg-gray-700 mr-2" />
+              <View className="w-3 h-3 rounded-sm bg-gray-400 mr-2" />
               <Text className="text-sm font-medium text-primaryText">Your Average</Text>
             </View>
           )}

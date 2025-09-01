@@ -56,7 +56,7 @@ export default function ProductivityContainer({
       
       {/* Legend (if we have data) */}
       {productivityScore !== null && !loading && (
-        <View className=" flex-row justify-center items-center gap-6">
+        <View className="flex-row justify-center items-center gap-6">
           <View className="flex-row items-center">
             <View className="w-3 h-3 rounded-sm bg-purple-600 mr-2" />
             <Text className="text-sm font-medium text-primaryText">Today's Score</Text>
@@ -72,8 +72,8 @@ export default function ProductivityContainer({
       
       {/* Coaching Message */}
       {coachingMessage && (
-        <View className="mt-4 px-2">
-          <Text className="text-secondaryText text-xs text-center" numberOfLines={2}>
+        <View className="mt-4 px-4">
+          <Text className="text-secondaryText text-sm text-center" numberOfLines={2}>
             {coachingMessage}
           </Text>
         </View>

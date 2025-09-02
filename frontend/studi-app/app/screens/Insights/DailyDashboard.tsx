@@ -21,6 +21,8 @@ interface DailyDashboardProps {
   allTimeAvgProductivity?: number | null;
   flowScore?: number | null;
   flowScoreDetails?: any;
+  flowCoachingMessage?: string | null;
+  isPremium?: boolean;
 }
 
 export default function DailyDashboard({
@@ -37,7 +39,9 @@ export default function DailyDashboard({
   productivityScore,
   allTimeAvgProductivity,
   flowScore,
-  flowScoreDetails
+  flowScoreDetails,
+  flowCoachingMessage,
+  isPremium = false
 }: DailyDashboardProps) {
   const [refreshing, setRefreshing] = useState(false);
   
@@ -103,6 +107,7 @@ export default function DailyDashboard({
             productivityScore={flowScore ?? null}
             allTimeAverage={allTimeAvgProductivity ?? null}
             loading={loading}
+            coachingMessage={isPremium ? flowCoachingMessage : null}
           />
         </View>
       )}

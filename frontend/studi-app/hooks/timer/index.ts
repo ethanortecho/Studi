@@ -2,4 +2,5 @@ export { useBaseTimer, type TimerStatus, type BaseTimerConfig } from './useBaseT
 export { useStopwatch, type StopwatchConfig } from './useStopwatch';
 export { useCountdown } from './useCountdown';
 export type { CountdownConfig } from './useCountdown';
-export { usePomo, type PomoConfig } from './usePomo'; 
+export { usePomo, type PomoConfig } from './usePomo';
+export { useTimerRecovery } from './useTimerRecovery'; 

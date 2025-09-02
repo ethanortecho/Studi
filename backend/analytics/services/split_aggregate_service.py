@@ -7,6 +7,7 @@ from ..models import StudySession, CategoryBlock, Break
 from ..models import DailyAggregate, WeeklyAggregate, MonthlyAggregate
 from .date_utils import get_week_boundaries, get_month_boundaries, is_current_period
 from .goal_progress_service import GoalProgressService
+from ..flow_score import get_aggregate_coaching_message
 
 
 class SplitAggregateUpdateService:
@@ -76,6 +77,11 @@ class SplitAggregateUpdateService:
         # Determine if this period is final (not current day)
         is_final = not is_current_period(date, 'daily')
         
+        # Generate coaching message if we have flow score
+        flow_score = aggregate_data.get('flow_score')
+        flow_details = aggregate_data.get('flow_score_details')
+        coaching_message = get_aggregate_coaching_message(flow_score, flow_details, 'daily') if flow_score else None
+        
         # Update or create daily aggregate
         daily_aggregate, created = DailyAggregate.objects.update_or_create(
             user=user,
@@ -90,6 +96,7 @@ class SplitAggregateUpdateService:
                 'productivity_sessions_count': aggregate_data.get('productivity_sessions_count', 0),
                 'flow_score': aggregate_data.get('flow_score'),
                 'flow_score_details': aggregate_data.get('flow_score_details'),
+                'flow_coaching_message': coaching_message,
                 'is_final': is_final
             }
         )
@@ -365,6 +372,9 @@ class SplitAggregateUpdateService:
         # Determine if week is final
         is_final = not is_current_period(week_start, 'weekly')
         
+        # Generate coaching message if we have flow score
+        coaching_message = get_aggregate_coaching_message(flow_score, flow_score_details, 'weekly') if flow_score else None
+        
         # Update weekly aggregate
         weekly_aggregate, created = WeeklyAggregate.objects.update_or_create(
             user=user,
@@ -378,6 +388,7 @@ class SplitAggregateUpdateService:
                 'session_times': session_times,
                 'flow_score': flow_score,
                 'flow_score_details': flow_score_details,
+                'flow_coaching_message': coaching_message,
                 'is_final': is_final
             }
         )
@@ -469,6 +480,9 @@ class SplitAggregateUpdateService:
         # Determine if month is final
         is_final = not is_current_period(month_start, 'monthly')
         
+        # Generate coaching message if we have flow score
+        coaching_message = get_aggregate_coaching_message(flow_score, flow_score_details, 'monthly') if flow_score else None
+        
         # Update monthly aggregate
         monthly_aggregate, created = MonthlyAggregate.objects.update_or_create(
             user=user,
@@ -482,6 +496,7 @@ class SplitAggregateUpdateService:
                 'heatmap_data': heatmap_data,
                 'flow_score': flow_score,
                 'flow_score_details': flow_score_details,
+                'flow_coaching_message': coaching_message,
                 'is_final': is_final
             }
         )

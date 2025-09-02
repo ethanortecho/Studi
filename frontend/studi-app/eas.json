@@ -60,9 +60,9 @@
   "submit": {
     "production": {
       "ios": {
-        "appleId": "your-apple-id@example.com",
-        "ascAppId": "placeholder-will-be-generated",
-        "appleTeamId": "placeholder-from-developer-account"
+        "appleId": "ethan.ortecho@gmail.com",
+        "ascAppId": "6749604338",
+        "appleTeamId": "S7KQX9LXKV"
       }
     }
   }

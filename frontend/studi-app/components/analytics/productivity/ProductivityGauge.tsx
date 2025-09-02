@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text } from 'react-native';
-import Svg, { Path, Defs, LinearGradient, Stop, G, Line, Circle } from 'react-native-svg';
+import Svg, { Path, G, Line } from 'react-native-svg';
 
 interface ProductivityGaugeProps {
   score: number | null; // 0-1000 flow score or null for no data
@@ -14,7 +14,9 @@ export default function ProductivityGauge({
   size = 200 
 }: ProductivityGaugeProps) {
   // Constants for gauge geometry
-  const strokeWidth = size * 0.08; // 8% of size
+  const strokeWidthBackground = size * 0.06; // 6% for thinner background
+  const strokeWidthFilled = size * 0.10; // 10% for thicker purple arc
+  const strokeWidth = strokeWidthFilled; // Use the larger one for radius calculation
   const radius = (size - strokeWidth) / 2;
   const centerX = size / 2;
   const centerY = size / 2;
@@ -57,25 +59,8 @@ export default function ProductivityGauge({
     ? startAngle + (avgPercentage / 100) * angleRange
     : null;
   
-  // Determine color based on flow score (0-1000)
-  const getGaugeColor = (value: number) => {
-    // From light purple to deep purple based on flow score ranges
-    const colors = [
-      '#c084fc', // purple-400 (0-400 poor)
-      '#a855f7', // purple-500 (400-550 fair)
-      '#9333ea', // purple-600 (550-700 good)
-      '#7e22ce', // purple-700 (700-850 great)
-      '#6b21a8', // purple-800 (850-1000 excellent)
-    ];
-    
-    if (value < 400) return colors[0];
-    if (value < 550) return colors[1];
-    if (value < 700) return colors[2];
-    if (value < 850) return colors[3];
-    return colors[4];
-  };
-  
-  const gaugeColor = score !== null ? getGaugeColor(score) : '#e5e7eb';
+  // Use solid accent purple color from theme
+  const gaugeColor = '#5D3EDA'; // accent purple from theme
   
   // Handle no data state
   if (score === null) {
@@ -90,80 +75,46 @@ export default function ProductivityGauge({
   return (
     <View className="items-center" style={{ width: size, height: size }}>
       <Svg width={size} height={size}>
-        <Defs>
-          {/* Gradient definition for filled gauge */}
-          <LinearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <Stop offset="0%" stopColor={gaugeColor} stopOpacity={0.3} />
-            <Stop offset="100%" stopColor={gaugeColor} stopOpacity={1} />
-          </LinearGradient>
-        </Defs>
-        
         <G>
-          {/* Background arc (gray) */}
+          {/* Background arc (surface color, thinner) */}
           <Path
             d={createArcPath(startAngle, endAngle)}
-            stroke="#e5e7eb"
-            strokeWidth={strokeWidth}
+            stroke="#262748"
+            strokeWidth={strokeWidthBackground}
             fill="none"
-            strokeLinecap="round"
+            strokeLinecap="butt"
           />
           
-          {/* Filled arc (score) */}
+          {/* Filled arc (score, thicker) */}
           <Path
             d={createArcPath(startAngle, scoreAngle)}
-            stroke="url(#gaugeGradient)"
-            strokeWidth={strokeWidth}
+            stroke={gaugeColor}
+            strokeWidth={strokeWidthFilled}
             fill="none"
-            strokeLinecap="round"
+            strokeLinecap="butt"
           />
           
           {/* All-time average marker */}
           {avgAngle !== null && (
-            <>
-              {/* Dark gray line marker for visibility */}
-              <G>
-                {(() => {
-                  const markerStart = getPointOnArc(avgAngle, radius - strokeWidth / 2);
-                  const markerEnd = getPointOnArc(avgAngle, radius + strokeWidth / 2);
-                  return (
-                    <Line
-                      x1={markerStart.x}
-                      y1={markerStart.y}
-                      x2={markerEnd.x}
-                      y2={markerEnd.y}
-                      stroke="#374151"
-                      strokeWidth={3}
-                      strokeLinecap="round"
-                    />
-                  );
-                })()}
-              </G>
-              
-              {/* Small circle at the tip for visibility */}
-              <Circle
-                cx={getPointOnArc(avgAngle, radius).x}
-                cy={getPointOnArc(avgAngle, radius).y}
-                r={4}
-                fill="#374151"
-              />
-            </>
+            <G>
+              {(() => {
+                const markerStart = getPointOnArc(avgAngle, radius - strokeWidth / 2);
+                const markerEnd = getPointOnArc(avgAngle, radius + strokeWidth / 2);
+                return (
+                  <Line
+                    x1={markerStart.x}
+                    y1={markerStart.y}
+                    x2={markerEnd.x}
+                    y2={markerEnd.y}
+                    stroke="#B0B0B0"
+                    strokeWidth={3}
+                    strokeLinecap="butt"
+                  />
+                );
+              })()}
+            </G>
           )}
           
-          {/* End cap circles for polish */}
-          <Circle
-            cx={getPointOnArc(startAngle).x}
-            cy={getPointOnArc(startAngle).y}
-            r={strokeWidth / 2}
-            fill="#e5e7eb"
-          />
-          {score > 0 && (
-            <Circle
-              cx={getPointOnArc(scoreAngle).x}
-              cy={getPointOnArc(scoreAngle).y}
-              r={strokeWidth / 2}
-              fill={gaugeColor}
-            />
-          )}
         </G>
       </Svg>
       
@@ -172,7 +123,7 @@ export default function ProductivityGauge({
         <Text className="text-4xl font-bold text-primaryText">
           {Math.round(score)}
         </Text>
-        <Text className="text-sm text-secondaryText mt-1">Flow Score</Text>
+        <Text className="text-sm text-secondaryText mt-1">out of 1000</Text>
         {allTimeAverage !== null && (
           <Text className="text-xs text-secondaryText opacity-70 mt-1">
             Avg: {Math.round(allTimeAverage)}

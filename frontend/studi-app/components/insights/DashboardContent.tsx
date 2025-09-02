@@ -10,6 +10,7 @@ import DailyDashboard from '../../app/screens/Insights/DailyDashboard';
 import WeeklyDashboard from '../../app/screens/Insights/WeeklyDashboard';
 import MonthlyDashboard from '../../app/screens/Insights/MonthlyDashboard';
 import { DashboardSkeleton } from './SkeletonLoader';
+import { usePremium } from '../../contexts/PremiumContext';
 
 interface DashboardContentProps {
     selectedTab: string;
@@ -35,6 +36,7 @@ export default function DashboardContent({
     monthly,
     loading
 }: DashboardContentProps) {
+    const { isPremium } = usePremium();
     const renderCount = useRef(0);
     renderCount.current += 1;
     
@@ -114,6 +116,8 @@ export default function DashboardContent({
                     allTimeAvgProductivity={daily.allTimeAvgProductivity}
                     flowScore={daily.flowScore}
                     flowScoreDetails={daily.flowScoreDetails}
+                    flowCoachingMessage={daily.flowCoachingMessage}
+                    isPremium={isPremium}
                 />
             );
             DEBUG_DASHBOARD && console.log(`⏱️ DashboardContent: Daily dashboard render took ${(performance.now() - renderStart).toFixed(2)}ms`);
@@ -134,6 +138,8 @@ export default function DashboardContent({
                     percentGoal={weekly.percentGoal}
                     isEmpty={weekly.isEmpty}
                     flowScore={weekly.flowScore}
+                    flowCoachingMessage={weekly.flowCoachingMessage}
+                    isPremium={isPremium}
                 />
             );
             DEBUG_DASHBOARD && console.log(`⏱️ DashboardContent: Weekly dashboard render took ${(performance.now() - renderStart).toFixed(2)}ms`);
@@ -154,6 +160,8 @@ export default function DashboardContent({
                     percentGoal={monthly.percentGoal}
                     isEmpty={monthly.isEmpty}
                     flowScore={monthly.flowScore}
+                    flowCoachingMessage={monthly.flowCoachingMessage}
+                    isPremium={isPremium}
                 />
             );
             DEBUG_DASHBOARD && console.log(`⏱️ DashboardContent: Monthly dashboard render took ${(performance.now() - renderStart).toFixed(2)}ms`);

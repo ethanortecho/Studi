@@ -9,9 +9,20 @@ export interface StopwatchConfig {
 
 export function useStopwatch(config?: StopwatchConfig) {
     const { startSession, stopSession, pauseSession, resumeSession, cancelSession, switchCategory } = useStudySession();
-    const { sessionId } = useContext(StudySessionContext);
+    const { sessionId, sessionStartTime, currentCategoryId, currentCategoryBlockId, categories } = useContext(StudySessionContext);
+    
+    // Get current category info for recovery
+    const currentCategory = categories.find(c => Number(c.id) === Number(currentCategoryId || config?.selectedCategoryId));
     
     const baseTimer = useBaseTimer({
+        enableRecovery: true,
+        sessionId: sessionId || undefined,
+        sessionStartTime: sessionStartTime || undefined,
+        categoryId: currentCategoryId || (config?.selectedCategoryId ? Number(config.selectedCategoryId) : null),
+        categoryBlockId: currentCategoryBlockId || undefined,
+        categoryName: currentCategory?.name,
+        categoryColor: currentCategory?.color,
+        timerType: 'stopwatch',
         onStart: async () => {
             console.log("Stopwatch: onStart callback - creating session and starting timer atomically");
             
@@ -108,5 +119,6 @@ export function useStopwatch(config?: StopwatchConfig) {
         // Utilities
         formatTime: baseTimer.formatTime,
         cancelTimer,
+        recoverFromState: baseTimer.recoverFromState,
     };
 } 

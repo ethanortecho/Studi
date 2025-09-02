@@ -230,7 +230,8 @@ export function useDashboardData({ dailyDate, weeklyDate, monthlyDate }: UseDash
             productivityScore: dailyData.aggregate?.productivity_score ?? null,
             allTimeAvgProductivity: dailyData.all_time_avg_productivity ?? null,
             flowScore: dailyData.aggregate?.flow_score ?? null,
-            flowScoreDetails: dailyData.aggregate?.flow_score_details ?? null
+            flowScoreDetails: dailyData.aggregate?.flow_score_details ?? null,
+            flowCoachingMessage: dailyData.aggregate?.flow_coaching_message ?? null
         };
         
         const end = performance.now();
@@ -294,7 +295,8 @@ export function useDashboardData({ dailyDate, weeklyDate, monthlyDate }: UseDash
             goalMinutes: weekGoalMinutes,
             percentGoal: weekPercentGoal,
             flowScore: weeklyData.aggregate?.flow_score ?? null,
-            flowScoreDetails: weeklyData.aggregate?.flow_score_details ?? null
+            flowScoreDetails: weeklyData.aggregate?.flow_score_details ?? null,
+            flowCoachingMessage: weeklyData.aggregate?.flow_coaching_message ?? null
         };
         
         const end = performance.now();
@@ -366,7 +368,8 @@ export function useDashboardData({ dailyDate, weeklyDate, monthlyDate }: UseDash
             isEmpty: isMonthlyEmpty,
             percentGoal: null, // Monthly goals not implemented yet
             flowScore: aggregate?.flow_score ?? null,
-            flowScoreDetails: aggregate?.flow_score_details ?? null
+            flowScoreDetails: aggregate?.flow_score_details ?? null,
+            flowCoachingMessage: aggregate?.flow_coaching_message ?? null
         };
         
         const end = performance.now();

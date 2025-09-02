@@ -20,16 +20,27 @@ DEBUG = True
 # Allow all hosts in development for easy testing
 ALLOWED_HOSTS = ['*']
 
-# Database - your current local setup
+# Database - TEMPORARILY USING PRODUCTION FOR TESTING
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'studi',
-        'USER': 'ethanortecho',
-        'HOST': 'localhost',
+        'NAME': 'studi_production',
+        'USER': 'studi_production_user',
+        'PASSWORD': 'g5YrNH5oSE4kZ5fqRzrYctFRZff9dTNL',
+        'HOST': 'dpg-d282e9fdiees73d70vq0-a.ohio-postgres.render.com',
         'PORT': '5432',
     }
 }
+# ORIGINAL LOCAL DB (commented out)
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'studi',
+#         'USER': 'ethanortecho',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
 
 # CORS settings - permissive for development
 CORS_ALLOW_ALL_ORIGINS = True  # Allow any origin in development

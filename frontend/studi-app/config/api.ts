@@ -28,8 +28,9 @@ const getDevServerUrl = (): string => {
 };
 
 // Environment-based URL selection (kept for backward compatibility)
+// TEMPORARILY pointing to production for testing
 export const API_BASE_URL = __DEV__ 
-  ? getDevServerUrl()  // Dynamic local development URL
+  ? 'https://studi-backend-production.onrender.com/api'  // TEMP: Using production for testing
   : process.env.EXPO_PUBLIC_ENVIRONMENT === 'staging'
   ? 'https://studi-backend-staging.onrender.com/api'  // Staging (preview builds)
   : 'https://studi-backend-production.onrender.com/api';  // Production (App Store)

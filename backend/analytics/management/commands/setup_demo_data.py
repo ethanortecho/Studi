@@ -20,20 +20,9 @@ class Command(BaseCommand):
         Break.objects.all().delete()
         Categories.objects.all().delete()
         
-        # Keep existing users but get or create demo user
-        demo_user, created = CustomUser.objects.get_or_create(
-            email='demo@student.com',
-            defaults={
-                'first_name': 'Demo',
-                'last_name': 'Student',
-                'timezone': 'America/New_York'
-            }
-        )
-        
-        if created:
-            demo_user.set_password('demopassword123')
-            demo_user.save()
-            self.stdout.write(f'Created demo user: {demo_user.email}')
+        # Use the applereviewer account
+        demo_user = CustomUser.objects.get(username='applereviewer')
+        self.stdout.write(f'Using existing user: {demo_user.email}')
         
         # Create student-friendly categories
         categories_data = [
@@ -102,7 +91,7 @@ class Command(BaseCommand):
                     start_time=session_start,
                     end_time=session_end,
                     status='completed',
-                    productivity_rating=random.randint(3, 5)  # Good ratings for demo
+                    focus_rating=random.randint(3, 5)  # Good ratings for demo
                 )
                 
                 # Create category blocks for this session

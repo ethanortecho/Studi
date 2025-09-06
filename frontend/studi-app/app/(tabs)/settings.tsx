@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
+import { resetOnboarding } from '../../utils/onboarding';
 
 export default function SettingsScreen() {
   const { user, logout } = useAuth();
@@ -32,6 +33,28 @@ export default function SettingsScreen() {
             } catch (error) {
               console.error('Logout error:', error);
               Alert.alert('Error', 'Failed to logout. Please try again.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleViewOnboarding = () => {
+    Alert.alert(
+      'View Onboarding',
+      'This will show the app introduction screens again.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'View Onboarding',
+          onPress: async () => {
+            try {
+              await resetOnboarding();
+              router.push('/onboarding');
+            } catch (error) {
+              console.error('Error resetting onboarding:', error);
+              Alert.alert('Error', 'Failed to reset onboarding. Please try again.');
             }
           },
         },
@@ -103,6 +126,11 @@ export default function SettingsScreen() {
           label="Manage Study Goal"
           icon="calendar"
           onPress={() => router.push('/screens/set-weekly-goal?edit=1' as any)}
+        />
+        <Row
+          label="View Onboarding"
+          icon="help-circle"
+          onPress={handleViewOnboarding}
         />
         
         {/* Logout Button */}

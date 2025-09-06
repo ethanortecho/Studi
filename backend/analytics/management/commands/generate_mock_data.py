@@ -1,6 +1,8 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from analytics.models import CustomUser, StudySession, Categories, CategoryBlock
+from analytics.flow_score import calculate_flow_score
+from analytics.services.split_aggregate_service import SplitAggregateUpdateService
 from faker import Faker
 from datetime import timedelta, datetime, date
 import random
@@ -11,7 +13,13 @@ class Command(BaseCommand):
     help = 'Generates mock data for testing'
 
     def add_arguments(self, parser):
-        """Add optional CLI arguments to specify a custom date range."""
+        """Add optional CLI arguments to specify user and date range."""
+        parser.add_argument(
+            '--user',
+            type=str,
+            dest='user_identifier',
+            help='Username or email of user to generate data for (defaults to ethanortecho).'
+        )
         parser.add_argument(
             '--start-date',
             type=str,
@@ -24,21 +32,42 @@ class Command(BaseCommand):
             dest='end_date',
             help='Inclusive end date for data generation in YYYY-MM-DD format.'
         )
+        parser.add_argument(
+            '--skip-aggregates',
+            action='store_true',
+            help='Skip automatic aggregate recalculation after generating data.'
+        )
 
     def handle(self, *args, **kwargs):
-        # Clear existing data
-        CategoryBlock.objects.all().delete()
-        StudySession.objects.all().delete()
-        Categories.objects.all().delete()
-
-        # Create test user if doesn't exist
-        user, created = CustomUser.objects.get_or_create(
-            username='ethanortecho',
-            defaults={'email': 'ethan@example.com'}
-        )
-        if created:
-            user.set_password('EthanVer2010!')
-            user.save()
+        # Get user identifier from arguments
+        user_identifier = kwargs.get('user_identifier', 'ethanortecho')
+        
+        # Find user by username or email
+        try:
+            if '@' in user_identifier:
+                # It's an email
+                user = CustomUser.objects.get(email=user_identifier)
+                username_display = user.username if user.username else 'No Username'
+                self.stdout.write(f'Found user by email: {username_display} ({user.email})')
+            else:
+                # It's a username
+                user = CustomUser.objects.get(username=user_identifier)
+                self.stdout.write(f'Found user by username: {user.username} ({user.email})')
+        except CustomUser.DoesNotExist:
+            self.stderr.write(
+                self.style.ERROR(f'User not found: {user_identifier}')
+            )
+            self.stderr.write('Available users:')
+            for u in CustomUser.objects.all()[:10]:  # Show first 10 users
+                self.stderr.write(f'  - {u.username} ({u.email})')
+            return
+        
+        # Clear existing data for this specific user
+        username_display = user.username if user.username else 'No Username'
+        self.stdout.write(f'Clearing existing data for user: {username_display}')
+        CategoryBlock.objects.filter(study_session__user=user).delete()
+        StudySession.objects.filter(user=user).delete()
+        Categories.objects.filter(user=user).delete()
 
         # Create categories (limited to 5) with frontend-matching colors
         categories = [
@@ -130,13 +159,17 @@ class Command(BaseCommand):
                 # Debug print
                 self.stdout.write(f"Session: {start_time} - {end_time} | Duration: {duration}")
 
+                # Generate 1-5 focus rating and convert to 1-10 scale for flow score algorithm
+                focus_rating_5_scale = random.choice([1, 2, 3, 4, 5])
+                focus_rating_10_scale = focus_rating_5_scale * 2  # Convert to 1-10 scale
+                
                 session = StudySession.objects.create(
                     user=user,
                     start_time=start_time,
                     end_time=end_time,
                     total_duration=int(duration.total_seconds()),  # Convert to integer seconds
                     status='completed',  # Ensure all mock sessions are completed
-                    productivity_rating=random.choice([1, 2, 3, 4, 5])  # Use numeric ratings 1-5
+                    focus_rating=str(focus_rating_5_scale)  # Store as string (1-5 scale)
                 )
 
                 # Create breakdowns for the session
@@ -170,22 +203,114 @@ class Command(BaseCommand):
                     breakdown_durations.append(breakdown_minutes)
                 
                 # Create CategoryBlocks with exact durations
+                category_blocks_data = []
                 for breakdown_minutes in breakdown_durations:
                     breakdown_duration = timedelta(minutes=breakdown_minutes)
+                    selected_category = random.choice(category_objects)
                     
-                    CategoryBlock.objects.create(
+                    block = CategoryBlock.objects.create(
                         study_session=session,
-                        category=random.choice(category_objects),
+                        category=selected_category,
                         start_time=current_time,
                         end_time=current_time + breakdown_duration,
                         duration=int(breakdown_duration.total_seconds())  # Convert to integer seconds
                     )
+                    
+                    # Collect block data for flow score calculation
+                    category_blocks_data.append({
+                        'category_id': selected_category.id,
+                        'category_name': selected_category.name,
+                        'start_time': current_time,
+                        'end_time': current_time + breakdown_duration,
+                        'duration': int(breakdown_duration.total_seconds()),
+                        'is_break': False
+                    })
 
                     current_time += breakdown_duration
+                
+                # Calculate and save flow score using the real algorithm (only for sessions 15+ minutes)
+                if duration_minutes >= 15:
+                    try:
+                        flow_result = calculate_flow_score(
+                            start_time=start_time,
+                            end_time=end_time,
+                            focus_rating=focus_rating_10_scale,
+                            category_blocks=category_blocks_data
+                        )
+                        session.flow_score = flow_result.score
+                        session.save(update_fields=['flow_score'])
+                        
+                        self.stdout.write(f"  → Flow score: {flow_result.score}/1000")
+                    except Exception as e:
+                        self.stdout.write(f"  → Flow score calculation failed: {e}")
+                        session.flow_score = None
+                        session.save(update_fields=['flow_score'])
+                else:
+                    session.flow_score = None
+                    session.save(update_fields=['flow_score'])
 
+        username_display = user.username if user.username else 'No Username'
         self.stdout.write(
             self.style.SUCCESS(
-                f'Successfully generated mock data from {start_date} to {end_date} '
-                f'({total_days} day{"s" if total_days != 1 else ""}).'
+                f'Successfully generated mock data for {username_display} ({user.email}) '
+                f'from {start_date} to {end_date} ({total_days} day{"s" if total_days != 1 else ""}).'
             )
+        )
+        
+        # Update aggregates unless explicitly skipped
+        if not kwargs.get('skip_aggregates', False):
+            self.stdout.write('\n' + '='*50)
+            self.stdout.write('🔄 Updating aggregates for generated data...')
+            self.stdout.write('='*50)
+            
+            # Update aggregates for each day in the range
+            current_date = start_date
+            successful_updates = 0
+            failed_updates = 0
+            
+            while current_date <= end_date:
+                try:
+                    self.stdout.write(f'Updating aggregates for {current_date}...')
+                    
+                    # Update daily aggregates
+                    SplitAggregateUpdateService._update_daily_aggregate(
+                        user=user,
+                        date=current_date
+                    )
+                    
+                    # Update weekly aggregates (only do this once per week to avoid redundancy)
+                    if current_date.weekday() == 6:  # Sunday (end of week)
+                        SplitAggregateUpdateService.update_weekly_aggregates_for_date(current_date)
+                    
+                    # Update monthly aggregates (only do this on last day of month)
+                    if current_date == end_date or (current_date + timedelta(days=1)).month != current_date.month:
+                        SplitAggregateUpdateService.update_monthly_aggregates_for_date(current_date)
+                    
+                    successful_updates += 1
+                    
+                except Exception as e:
+                    self.stderr.write(f'❌ Failed to update aggregates for {current_date}: {e}')
+                    failed_updates += 1
+                
+                current_date += timedelta(days=1)
+            
+            # Final aggregate update summary
+            self.stdout.write('\n' + '='*50)
+            if successful_updates > 0:
+                self.stdout.write(
+                    self.style.SUCCESS(
+                        f'✅ Aggregate updates completed: {successful_updates} successful, {failed_updates} failed'
+                    )
+                )
+            else:
+                self.stdout.write(
+                    self.style.ERROR(f'❌ All aggregate updates failed ({failed_updates} failures)')
+                )
+            self.stdout.write('='*50)
+        else:
+            self.stdout.write('\n⚠️  Aggregate recalculation skipped. Run manually with:')
+            self.stdout.write(f'   python manage.py update_aggregates --user {user.username or user.email}')
+        
+        self.stdout.write(
+            self.style.SUCCESS(f'\n🎉 Mock data generation completed!')
         ) 

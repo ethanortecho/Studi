@@ -92,7 +92,7 @@ export default function DashboardTabs({ onDataChange }: DashboardTabsProps) {
                                 Monthly
                             </Text>
                             {!isPremium && (
-                                <Text className="text-xs ml-1">🔒</Text>
+                                <Text className="text-xs ml-1">👑</Text>
                             )}
                         </View>
                     </Pressable>

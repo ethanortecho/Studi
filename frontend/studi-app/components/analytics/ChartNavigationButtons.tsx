@@ -60,7 +60,7 @@ export default function ChartNavigationButtons({
                     {chart.label}
                   </Text>
                   {chart.requiresPremium && !isPremium && (
-                    <Text className="text-xs ml-1">🔒</Text>
+                    <Text className="text-xs ml-1">👑</Text>
                   )}
                 </View>
               </View>

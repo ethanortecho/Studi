@@ -75,6 +75,29 @@ export const CHART_MOCKUPS: Record<string, ChartMockup> = {
       height: 400, // Larger for dashboard view
     }
   },
+
+  // Historical Dashboards
+  historical_daily_dashboard: {
+    id: 'historical_daily_dashboard',
+    name: 'Historical Daily Dashboard',
+    image: require('../assets/mockups/historical-daily-mockup.png'),
+    description: 'Rich historical daily analytics with detailed insights',
+    defaultStyle: {
+      width: '100%',
+      height: 920, // Full dashboard height
+    }
+  },
+
+  historical_weekly_dashboard: {
+    id: 'historical_weekly_dashboard',
+    name: 'Historical Weekly Dashboard',
+    image: require('../assets/mockups/historical-weekly-mockup.png'),
+    description: 'Comprehensive historical weekly patterns and trends',
+    defaultStyle: {
+      width: '100%',
+      height: 620, // Full dashboard height
+    }
+  },
 };
 
 /**

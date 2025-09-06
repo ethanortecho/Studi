@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, ImageSourcePropType } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, ImageSourcePropType, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { usePremium } from '../../contexts/PremiumContext';
@@ -48,7 +48,11 @@ export const PremiumGate: React.FC<PremiumGateProps> = ({
   if (mockupImage) {
     console.log('PremiumGate: Showing mockup image (non-premium)');
     return (
-      <View style={[mockupImageStyle, { position: 'relative' }]}>
+      <ScrollView 
+        style={{ flex: 1 }}
+        showsVerticalScrollIndicator={true}
+        contentContainerStyle={{ flexGrow: 1 }}
+      >
         <Image 
           source={mockupImage}
           style={[mockupImageStyle]}
@@ -60,7 +64,7 @@ export const PremiumGate: React.FC<PremiumGateProps> = ({
             console.log('PremiumGate: Image loaded successfully');
           }}
         />
-      </View>
+      </ScrollView>
     );
   }
 
@@ -132,7 +136,7 @@ const FloatingPremiumCTA: React.FC<{ feature: string; showUpgradePrompt: boolean
         elevation: 5
       }}
     >
-      <Ionicons name="lock-closed" size={20} color="#8B5CF6" />
+      <Ionicons name="diamond" size={20} color="#FFD700" />
     </TouchableOpacity>
   );
 };
@@ -146,8 +150,8 @@ const PremiumOverlay: React.FC<{ feature: string; showUpgradePrompt: boolean }> 
   
   return (
     <View className="bg-surface rounded-2xl p-6 items-center shadow-lg">
-      {/* Purple lock icon */}
-      <Ionicons name="lock-closed" size={32} color="#8B5CF6" style={{ marginBottom: 8 }} />
+      {/* Gold crown icon */}
+      <Ionicons name="diamond" size={32} color="#FFD700" style={{ marginBottom: 8 }} />
       
       <Text className="text-lg font-semibold text-primaryText mb-2">
         Premium Feature

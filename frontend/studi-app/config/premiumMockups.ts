@@ -13,6 +13,12 @@ export interface ChartMockup {
   image: ImageSourcePropType;
   description: string;
   defaultStyle?: object;
+  overlayConfig?: {
+    title: string;
+    subtitle: string;
+    ctaText: string;
+    position?: 'center' | 'top' | 'bottom';
+  };
 }
 
 // Mockup images for different chart types
@@ -26,6 +32,12 @@ export const CHART_MOCKUPS: Record<string, ChartMockup> = {
     defaultStyle: {
       width: '100%',
       height: 220,
+    },
+    overlayConfig: {
+      title: 'Unlock Advanced Flow Analytics',
+      subtitle: 'Track your focus patterns and productivity trends',
+      ctaText: 'UPGRADE TO PREMIUM',
+      position: 'center'
     }
   },
 
@@ -38,6 +50,12 @@ export const CHART_MOCKUPS: Record<string, ChartMockup> = {
     defaultStyle: {
       width: '100%',
       height: 250,
+    },
+    overlayConfig: {
+      title: 'Unlock Detailed Study Maps',
+      subtitle: 'Visualize your study patterns and time distribution',
+      ctaText: 'UPGRADE TO PREMIUM',
+      position: 'center'
     }
   },
 
@@ -49,6 +67,12 @@ export const CHART_MOCKUPS: Record<string, ChartMockup> = {
     defaultStyle: {
       width: '100%',
       height: 250,
+    },
+    overlayConfig: {
+      title: 'Unlock Detailed Study Maps',
+      subtitle: 'Visualize your study patterns and time distribution',
+      ctaText: 'UPGRADE TO PREMIUM',
+      position: 'center'
     }
   },
 
@@ -61,6 +85,12 @@ export const CHART_MOCKUPS: Record<string, ChartMockup> = {
     defaultStyle: {
       width: '100%',
       height: 210,
+    },
+    overlayConfig: {
+      title: 'Unlock Detailed Study Maps',
+      subtitle: 'Visualize your study patterns and time distribution',
+      ctaText: 'UPGRADE TO PREMIUM',
+      position: 'center'
     }
   },
 
@@ -73,6 +103,12 @@ export const CHART_MOCKUPS: Record<string, ChartMockup> = {
     defaultStyle: {
       width: '100%',
       height: 400, // Larger for dashboard view
+    },
+    overlayConfig: {
+      title: 'Unlock Monthly Insights',
+      subtitle: 'Deep analytics and comprehensive monthly reports',
+      ctaText: 'UPGRADE TO PREMIUM',
+      position: 'center'
     }
   },
 
@@ -85,6 +121,12 @@ export const CHART_MOCKUPS: Record<string, ChartMockup> = {
     defaultStyle: {
       width: '100%',
       height: 920, // Full dashboard height
+    },
+    overlayConfig: {
+      title: 'Unlock your Complete Study History',
+      subtitle: 'See trends and compare progress over months',
+      ctaText: 'VIEW FULL HISTORY',
+      position: 'center'
     }
   },
 
@@ -96,6 +138,12 @@ export const CHART_MOCKUPS: Record<string, ChartMockup> = {
     defaultStyle: {
       width: '100%',
       height: 620, // Full dashboard height
+    },
+    overlayConfig: {
+      title: 'Unlock your Complete Study History',
+      subtitle: 'See trends and compare progress over months',
+      ctaText: 'VIEW FULL HISTORY',
+      position: 'center'
     }
   },
 };

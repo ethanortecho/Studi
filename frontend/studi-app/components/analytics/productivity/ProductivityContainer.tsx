@@ -47,6 +47,7 @@ export default function ProductivityContainer({
               height: 180,
               ...mockup?.defaultStyle
             }}
+            displayMode="chart"
           >
             {loading ? (
               <View className="h-[180px] items-center justify-center">

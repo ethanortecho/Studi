@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { usePremium } from '../../contexts/PremiumContext';
 import { PREMIUM_FEATURES } from '../../config/premiumFeatures';
+import { getMockupForFeature } from '../../config/premiumMockups';
 
 interface PremiumGateProps {
   feature: string;
@@ -14,6 +15,7 @@ interface PremiumGateProps {
   mockupImageStyle?: object; // Custom styling for mockup image
   blurMode?: boolean; // Enable blur overlay instead of mockup image
   blurIntensity?: number; // Blur intensity (1-100, default 80)
+  displayMode?: 'dashboard' | 'chart'; // Context for overlay styling
 }
 
 export const PremiumGate: React.FC<PremiumGateProps> = ({ 
@@ -24,7 +26,8 @@ export const PremiumGate: React.FC<PremiumGateProps> = ({
   mockupImage,
   mockupImageStyle,
   blurMode = false,
-  blurIntensity = 80
+  blurIntensity = 80,
+  displayMode = 'dashboard'
 }) => {
   const { canAccessFeature } = usePremium();
   
@@ -47,24 +50,61 @@ export const PremiumGate: React.FC<PremiumGateProps> = ({
   // Priority 2: Show mockup image for non-premium users
   if (mockupImage) {
     console.log('PremiumGate: Showing mockup image (non-premium)');
+    
+    // For chart mode, use simple layout without ScrollView
+    if (displayMode === 'chart') {
+      return (
+        <View style={{ position: 'relative', ...mockupImageStyle }}>
+          <Image 
+            source={mockupImage}
+            style={[mockupImageStyle]}
+            resizeMode="contain"
+            onError={(error) => {
+              console.log('PremiumGate: Image loading error:', error);
+            }}
+            onLoad={() => {
+              console.log('PremiumGate: Image loaded successfully');
+            }}
+          />
+          
+          {/* Overlay Text and CTA */}
+          <PremiumOverlayContent 
+            feature={feature} 
+            showUpgradePrompt={showUpgradePrompt}
+            displayMode={displayMode}
+          />
+        </View>
+      );
+    }
+    
+    // For dashboard mode, use ScrollView for full-screen mockups
     return (
-      <ScrollView 
-        style={{ flex: 1 }}
-        showsVerticalScrollIndicator={true}
-        contentContainerStyle={{ flexGrow: 1 }}
-      >
-        <Image 
-          source={mockupImage}
-          style={[mockupImageStyle]}
-          resizeMode="contain"
-          onError={(error) => {
-            console.log('PremiumGate: Image loading error:', error);
-          }}
-          onLoad={() => {
-            console.log('PremiumGate: Image loaded successfully');
-          }}
+      <View style={{ flex: 1, position: 'relative' }}>
+        <ScrollView 
+          style={{ flex: 1 }}
+          showsVerticalScrollIndicator={true}
+          contentContainerStyle={{ flexGrow: 1 }}
+        >
+          <Image 
+            source={mockupImage}
+            style={[mockupImageStyle]}
+            resizeMode="contain"
+            onError={(error) => {
+              console.log('PremiumGate: Image loading error:', error);
+            }}
+            onLoad={() => {
+              console.log('PremiumGate: Image loaded successfully');
+            }}
+          />
+        </ScrollView>
+        
+        {/* Overlay Text and CTA */}
+        <PremiumOverlayContent 
+          feature={feature} 
+          showUpgradePrompt={showUpgradePrompt}
+          displayMode={displayMode}
         />
-      </ScrollView>
+      </View>
     );
   }
 
@@ -141,7 +181,109 @@ const FloatingPremiumCTA: React.FC<{ feature: string; showUpgradePrompt: boolean
   );
 };
 
-// Full overlay component for non-blur mode
+// Overlay content component for mockup images with center positioning
+const PremiumOverlayContent: React.FC<{ 
+  feature: string; 
+  showUpgradePrompt: boolean; 
+  displayMode?: 'dashboard' | 'chart';
+}> = ({ 
+  feature, 
+  showUpgradePrompt,
+  displayMode = 'dashboard'
+}) => {
+  if (!showUpgradePrompt) return null;
+  
+  const mockup = getMockupForFeature(feature);
+  const overlayConfig = mockup?.overlayConfig;
+  
+  if (!overlayConfig) return null;
+  
+  // Different overlay styling for chart vs dashboard mode
+  const isChartMode = displayMode === 'chart';
+  
+  return (
+    <View style={{
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      alignItems: 'center',
+      justifyContent: 'center',
+    }}>
+      <View style={{
+        alignItems: 'center',
+        paddingHorizontal: isChartMode ? 16 : 24,
+        paddingVertical: isChartMode ? 12 : 20,
+        maxWidth: isChartMode ? '90%' : '85%',
+        backgroundColor: 'rgba(0, 0, 0, 0.7)', 
+        borderRadius: isChartMode ? 12 : 16,
+      }}>
+        {/* Primary Title Text */}
+        <Text style={{
+          fontSize: isChartMode ? 16 : 22,
+          fontWeight: '700',
+          color: '#FFFFFF',
+          textAlign: 'center',
+          marginBottom: isChartMode ? 4 : 8,
+          textShadowColor: 'rgba(0, 0, 0, 0.8)',
+          textShadowOffset: { width: 0, height: 2 },
+          textShadowRadius: 4,
+        }}>
+          {overlayConfig.title}
+        </Text>
+        
+        {/* Secondary Subtitle Text */}
+        <Text style={{
+          fontSize: isChartMode ? 12 : 14,
+          fontWeight: '400',
+          color: '#FFFFFF',
+          textAlign: 'center',
+          marginBottom: isChartMode ? 12 : 20,
+          textShadowColor: 'rgba(0, 0, 0, 0.8)',
+          textShadowOffset: { width: 0, height: 1 },
+          textShadowRadius: 3,
+          lineHeight: isChartMode ? 16 : 20,
+        }}>
+          {overlayConfig.subtitle}
+        </Text>
+        
+        {/* CTA Button */}
+        <TouchableOpacity 
+          style={{
+            backgroundColor: '#8B5CF6', // Purple accent
+            paddingHorizontal: isChartMode ? 20 : 28,
+            paddingVertical: isChartMode ? 8 : 12,
+            borderRadius: isChartMode ? 16 : 20,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 3 },
+            shadowOpacity: 0.25,
+            shadowRadius: 6,
+            elevation: 5,
+            minWidth: isChartMode ? 120 : 160,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          onPress={() => {
+            // TODO: Navigate to upgrade screen
+            console.log('Navigate to upgrade screen');
+          }}
+        >
+          <Text style={{
+            color: '#FFFFFF',
+            fontSize: isChartMode ? 12 : 14,
+            fontWeight: '600',
+            textAlign: 'center',
+          }}>
+            {overlayConfig.ctaText}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
+
+// Full overlay component for non-blur mode (fallback)
 const PremiumOverlay: React.FC<{ feature: string; showUpgradePrompt: boolean }> = ({ 
   feature, 
   showUpgradePrompt 

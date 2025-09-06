@@ -119,6 +119,7 @@ export default function MultiChartContainerV2({
                   height: chartHeight,
                   ...mockup?.defaultStyle
                 }}
+                displayMode="chart"
               />
             );
           }

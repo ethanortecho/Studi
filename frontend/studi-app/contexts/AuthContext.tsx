@@ -38,6 +38,9 @@ interface AuthContextType {
   register: (userData: RegisterData) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   refreshAccessToken: () => Promise<boolean>;
+  
+  // Development helper (only available in __DEV__)
+  togglePremiumStatus?: () => void;
 }
 
 // Create the context (initially undefined)
@@ -331,6 +334,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  /**
+   * DEVELOPMENT HELPER: togglePremiumStatus()
+   * 
+   * Temporarily toggles the user's premium status for testing.
+   * Only available in development mode.
+   */
+  const togglePremiumStatus = () => {
+    if (__DEV__ && user) {
+      const updatedUser = {
+        ...user,
+        is_premium: !user.is_premium
+      };
+      setUser(updatedUser);
+      
+      // Update stored user data
+      AsyncStorage.setItem('user', JSON.stringify(updatedUser));
+      
+      console.log(`🔧 DEV: Premium status toggled to ${updatedUser.is_premium ? 'ON' : 'OFF'}`);
+    }
+  };
+
   // ==================
   // PROVIDE TO APP
   // ==================
@@ -345,6 +369,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     register,
     logout,
     refreshAccessToken,
+    ...__DEV__ && { togglePremiumStatus }, // Only include in development
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -17,6 +17,7 @@ import { getChartsForTimeframe } from '../../config/chartRegistry';
 import { useChartNavigation } from '../../hooks/useChartNavigation';
 import { usePremium } from '../../contexts/PremiumContext';
 import { PremiumGate } from '../premium/PremiumGate';
+import { getMockupForFeature } from '../../config/premiumMockups';
 
 interface MultiChartContainerV2Props {
   dashboardData: DashboardData;
@@ -66,7 +67,8 @@ export default function MultiChartContainerV2({
   const LEGEND_HEIGHT = 80; // Approximate height of legend space
   
   // Calculate if current chart should show legend
-  const shouldShowLegend = showLegend && activeChart && (
+  const isShowingPremiumMockup = activeChart && activeChart.requiresPremium && !isPremium;
+  const shouldShowLegend = showLegend && activeChart && !isShowingPremiumMockup && (
     (dashboardData.timeframe === 'daily' && ['subjects', 'sessions', 'map'].includes(activeChart.id)) ||
     (dashboardData.timeframe !== 'daily' && ['subjects', 'trends'].includes(activeChart.id))
   );
@@ -102,14 +104,22 @@ export default function MultiChartContainerV2({
           }
           
           if (activeChart && activeChart.requiresPremium && !isPremium) {
+            // Get mockup image for this chart type
+            const mockup = getMockupForFeature(`${activeChart.id}_chart_${dashboardData.timeframe}`) || 
+                          getMockupForFeature(`${activeChart.id}_chart`) ||
+                          getMockupForFeature('map_chart_' + dashboardData.timeframe);
+            
             return (
               <PremiumGate 
                 feature={`${activeChart.id}_chart_${dashboardData.timeframe}`}
                 showUpgradePrompt={true}
-              >
-                {/* This won't render for non-premium users */}
-                <View />
-              </PremiumGate>
+                mockupImage={mockup?.image}
+                mockupImageStyle={{
+                  width: PAGE_WIDTH - 40,
+                  height: chartHeight,
+                  ...mockup?.defaultStyle
+                }}
+              />
             );
           }
           

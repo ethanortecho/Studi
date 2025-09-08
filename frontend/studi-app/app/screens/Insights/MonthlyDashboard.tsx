@@ -5,6 +5,7 @@ import DashboardKPIs from '../../../components/analytics/DashboardKPIs';
 import MultiChartContainerV2 from '../../../components/analytics/MultiChartContainerV2';
 import { DashboardData } from '../../../types/charts';
 import { PremiumGate } from '../../../components/premium/PremiumGate';
+import { getMockupForFeature } from '../../../config/premiumMockups';
 
 interface MonthlyDashboardProps {
   totalHours: number;
@@ -76,44 +77,53 @@ export default function MonthlyDashboard({
     isEmpty
   };
 
+  // Get mockup image for monthly dashboard charts
+  const mockup = getMockupForFeature('monthly_dashboard');
+
   return (
-    <PremiumGate
-      feature="monthly_dashboard"
-      showUpgradePrompt={true}
+    <ScrollView 
+      className="flex-1" 
+      contentContainerStyle={{ paddingBottom: 30 }}
+      showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor="#9333ea"
+          colors={['#9333ea']}
+          progressBackgroundColor="#1f1f2e"
+        />
+      }
     >
-      <ScrollView 
-        className="flex-1" 
-        contentContainerStyle={{ paddingBottom: 30 }}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor="#9333ea"
-            colors={['#9333ea']}
-            progressBackgroundColor="#1f1f2e"
-          />
-        }
-      >
-        {/* High-level KPIs */}
-        {!isEmpty && (
-          <DashboardKPIs 
-            totalTime={totalTime}
-            percentGoal={percentGoal}
-            flowScore={flowScore ?? undefined}
-          />
-        )}
-        
-        {/* Multi-chart container with new architecture */}
-        <View className="mx-4 mb-4">
+      {/* High-level KPIs - Always visible as teaser */}
+      {!isEmpty && (
+        <DashboardKPIs 
+          totalTime={totalTime}
+          percentGoal={percentGoal}
+          flowScore={flowScore ?? undefined}
+        />
+      )}
+      
+      {/* Charts section - Premium gated */}
+      <View className="mx-4 mb-4">
+        <PremiumGate
+          feature="monthly_dashboard"
+          showUpgradePrompt={true}
+          mockupImage={mockup?.image}
+          mockupImageStyle={{
+            width: '100%',
+            height: 400,
+            ...mockup?.defaultStyle
+          }}
+        >
           <MultiChartContainerV2 
             dashboardData={dashboardData}
             showLegend={true}
           />
-        </View>
-        
-      </ScrollView>
-    </PremiumGate>
+        </PremiumGate>
+      </View>
+      
+    </ScrollView>
   );
 }
 

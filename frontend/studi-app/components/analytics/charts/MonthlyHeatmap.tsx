@@ -147,7 +147,7 @@ const MonthlyHeatmap: React.FC<MonthlyHeatmapProps> = ({
                         className="font-medium" 
                         style={{ 
                           fontSize: finalCellSize > 35 ? 12 : 10, // Responsive font size
-                          color: studyHours > 1.5 ? 'white' : studyHours > 0 ? '#374151' : 'rgba(107, 114, 128, 0.6)' // Dynamic text color based on intensity
+                          color: 'white' // Always white text for better visibility
                         }}
                       >
                         {dayNumber}

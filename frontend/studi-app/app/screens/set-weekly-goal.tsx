@@ -100,23 +100,23 @@ export default function SetWeeklyGoalScreen() {
       <Pressable
         key={item.minutes}
         onPress={() => setSelectedMinutes(item.minutes)}
-        className={`flex-row items-center justify-between px-4 py-3 border-b border-gray-700 ${isSelected ? 'bg-purple-600/20' : ''}`}
+        className={`flex-row items-center justify-between px-4 py-3 border-b border-surface ${isSelected ? 'bg-accent/20' : ''}`}
       >
-        <Text className="text-lg text-gray-100 font-medium">{item.label}</Text>
-        <Text className="text-sm text-gray-400">{item.description}</Text>
+        <Text className="text-lg text-primaryText font-medium">{item.label}</Text>
+        <Text className="text-sm text-secondaryText">{item.description}</Text>
       </Pressable>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-900">
+    <SafeAreaView className="flex-1 bg-background">
       <View className="flex-1 p-6">
-        <Text className="text-center text-2xl font-bold text-gray-100 mb-8">
+        <Text className="text-center text-2xl font-bold text-primaryText mb-8">
           {headerText}
         </Text>
 
         {/* Goal options table */}
-        <View className="rounded-lg overflow-hidden border border-gray-700 mb-8">
+        <View className="rounded-lg overflow-hidden border border-surface mb-8">
           <FlatList
             data={WEEKLY_GOAL_OPTIONS}
             renderItem={renderOption}
@@ -127,11 +127,11 @@ export default function SetWeeklyGoalScreen() {
         {/* Carry-over toggle - Temporarily disabled for MVP */}
         {/*
         <View className="flex-row items-center justify-between mb-8 px-1">
-          <Text className="text-gray-100 text-lg">Carry over overtime</Text>
+          <Text className="text-primaryText text-lg">Carry over overtime</Text>
           <Switch
             value={carryOverEnabled}
             onValueChange={setCarryOverEnabled}
-            trackColor={{ false: '#555', true: '#7c3aed' }}
+            trackColor={{ false: '#555', true: '#5D3EDA' }}
             thumbColor="#fff"
           />
         </View>
@@ -139,8 +139,8 @@ export default function SetWeeklyGoalScreen() {
 
         {/* Study Days Selection */}
         <View className="mb-8">
-          <Text className="text-gray-100 text-lg font-medium mb-4">Study Days</Text>
-          <Text className="text-gray-400 text-sm mb-4">
+          <Text className="text-primaryText text-lg font-medium mb-4">Study Days</Text>
+          <Text className="text-secondaryText text-sm mb-4">
             Choose which days count toward your daily study goal
           </Text>
           
@@ -154,12 +154,12 @@ export default function SetWeeklyGoalScreen() {
                   onPress={() => toggleDay(index)}
                   className={`w-12 h-12 rounded-full items-center justify-center border-2 ${
                     isSelected 
-                      ? 'bg-purple-600 border-purple-600' 
-                      : 'border-gray-600 bg-gray-900'
+                      ? 'bg-accent border-accent' 
+                      : 'border-surface bg-background'
                   }`}
                 >
                   <Text className={`font-semibold ${
-                    isSelected ? 'text-white' : 'text-gray-400'
+                    isSelected ? 'text-white' : 'text-secondaryText'
                   }`}>
                     {label}
                   </Text>
@@ -168,7 +168,7 @@ export default function SetWeeklyGoalScreen() {
             })}
           </View>
           
-          <Text className="text-gray-500 text-xs text-center">
+          <Text className="text-secondaryText text-xs text-center">
             {selectedDays.length} day{selectedDays.length !== 1 ? 's' : ''} selected
             {selectedMinutes && selectedDays.length > 0 && 
               ` • ${Math.round(selectedMinutes / selectedDays.length)} min/day`
@@ -180,7 +180,7 @@ export default function SetWeeklyGoalScreen() {
         <Pressable
           disabled={selectedMinutes == null || selectedDays.length === 0 || saving}
           onPress={handleSave}
-          className={`py-4 rounded-lg ${(selectedMinutes && selectedDays.length > 0) ? 'bg-purple-600' : 'bg-gray-700'}`}
+          className={`py-4 rounded-lg ${(selectedMinutes && selectedDays.length > 0) ? 'bg-accent' : 'bg-surface'}`}
         >
           <Text className="text-center text-lg font-semibold text-white">
             {saving ? 'Saving…' : isEdit ? 'Save' : 'Continue'}

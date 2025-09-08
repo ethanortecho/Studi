@@ -106,12 +106,9 @@ export function navigateDate(currentDate: Date, direction: 'prev' | 'next', type
 
 export function canNavigate(currentDate: Date, direction: 'prev' | 'next', type: 'daily' | 'weekly' | 'monthly', isPremium: boolean = false): boolean {
   const today = new Date();
-  const dayLimit = isPremium ? 365 : 14; // Premium: 1 year, Free: 14 days
-  const limitDate = new Date(today);
-  limitDate.setDate(today.getDate() - dayLimit);
   
   if (direction === 'next') {
-    // Can't navigate beyond today/current week/month
+    // Can't navigate beyond today/current week/month (prevent future navigation)
     if (type === 'daily') {
       return currentDate < today;
     } else if (type === 'weekly') {
@@ -124,18 +121,8 @@ export function canNavigate(currentDate: Date, direction: 'prev' | 'next', type:
       return targetMonthStart < currentMonthStart;
     }
   } else {
-    // Can't navigate beyond limit (14 days for free, 1 year for premium)
-    if (type === 'daily') {
-      return currentDate > limitDate;
-    } else if (type === 'weekly') {
-      const targetWeekStart = getWeekStart(currentDate);
-      const limitWeekStart = getWeekStart(limitDate);
-      return targetWeekStart > limitWeekStart;
-    } else { // monthly
-      const targetMonthStart = getMonthStart(currentDate);
-      const limitMonthStart = getMonthStart(limitDate);
-      return targetMonthStart > limitMonthStart;
-    }
+    // Allow unlimited historical navigation - data access will be gated separately
+    return true;
   }
 }
 

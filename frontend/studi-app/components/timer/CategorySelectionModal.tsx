@@ -75,7 +75,7 @@ export default function CategorySelectionModal({
       {/* Backdrop */}
       <Pressable 
         className="flex-1 justify-end"
-        style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+        style={{ backgroundColor: 'transparent' }}
         onPress={handleModalClose}
       >
         {/* Modal Content - Glassmorphic */}

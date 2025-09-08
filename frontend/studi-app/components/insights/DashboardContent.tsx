@@ -11,6 +11,7 @@ import WeeklyDashboard from '../../app/screens/Insights/WeeklyDashboard';
 import MonthlyDashboard from '../../app/screens/Insights/MonthlyDashboard';
 import { DashboardSkeleton } from './SkeletonLoader';
 import { usePremium } from '../../contexts/PremiumContext';
+import { HistoricalGate } from '../premium/HistoricalGate';
 
 interface DashboardContentProps {
     selectedTab: string;
@@ -101,46 +102,50 @@ export default function DashboardContent({
         // Show actual dashboard
         if (isDaily && daily) {
             const dashboardRender = (
-                <DailyDashboard 
-                    totalHours={daily.totalHours || '0.00'}
-                    totalTime={daily.totalTime}
-                    categoryDurations={daily.categoryDurations}
-                    categoryMetadata={daily.categoryMetadata}
-                    pieChartData={daily.pieChartData}
-                    timelineData={daily.timelineData || []}
-                    rawData={daily.rawData}
-                    loading={false}
-                    percentGoal={daily.percentGoal}
-                    isEmpty={daily.isEmpty}
-                    productivityScore={daily.productivityScore}
-                    allTimeAvgProductivity={daily.allTimeAvgProductivity}
-                    flowScore={daily.flowScore}
-                    flowScoreDetails={daily.flowScoreDetails}
-                    flowCoachingMessage={daily.flowCoachingMessage}
-                    isPremium={isPremium}
-                />
+                <HistoricalGate date={dailyDate || new Date()} timeframe="daily">
+                    <DailyDashboard 
+                        totalHours={daily.totalHours || '0.00'}
+                        totalTime={daily.totalTime}
+                        categoryDurations={daily.categoryDurations}
+                        categoryMetadata={daily.categoryMetadata}
+                        pieChartData={daily.pieChartData}
+                        timelineData={daily.timelineData || []}
+                        rawData={daily.rawData}
+                        loading={false}
+                        percentGoal={daily.percentGoal}
+                        isEmpty={daily.isEmpty}
+                        productivityScore={daily.productivityScore}
+                        allTimeAvgProductivity={daily.allTimeAvgProductivity}
+                        flowScore={daily.flowScore}
+                        flowScoreDetails={daily.flowScoreDetails}
+                        flowCoachingMessage={daily.flowCoachingMessage}
+                        isPremium={isPremium}
+                    />
+                </HistoricalGate>
             );
             DEBUG_DASHBOARD && console.log(`⏱️ DashboardContent: Daily dashboard render took ${(performance.now() - renderStart).toFixed(2)}ms`);
             return dashboardRender;
         } else if (isWeekly && weekly) {
             const dashboardRender = (
-                <WeeklyDashboard 
-                    totalHours={weekly.totalHours || '0.00'}
-                    totalTime={weekly.totalTime}
-                    categoryDurations={weekly.categoryDurations}
-                    categoryMetadata={weekly.categoryMetadata}
-                    pieChartData={weekly.pieChartData}
-                    trendData={weekly.trendData}
-                    sessionTimes={weekly.sessionTimes}
-                    dailyBreakdown={weekly.dailyBreakdown}
-                    rawData={weekly.rawData}
-                    loading={false}
-                    percentGoal={weekly.percentGoal}
-                    isEmpty={weekly.isEmpty}
-                    flowScore={weekly.flowScore}
-                    flowCoachingMessage={weekly.flowCoachingMessage}
-                    isPremium={isPremium}
-                />
+                <HistoricalGate date={weeklyDate || new Date()} timeframe="weekly">
+                    <WeeklyDashboard 
+                        totalHours={weekly.totalHours || '0.00'}
+                        totalTime={weekly.totalTime}
+                        categoryDurations={weekly.categoryDurations}
+                        categoryMetadata={weekly.categoryMetadata}
+                        pieChartData={weekly.pieChartData}
+                        trendData={weekly.trendData}
+                        sessionTimes={weekly.sessionTimes}
+                        dailyBreakdown={weekly.dailyBreakdown}
+                        rawData={weekly.rawData}
+                        loading={false}
+                        percentGoal={weekly.percentGoal}
+                        isEmpty={weekly.isEmpty}
+                        flowScore={weekly.flowScore}
+                        flowCoachingMessage={weekly.flowCoachingMessage}
+                        isPremium={isPremium}
+                    />
+                </HistoricalGate>
             );
             DEBUG_DASHBOARD && console.log(`⏱️ DashboardContent: Weekly dashboard render took ${(performance.now() - renderStart).toFixed(2)}ms`);
             return dashboardRender;

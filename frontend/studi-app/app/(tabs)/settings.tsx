@@ -4,9 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
+import { resetOnboarding } from '../../utils/onboarding';
 
 export default function SettingsScreen() {
-  const { user, logout } = useAuth();
+  const { user, logout, togglePremiumStatus } = useAuth();
 
   /**
    * EXPLANATION: handleLogout()
@@ -37,6 +38,48 @@ export default function SettingsScreen() {
         },
       ]
     );
+  };
+
+  const handleViewOnboarding = () => {
+    Alert.alert(
+      'View Onboarding',
+      'This will show the app introduction screens again.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'View Onboarding',
+          onPress: async () => {
+            try {
+              await resetOnboarding();
+              router.push('/onboarding');
+            } catch (error) {
+              console.error('Error resetting onboarding:', error);
+              Alert.alert('Error', 'Failed to reset onboarding. Please try again.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleTogglePremium = () => {
+    if (__DEV__ && togglePremiumStatus && user) {
+      const newStatus = !user.is_premium;
+      Alert.alert(
+        'Toggle Premium Status',
+        `Switch to ${newStatus ? 'Premium' : 'Free'} account for testing?`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: `Switch to ${newStatus ? 'Premium' : 'Free'}`,
+            onPress: () => {
+              togglePremiumStatus();
+              Alert.alert('Success', `Account is now ${newStatus ? 'Premium' : 'Free'}`);
+            },
+          },
+        ]
+      );
+    }
   };
 
   /** Helper to render a single settings row */
@@ -104,6 +147,20 @@ export default function SettingsScreen() {
           icon="calendar"
           onPress={() => router.push('/screens/set-weekly-goal?edit=1' as any)}
         />
+        <Row
+          label="View Onboarding"
+          icon="help-circle"
+          onPress={handleViewOnboarding}
+        />
+        
+        {/* Development only: Premium toggle */}
+        {__DEV__ && togglePremiumStatus && user && (
+          <Row
+            label={`Premium Status: ${user.is_premium ? 'ON' : 'OFF'}`}
+            icon={user.is_premium ? "checkmark-circle" : "close-circle"}
+            onPress={handleTogglePremium}
+          />
+        )}
         
         {/* Logout Button */}
         <View className="mt-8">

@@ -147,20 +147,21 @@ export default function SettingsScreen() {
           icon="calendar"
           onPress={() => router.push('/screens/set-weekly-goal?edit=1' as any)}
         />
-        <Row
+        {/* TEMPORARILY DISABLED FOR APP STORE REVIEW */}
+        {/* <Row
           label="View Onboarding"
           icon="help-circle"
           onPress={handleViewOnboarding}
-        />
+        /> */}
         
-        {/* Development only: Premium toggle */}
-        {__DEV__ && togglePremiumStatus && user && (
+        {/* Development only: Premium toggle - TEMPORARILY DISABLED FOR APP STORE REVIEW */}
+        {/* {__DEV__ && togglePremiumStatus && user && (
           <Row
             label={`Premium Status: ${user.is_premium ? 'ON' : 'OFF'}`}
             icon={user.is_premium ? "checkmark-circle" : "close-circle"}
             onPress={handleTogglePremium}
           />
-        )}
+        )} */}
         
         {/* Logout Button */}
         <View className="mt-8">

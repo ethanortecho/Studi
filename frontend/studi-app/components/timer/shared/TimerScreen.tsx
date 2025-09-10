@@ -121,10 +121,10 @@ export default function TimerScreen({
     }
   }, [sessionId, pendingCategoryId]); // Removed switchCategory from dependencies
   
-  // Show modal automatically for initial category selection (stopwatch only)
+  // Show modal automatically for initial category selection (all timer types)
   useEffect(() => {
-    // For stopwatch timer without preselected category, show modal immediately
-    if (timerType === 'stopwatch' && !selectedCategoryId && !sessionId && !sessionStarted && !showCategoryModal) {
+    // For any timer without preselected category, show modal immediately
+    if (!selectedCategoryId && !sessionId && !sessionStarted && !showCategoryModal) {
       console.log("TimerScreen: Auto-showing category modal for initial selection");
       setShowCategoryModal(true);
     }

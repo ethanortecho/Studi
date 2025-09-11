@@ -20,6 +20,160 @@
 
 **Philosophy**: Incremental implementation prioritizing critical business logic first
 
+## 🎯 **PRIORITY IMPLEMENTATION PLAN** (Selected: Option 1 - Comprehensive Integration Testing)
+
+*Based on requirements gathering session - September 2025*
+
+### **Chosen Architecture: Option 1 - Comprehensive Integration Testing**
+**Focus**: Real-world scenarios with actual data flow, prioritizing user experience accuracy
+
+**Key Requirements Identified**:
+- **Background/Recovery**: Primary concern - app backgrounding during long sessions
+- **Pomodoro Accuracy**: Block counting issues when exiting/returning to app
+- **Dashboard Consistency**: Timer length discrepancies affecting aggregate data
+- **Session Lifecycle**: Solid session management with accurate data flow
+
+### **Implementation Priority Order**
+
+#### **Phase 1: Critical Path Integration Tests** (Immediate Priority)
+
+**1.1 Background Recovery Tests** (Highest Priority)
+```typescript
+// /frontend/tests/integration/background-recovery.test.tsx
+describe('Background Recovery Scenarios', () => {
+  it('should maintain timer accuracy during screen-off scenarios', () => {
+    // Test: Start stopwatch → Simulate screen off (5-30 minutes) → Return to app
+    // Verify: Timer shows correct elapsed time, session data accurate
+  });
+  
+  it('should recover pomodoro state accurately after backgrounding', () => {
+    // Test: Start pomo work block → Background during work → Return
+    // Verify: Correct block status, accurate time remaining, proper transitions
+  });
+  
+  it('should handle intentional app exit scenarios', () => {
+    // Test: Long running timer → User exits app → Returns hours later
+    // Verify: Session recovery prompt, accurate time calculations
+  });
+});
+```
+
+**1.2 Session Lifecycle Integration Tests**
+```typescript
+// /frontend/tests/integration/session-lifecycle.test.tsx
+describe('Complete Session Lifecycle', () => {
+  it('should complete full session flow with backend integration', () => {
+    // Test: Start → Category selection → Pause → Resume → Complete
+    // Verify: Backend session created, aggregates updated, dashboard reflects changes
+  });
+  
+  it('should handle orphaned session cleanup', () => {
+    // Test: Session created but never properly ended
+    // Verify: Cleanup mechanisms work, no duplicate sessions
+  });
+});
+```
+
+**1.3 Pomodoro Block Accuracy Tests** (Time Simulation)
+```typescript
+// /frontend/tests/integration/pomodoro-accuracy.test.tsx
+describe('Pomodoro Block Counting', () => {
+  beforeEach(() => {
+    jest.useFakeTimers(); // Fast-forward time simulation
+  });
+  
+  it('should accurately track work/break transitions', () => {
+    // Test: Start pomo → Fast-forward through work block → Verify break starts
+    // Test: Complete break → Verify next work block starts with correct count
+  });
+  
+  it('should maintain block count accuracy during app recovery', () => {
+    // Test: Start pomo → Background during block 2 of 4 → Return
+    // Verify: Correct block remaining count, proper phase state
+  });
+});
+```
+
+**1.4 Dashboard Consistency Tests**
+```typescript
+// /frontend/tests/integration/dashboard-consistency.test.tsx
+describe('Dashboard Aggregation Accuracy', () => {
+  it('should reflect accurate session data after completion', () => {
+    // Test: Complete various session types → Check dashboard data
+    // Verify: Duration matches, flow scores calculated, aggregates updated
+  });
+  
+  it('should handle concurrent session completion aggregation', () => {
+    // Test: Multiple sessions ending simultaneously
+    // Verify: All data properly aggregated, no race conditions
+  });
+});
+```
+
+#### **Phase 2: Timer Logic Unit Tests** (Secondary Priority)
+
+**2.1 Timer Calculation Tests**
+```typescript
+// /frontend/tests/unit/timer-calculations.test.ts
+describe('Timer State Management', () => {
+  it('should calculate elapsed time accurately', () => {
+    // Test: Various timing scenarios, pause/resume calculations
+  });
+  
+  it('should handle edge cases in time formatting', () => {
+    // Test: Zero duration, very long sessions, negative values
+  });
+});
+```
+
+**2.2 Recovery State Tests**
+```typescript
+// /frontend/tests/unit/timer-recovery.test.ts
+describe('TimerRecoveryService', () => {
+  it('should save and restore timer state correctly', () => {
+    // Test: AsyncStorage persistence, state validation
+  });
+  
+  it('should handle corrupted or stale recovery data', () => {
+    // Test: Invalid recovery states, old data cleanup
+  });
+});
+```
+
+### **Testing Infrastructure Setup**
+
+**Real Backend Integration**:
+- Test database setup for realistic data testing
+- API call integration (not mocked) for accuracy verification
+- Test data seeding for consistent baseline
+
+**Time Simulation**:
+- Jest fake timers for fast Pomodoro testing
+- AsyncStorage mocking for recovery scenarios  
+- App state simulation for backgrounding tests
+
+**Success Metrics**:
+- **Background Recovery**: 100% accuracy in timer state restoration
+- **Dashboard Consistency**: Zero timing discrepancies between timer and aggregates
+- **Pomodoro Blocks**: 100% accurate block counting across all scenarios
+- **Session Lifecycle**: 95%+ success rate for complete session flows
+
+### **Quick Start Implementation**
+```bash
+# Setup test environment
+cd frontend/studi-app
+npm install --save-dev @testing-library/react-native-testing-library
+npm install --save-dev jest-environment-node
+
+# Run priority tests
+npm test background-recovery    # Phase 1.1
+npm test session-lifecycle     # Phase 1.2  
+npm test pomodoro-accuracy     # Phase 1.3
+npm test dashboard-consistency # Phase 1.4
+```
+
+---
+
 ### Coverage Goals
 - **Backend**: 80%+ on critical business logic (flow score, aggregation, session lifecycle)
 - **Frontend**: 70%+ on hooks and contexts (state management, timers, auth)

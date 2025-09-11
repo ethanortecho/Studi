@@ -7,7 +7,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { resetOnboarding } from '../../utils/onboarding';
 
 export default function SettingsScreen() {
-  const { user, logout, togglePremiumStatus } = useAuth();
+  const { user, logout, togglePremiumStatus, deleteAccount } = useAuth();
 
   /**
    * EXPLANATION: handleLogout()
@@ -80,6 +80,29 @@ export default function SettingsScreen() {
         ]
       );
     }
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete Account',
+      'Are you sure you want to permanently delete your account?\n\nThis will delete all your study data, categories, goals, and cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete Account',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteAccount();
+              // Navigation will happen automatically via AuthContext
+            } catch (error) {
+              console.error('Account deletion error:', error);
+              Alert.alert('Error', 'Failed to delete account. Please try again.');
+            }
+          },
+        },
+      ]
+    );
   };
 
   /** Helper to render a single settings row */
@@ -163,8 +186,16 @@ export default function SettingsScreen() {
           />
         )} */}
         
-        {/* Logout Button */}
+        {/* Account Actions */}
         <View className="mt-8">
+          {/* Delete Account Button - Dangerous action */}
+          <Row
+            label="Delete Account"
+            icon="trash"
+            onPress={handleDeleteAccount}
+          />
+          
+          {/* Logout Button */}
           <Row
             label="Logout"
             icon="log-out"

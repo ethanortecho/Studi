@@ -1,0 +1,5 @@
+dev cleanup
+
+Subject select doesnt auto pop up on countdown and pomo timer
+subject select modal lacks cancel option
+action go back not handled by any navigator 

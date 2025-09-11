@@ -34,6 +34,7 @@ export default function TimerScreen({
   const [sessionStarted, setSessionStarted] = useState(false);
   const [pendingCategoryId, setPendingCategoryId] = useState<string | number | null>(null);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [userDismissedModal, setUserDismissedModal] = useState(false);
   
   // Extract timer hook methods and state
   const { startTimer, pauseTimer, resumeTimer, stopTimer, cancelTimer, status, formatTime } = timerHook;
@@ -75,6 +76,10 @@ export default function TimerScreen({
   // Handler for FAB press
   const handleFABPress = () => {
     setShowCategoryModal(true);
+    // Reset dismissal flag since user is manually opening the modal
+    if (userDismissedModal) {
+      setUserDismissedModal(false);
+    }
   };
   
   // Fetch categories when timer screen loads (if not already loaded)
@@ -123,12 +128,12 @@ export default function TimerScreen({
   
   // Show modal automatically for initial category selection (all timer types)
   useEffect(() => {
-    // For any timer without preselected category, show modal immediately
-    if (!selectedCategoryId && !sessionId && !sessionStarted && !showCategoryModal) {
+    // For any timer without preselected category, show modal immediately (unless user dismissed it)
+    if (!selectedCategoryId && !sessionId && !sessionStarted && !showCategoryModal && !userDismissedModal) {
       console.log("TimerScreen: Auto-showing category modal for initial selection");
       setShowCategoryModal(true);
     }
-  }, [timerType, selectedCategoryId, sessionId, sessionStarted, showCategoryModal]);
+  }, [timerType, selectedCategoryId, sessionId, sessionStarted, showCategoryModal, userDismissedModal]);
 
   return (
     <AnimatedGradientBackground color={categoryColor}>
@@ -192,6 +197,7 @@ export default function TimerScreen({
           onClose={() => {
             resetPreviewColor();
             setShowCategoryModal(false);
+            setUserDismissedModal(true); // Remember user dismissed the initial modal
           }}
           onCategorySelect={isSessionActive ? handleCategorySwitchDuringSession : handleFirstCategorySelect}
           onImmediateColorChange={handleInstantColorChange}

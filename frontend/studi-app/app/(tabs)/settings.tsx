@@ -7,7 +7,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { resetOnboarding } from '../../utils/onboarding';
 
 export default function SettingsScreen() {
-  const { user, logout, togglePremiumStatus } = useAuth();
+  const { user, logout, togglePremiumStatus, deleteAccount } = useAuth();
 
   /**
    * EXPLANATION: handleLogout()
@@ -82,6 +82,29 @@ export default function SettingsScreen() {
     }
   };
 
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete Account',
+      'Are you sure you want to permanently delete your account?\n\nThis will delete all your study data, categories, goals, and cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete Account',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteAccount();
+              // Navigation will happen automatically via AuthContext
+            } catch (error) {
+              console.error('Account deletion error:', error);
+              Alert.alert('Error', 'Failed to delete account. Please try again.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   /** Helper to render a single settings row */
   const Row = ({
     label,
@@ -147,23 +170,32 @@ export default function SettingsScreen() {
           icon="calendar"
           onPress={() => router.push('/screens/set-weekly-goal?edit=1' as any)}
         />
-        <Row
+        {/* TEMPORARILY DISABLED FOR APP STORE REVIEW */}
+        {/* <Row
           label="View Onboarding"
           icon="help-circle"
           onPress={handleViewOnboarding}
-        />
+        /> */}
         
-        {/* Development only: Premium toggle */}
-        {__DEV__ && togglePremiumStatus && user && (
+        {/* Development only: Premium toggle - TEMPORARILY DISABLED FOR APP STORE REVIEW */}
+        {/* {__DEV__ && togglePremiumStatus && user && (
           <Row
             label={`Premium Status: ${user.is_premium ? 'ON' : 'OFF'}`}
             icon={user.is_premium ? "checkmark-circle" : "close-circle"}
             onPress={handleTogglePremium}
           />
-        )}
+        )} */}
         
-        {/* Logout Button */}
+        {/* Account Actions */}
         <View className="mt-8">
+          {/* Delete Account Button - Dangerous action */}
+          <Row
+            label="Delete Account"
+            icon="trash"
+            onPress={handleDeleteAccount}
+          />
+          
+          {/* Logout Button */}
           <Row
             label="Logout"
             icon="log-out"

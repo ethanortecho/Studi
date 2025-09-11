@@ -11,8 +11,8 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.ethanortecho.studi",
+      "buildNumber": "3",
       "infoPlist": {
-        "NSUserTrackingUsageDescription": "This app does not track users across other apps or websites.",
         "NSCameraUsageDescription": "Camera access is used to capture study notes and materials.",
         "NSPhotoLibraryUsageDescription": "Photo library access allows you to save and organize study-related images.",
         "NSLocationWhenInUseUsageDescription": "Location is used to provide study location tracking and analytics.",

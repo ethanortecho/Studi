@@ -38,6 +38,7 @@ interface AuthContextType {
   register: (userData: RegisterData) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   refreshAccessToken: () => Promise<boolean>;
+  deleteAccount: () => Promise<void>;
   
   // Development helper (only available in __DEV__)
   togglePremiumStatus?: () => void;
@@ -335,6 +336,50 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   /**
+   * EXPLANATION: deleteAccount()
+   * 
+   * When user deletes their account:
+   * 1. Call backend API to permanently delete user and all data
+   * 2. Clear all local authentication data
+   * 3. User gets redirected to login screen
+   */
+  const deleteAccount = async () => {
+    try {
+      console.log('🗑️ AuthContext: Deleting user account');
+      
+      if (!accessToken) {
+        throw new Error('No access token available for account deletion');
+      }
+      
+      // Call backend to delete account and all data
+      const response = await fetch(`${getEffectiveApiUrl()}/account/delete/`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.error || `Account deletion failed (${response.status})`);
+      }
+      
+      const result = await response.json();
+      console.log('✅ AuthContext: Account deletion successful:', result.message);
+      
+    } catch (error) {
+      console.error('❌ AuthContext: Account deletion failed:', error);
+      throw error; // Re-throw so the UI can handle it
+    } finally {
+      // Always clear local data regardless of server response
+      // User can't use the app anymore anyway if account is deleted
+      await clearAuth();
+      console.log('✅ AuthContext: Local data cleared after account deletion');
+    }
+  };
+
+  /**
    * DEVELOPMENT HELPER: togglePremiumStatus()
    * 
    * Temporarily toggles the user's premium status for testing.
@@ -369,6 +414,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     register,
     logout,
     refreshAccessToken,
+    deleteAccount,
     ...__DEV__ && { togglePremiumStatus }, // Only include in development
   };
 

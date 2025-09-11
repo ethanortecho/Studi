@@ -232,6 +232,10 @@ export default function RegisterScreen() {
                   placeholderTextColor="#9CA3AF"
                   secureTextEntry
                   editable={!isLoading}
+                  autoComplete="off"
+                  textContentType="none"
+                  autoCorrect={false}
+                  spellCheck={false}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 text-base"
                 />
                 <Text className="text-xs text-gray-500 mt-1">
@@ -251,6 +255,10 @@ export default function RegisterScreen() {
                   placeholderTextColor="#9CA3AF"
                   secureTextEntry
                   editable={!isLoading}
+                  autoComplete="off"
+                  textContentType="none"
+                  autoCorrect={false}
+                  spellCheck={false}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 text-base"
                 />
               </View>

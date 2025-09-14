@@ -10,6 +10,7 @@ interface DailyDashboardProps {
   totalHours: string;
   totalTime?: { hours: number; minutes: number };
   percentGoal?: number | null;
+  isRestDay?: boolean;
   categoryDurations?: { [key: string]: number };
   categoryMetadata?: { [key: string]: CategoryMetadata };
   pieChartData?: Array<{ label: string; value: number; color: string }>;
@@ -29,6 +30,7 @@ export default function DailyDashboard({
   totalHours,
   totalTime,
   percentGoal,
+  isRestDay,
   categoryDurations,
   categoryMetadata,
   pieChartData,
@@ -85,10 +87,11 @@ export default function DailyDashboard({
     >
       {/* High-level KPIs */}
       {!isEmpty && (
-        <DashboardKPIs 
+        <DashboardKPIs
           totalTime={totalTime}
-          percentGoal={percentGoal}
+          percentGoal={isRestDay ? null : percentGoal}
           flowScore={flowScore !== null ? flowScore : undefined}
+          isRestDay={isRestDay}
         />
       )}
       

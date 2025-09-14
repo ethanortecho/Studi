@@ -170,11 +170,20 @@ export default function SetWeeklyGoalScreen() {
           
           <Text className="text-secondaryText text-xs text-center">
             {selectedDays.length} day{selectedDays.length !== 1 ? 's' : ''} selected
-            {selectedMinutes && selectedDays.length > 0 && 
+            {selectedMinutes && selectedDays.length > 0 &&
               ` • ${Math.round(selectedMinutes / selectedDays.length)} min/day`
             }
           </Text>
         </View>
+
+        {/* When changes take effect notice */}
+        {isEdit && (
+          <View className="mb-4 p-3 bg-surface/50 rounded-lg">
+            <Text className="text-secondaryText text-sm text-center">
+              ℹ️ Changes will take effect starting next Monday
+            </Text>
+          </View>
+        )}
 
         {/* Continue button */}
         <Pressable

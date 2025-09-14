@@ -103,7 +103,7 @@ export default function DashboardContent({
         if (isDaily && daily) {
             const dashboardRender = (
                 <HistoricalGate date={dailyDate || new Date()} timeframe="daily">
-                    <DailyDashboard 
+                    <DailyDashboard
                         totalHours={daily.totalHours || '0.00'}
                         totalTime={daily.totalTime}
                         categoryDurations={daily.categoryDurations}
@@ -113,6 +113,7 @@ export default function DashboardContent({
                         rawData={daily.rawData}
                         loading={false}
                         percentGoal={daily.percentGoal}
+                        isRestDay={daily.isRestDay}
                         isEmpty={daily.isEmpty}
                         productivityScore={daily.productivityScore}
                         allTimeAvgProductivity={daily.allTimeAvgProductivity}

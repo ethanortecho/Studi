@@ -6,12 +6,14 @@ interface DashboardKPIsProps {
   totalTime?: { hours: number; minutes: number };
   percentGoal?: number | null;
   flowScore?: number;
+  isRestDay?: boolean;
 }
 
-export default function DashboardKPIs({ 
+export default function DashboardKPIs({
   totalTime,
   percentGoal,
-  flowScore
+  flowScore,
+  isRestDay
 }: DashboardKPIsProps) {
   // Calculate the circle progress for goal percentage
   const radius = 32;  // Scaled down from 35
@@ -45,9 +47,16 @@ export default function DashboardKPIs({
         </View>
       )}
 
-      {/* Goal Progress */}
-      {percentGoal !== null && percentGoal !== undefined && (
-        <View className="flex-1">
+      {/* Goal Progress or Rest Day */}
+      <View className="flex-1">
+        {isRestDay ? (
+          // Rest Day Display
+          <View className="items-center justify-center">
+            <Text className="text-primaryText text-lg font-semibold">Rest Day</Text>
+            <Text className="text-secondaryText text-sm mt-1">No goal today</Text>
+          </View>
+        ) : percentGoal !== null && percentGoal !== undefined ? (
+          // Goal Progress Circle
           <View className="items-center">
             <View className="relative">
               <Svg width={74} height={74}>
@@ -83,8 +92,8 @@ export default function DashboardKPIs({
               </View>
             </View>
           </View>
-        </View>
-      )}
+        ) : null}
+      </View>
     </View>
   );
 }

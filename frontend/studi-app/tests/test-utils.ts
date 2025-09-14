@@ -1,4 +1,5 @@
 import { TimerRecoveryState } from '../services/TimerRecoveryService';
+import { Category } from '../utils/studySession';
 
 /**
  * Creates a mock timer state for testing
@@ -39,8 +40,20 @@ export const advanceTime = (ms: number) => {
 export const setupFakeTimers = () => {
   jest.useFakeTimers();
   jest.setSystemTime(new Date('2024-01-15T10:00:00Z'));
-  
+
   return () => {
     jest.useRealTimers();
+  };
+};
+
+/**
+ * Creates a mock category for testing
+ */
+export const createMockCategory = (overrides?: Partial<Category>): Category => {
+  return {
+    id: '1',
+    name: 'Test Category',
+    color: '#3B82F6',
+    ...overrides,
   };
 };

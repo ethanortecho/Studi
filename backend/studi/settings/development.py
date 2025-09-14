@@ -15,7 +15,7 @@ from .base import *
 SECRET_KEY = 'django-insecure-76!$8zxyy-8anmo!g=2_r@7iuz$(j@=)zwif_s=q#x$@tsz56*'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False  # Temporarily disabled for performance
 
 # Allow all hosts in development for easy testing
 ALLOWED_HOSTS = ['*']

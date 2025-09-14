@@ -3,14 +3,11 @@ import mockAsyncStorage from '@react-native-async-storage/async-storage/jest/asy
 
 jest.mock('@react-native-async-storage/async-storage', () => mockAsyncStorage);
 
-// Mock react-native modules that aren't available in test environment
-jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
-
 // Set up global test environment
 global.beforeEach(() => {
   // Clear all mocks before each test
   jest.clearAllMocks();
-  
+
   // Reset AsyncStorage
   mockAsyncStorage.clear();
 });

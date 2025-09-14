@@ -2,6 +2,7 @@ import { useBaseTimer } from "./useBaseTimer";
 import { useStudySession } from "../useStudySession";
 import { useContext, useEffect, useState } from "react";
 import { StudySessionContext } from '../../context/StudySessionContext';
+import { calculatePomodoroRecovery } from '../../services/PomodoroRecoveryService';
 
 export interface PomoConfig {
     pomodoroBlocks: number;
@@ -121,17 +122,37 @@ export function usePomo(config: PomoConfig) {
 
     // Custom recovery handler that restores pomodoro-specific state
     const recoverFromState = (state: any, elapsed: number) => {
-        // First recover the base timer state
-        baseTimer.recoverFromState(state, elapsed);
-        
-        // Then restore pomodoro-specific state
-        if (state.pomoBlocksRemaining !== undefined) {
-            setPomoBlocksRemaining(state.pomoBlocksRemaining);
+        // Use our Honest Recovery logic to determine the correct state
+        const recoveryResult = calculatePomodoroRecovery(state, elapsed);
+
+        // Update pomodoro-specific state based on recovery result
+        setPomoBlocksRemaining(recoveryResult.pomoBlocksRemaining);
+        setPomoBlockStatus(recoveryResult.pomoStatus);
+
+        // If session is complete, handle appropriately
+        if (recoveryResult.sessionComplete) {
+            baseTimer.stop();
+            return;
         }
-        if (state.pomoStatus) {
-            setPomoBlockStatus(state.pomoStatus);
+
+        // Recover base timer with adjusted elapsed time for current phase
+        baseTimer.recoverFromState(state, recoveryResult.currentPhaseElapsed);
+
+        // Log recovery details for debugging
+        console.log('Pomodoro Recovery:', {
+            blocksRemaining: recoveryResult.pomoBlocksRemaining,
+            status: recoveryResult.pomoStatus,
+            phaseElapsed: recoveryResult.currentPhaseElapsed,
+            shouldStartFresh: recoveryResult.shouldStartAtPhaseBeginning,
+            wasExtendedAbsence: recoveryResult.wasExtendedAbsence,
+            message: recoveryResult.recoveryMessage
+        });
+
+        // Show recovery message if available
+        if (recoveryResult.recoveryMessage) {
+            // TODO: Show this message to the user via toast or alert
+            console.log('Recovery Message:', recoveryResult.recoveryMessage);
         }
-        console.log('Pomodoro: Restored blocks remaining:', state.pomoBlocksRemaining, 'status:', state.pomoStatus);
     };
 
     return {

@@ -26,6 +26,8 @@ export const ConversionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
 
   // Initialize trigger manager on mount
+  // TEMPORARILY DISABLED FOR PERFORMANCE TESTING
+  /*
   useEffect(() => {
     const initializeTriggers = async () => {
       await conversionTriggerManager.initialize();
@@ -35,6 +37,7 @@ export const ConversionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     initializeTriggers();
   }, []);
+  */
 
   // Check for triggers
   const checkForTriggers = useCallback(async () => {
@@ -91,6 +94,8 @@ export const ConversionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   }, [isPremium, checkForTriggers]);
 
   // Check for Day 7 trigger on app launch
+  // TEMPORARILY DISABLED FOR PERFORMANCE TESTING
+  /*
   useEffect(() => {
     const checkDay7Trigger = async () => {
       if (isPremium) return;
@@ -114,6 +119,7 @@ export const ConversionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const timer = setTimeout(checkDay7Trigger, 5000);
     return () => clearTimeout(timer);
   }, [isPremium, checkForTriggers]);
+  */
 
   const value = {
     checkForTriggers,

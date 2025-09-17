@@ -19,7 +19,7 @@ export function useCountdown(config: CountdownConfig) {
     const currentCategory = categories.find(c => Number(c.id) === Number(currentCategoryId || config.selectedCategoryId));
     
     const baseTimer = useBaseTimer({
-        enableRecovery: true,
+        enableRecovery: false, // TEMPORARILY DISABLED FOR PERFORMANCE TESTING
         sessionId: sessionId || undefined,
         sessionStartTime: sessionStartTime || undefined,
         categoryId: currentCategoryId || (config.selectedCategoryId ? Number(config.selectedCategoryId) : null),

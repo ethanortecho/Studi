@@ -35,7 +35,6 @@ import { ToastProvider } from '../components/error/ToastProvider';
 import { ErrorBoundary } from '../components/error/ErrorBoundary';
 import { PremiumProvider } from '../contexts/PremiumContext';
 import { ConversionProvider } from '../contexts/ConversionContext';
-import { SessionCompleteTrigger } from '../components/SessionCompleteTrigger';
 
 // Fix SafeAreaView compatibility with NativeWind
 cssInterop(SafeAreaView, { className: "style" });
@@ -103,7 +102,6 @@ export default function RootLayout() {
         <PremiumProvider>
           <ConversionProvider>
             <StudySessionProvider>
-              <SessionCompleteTrigger>
                 <ToastProvider>
                   <GoalRedirectWrapper>
                   <NavigationThemeProvider value={themeMode === 'dark' ? DarkTheme : DefaultTheme}>
@@ -130,7 +128,6 @@ export default function RootLayout() {
               </NavigationThemeProvider>
                   </GoalRedirectWrapper>
                 </ToastProvider>
-              </SessionCompleteTrigger>
             </StudySessionProvider>
           </ConversionProvider>
         </PremiumProvider>

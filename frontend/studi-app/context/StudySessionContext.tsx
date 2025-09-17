@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getEffectiveApiUrl } from '../config/api';
 import { TimerRecoveryService, TimerRecoveryState } from '../services/TimerRecoveryService';
 import { router } from 'expo-router';
+import { useConversion } from '../contexts/ConversionContext';
 
 
 interface StudySessionContextType {
@@ -83,10 +84,10 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
   const [breakCategory, setBreakCategory] = useState<Category | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
-  
+
   // Timezone state
   const [userTimezone, setUserTimezone] = useState<string>('UTC');
-  
+
   // Background session management - track for analytics only
   const [backgroundStartTime, setBackgroundStartTime] = useState<Date | null>(null);
 
@@ -99,6 +100,12 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
 
   // Store recovered timer state for timer components to use
   const [recoveredTimerState, setRecoveredTimerState] = useState<TimerRecoveryState | null>(null);
+
+  // Get conversion context for session completion triggers
+  const { onSessionComplete } = useConversion();
+
+  // Track if we've already triggered for this session to avoid duplicates
+  const [hasTriggeredForSession, setHasTriggeredForSession] = useState(false);
 
   // Computed property: session is paused if we have a paused category ID
   const isSessionPaused = pausedCategoryId !== null;
@@ -235,7 +242,7 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
     }
 
     // Check for recoverable timer state
-    checkForRecoverableSession();
+    // checkForRecoverableSession(); // TEMPORARILY DISABLED FOR PERFORMANCE TESTING
   }, []);
 
   // Handle app state changes - track background time for analytics only
@@ -309,6 +316,27 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
     checkForHangingSessions();
   }, []); // Empty dependency array - only run once on mount
 
+  // Watch for session completion and trigger conversion checks
+  // TEMPORARILY DISABLED FOR PERFORMANCE TESTING
+  /*
+  useEffect(() => {
+    // Trigger when modal becomes visible (session just ended)
+    if (sessionStatsModal.isVisible && !hasTriggeredForSession) {
+      setHasTriggeredForSession(true);
+
+      // Session just completed, check for triggers
+      if (onSessionComplete) {
+        onSessionComplete();
+      }
+    }
+
+    // Reset trigger flag when modal closes
+    if (!sessionStatsModal.isVisible && hasTriggeredForSession) {
+      setHasTriggeredForSession(false);
+    }
+  }, [sessionStatsModal.isVisible, hasTriggeredForSession, onSessionComplete]);
+  */
+
   const startSession = async () => {
     console.log("Hook: startSession called");
     try {
@@ -359,7 +387,7 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
           completedSessionId: currentSessionId, // Store completed session ID for rating update
         });
 
-        // The SessionCompleteTrigger component will handle conversion checks
+        // Conversion triggers will be handled by the useEffect above
         // when the stats modal appears
 
         return res;

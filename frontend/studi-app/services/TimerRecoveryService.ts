@@ -69,7 +69,6 @@ export class TimerRecoveryService {
       
       // If saved more than 24 hours ago, consider it stale
       if (hoursSinceLastSave > 24) {
-        console.log('TimerRecovery: Saved state is too old, discarding');
         await this.clearTimerState();
         return null;
       }

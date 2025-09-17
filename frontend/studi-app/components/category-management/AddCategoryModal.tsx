@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Pressable, Modal, Alert } from 'react-native';
 import ColorPicker from './ColorPicker';
 import { createCategory } from '../../utils/studySession';
@@ -16,6 +16,20 @@ export default function AddCategoryModal({ visible, onClose, onCategoryAdded, us
   const [selectedColor, setSelectedColor] = useState(CATEGORY_COLORS[0].value);
   const [loading, setLoading] = useState(false);
 
+  // Helper function to get first available color
+  const getFirstAvailableColor = () => {
+    const availableColor = CATEGORY_COLORS.find(color => !usedColors.includes(color.value));
+    return availableColor ? availableColor.value : CATEGORY_COLORS[0].value;
+  };
+
+  // Update selected color when modal opens or usedColors changes
+  useEffect(() => {
+    if (visible) {
+      const firstAvailableColor = getFirstAvailableColor();
+      setSelectedColor(firstAvailableColor);
+    }
+  }, [visible, usedColors]);
+
   const handleSubmit = async () => {
     if (!name.trim()) {
       Alert.alert('Error', 'Please enter a category name');
@@ -26,7 +40,7 @@ export default function AddCategoryModal({ visible, onClose, onCategoryAdded, us
     try {
       await createCategory(name.trim(), selectedColor);
       setName('');
-      setSelectedColor(CATEGORY_COLORS[0].value);
+      // After creating, usedColors will be updated, so we'll get a new available color via useEffect
       onCategoryAdded();
       onClose();
     } catch (error) {
@@ -38,7 +52,7 @@ export default function AddCategoryModal({ visible, onClose, onCategoryAdded, us
 
   const handleClose = () => {
     setName('');
-    setSelectedColor(CATEGORY_COLORS[0].value);
+    setSelectedColor(getFirstAvailableColor());
     onClose();
   };
 

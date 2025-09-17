@@ -16,7 +16,6 @@ import { apiClient } from '../../utils/apiClient';
  */
 export default function SetupOrchestrator() {
   const [loading, setLoading] = useState(true);
-  const [checkingRequirements, setCheckingRequirements] = useState('Checking setup requirements...');
 
   useEffect(() => {
     checkSetupRequirements();
@@ -25,7 +24,6 @@ export default function SetupOrchestrator() {
   const checkSetupRequirements = async () => {
     try {
       // Step 1: Check if user has goals
-      setCheckingRequirements('Checking goals...');
       const goalsResponse = await apiClient.get<{ has_goals: boolean }>('/goals/has-goals/');
 
       if (goalsResponse.data && !goalsResponse.data.has_goals) {
@@ -35,7 +33,6 @@ export default function SetupOrchestrator() {
       }
 
       // Step 2: Check if user has categories (only if goals exist)
-      setCheckingRequirements('Checking categories...');
       const categoriesResponse = await apiClient.get<any[]>('/category-list/');
 
       if (categoriesResponse.data && categoriesResponse.data.length === 0) {
@@ -62,7 +59,7 @@ export default function SetupOrchestrator() {
     <View className="flex-1 justify-center items-center bg-background">
       <ActivityIndicator size="large" color="#5D3EDA" />
       <Text className="mt-4 text-lg text-secondaryText">
-        {checkingRequirements}
+        Loading...
       </Text>
     </View>
   );

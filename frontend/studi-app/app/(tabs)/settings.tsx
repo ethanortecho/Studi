@@ -171,12 +171,11 @@ export default function SettingsScreen() {
           icon="calendar"
           onPress={() => router.push('/screens/set-weekly-goal?edit=1' as any)}
         />
-        {/* TEMPORARILY DISABLED FOR APP STORE REVIEW */}
-        {/* <Row
+        <Row
           label="View Onboarding"
           icon="help-circle"
           onPress={handleViewOnboarding}
-        /> */}
+        />
         
         {/* Development only: Premium toggle - TEMPORARILY DISABLED FOR APP STORE REVIEW */}
         {/* {__DEV__ && togglePremiumStatus && user && (

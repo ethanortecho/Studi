@@ -106,6 +106,9 @@ export default function RootLayout() {
                   <ThemeContext.Provider value={{ mode: themeMode, toggle: toggleTheme }}>
                     <SafeAreaView edges={['left', 'right']} style={[{ flex: 1 }, themeStyles]}>
                       <Stack>
+                  {/* Onboarding Route */}
+                  <Stack.Screen name="onboarding/index" options={{ headerShown: false }} />
+
                   {/* Authentication Routes */}
                   <Stack.Screen name="auth/login" options={{ headerShown: false }} />
                   <Stack.Screen name="auth/register" options={{ headerShown: false }} />

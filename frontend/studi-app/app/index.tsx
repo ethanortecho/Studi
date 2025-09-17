@@ -37,13 +37,15 @@ export default function Index() {
 
   useEffect(() => {
     // Handle routing once we have all the information we need
+    // This only runs on cold app start, not after login/register
     if (onboardingComplete !== null && !isLoading) {
       if (!onboardingComplete) {
         // User hasn't completed onboarding, send them there first
         console.log('📚 Index: Onboarding not completed, redirecting to onboarding');
         router.replace('/onboarding');
       } else if (user && accessToken) {
-        // User is authenticated, go to main app
+        // User is already authenticated (persisted session), go to home
+        // Home screen will handle any necessary goal checks
         console.log('🏠 Index: User authenticated, redirecting to main app');
         router.replace('/(tabs)/home');
       } else {

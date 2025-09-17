@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { router, usePathname } from 'expo-router';
 import { useWeeklyGoal } from '../hooks/useWeeklyGoal';
 
@@ -7,25 +7,33 @@ import { useWeeklyGoal } from '../hooks/useWeeklyGoal';
  * It must be used INSIDE the AuthProvider to have access to auth context.
  */
 export function GoalRedirectWrapper({ children }: { children: React.ReactNode }) {
-  const { missing: goalMissing, loading: goalLoading } = useWeeklyGoal();
+  const { missing: goalMissing, loading: goalLoading, refetch } = useWeeklyGoal();
   const pathname = usePathname();
-  const [hasRedirected, setHasRedirected] = useState(false);
+
+  // Refetch when navigating away from goal screen (in case goal was just created)
+  useEffect(() => {
+    if (!pathname.startsWith('/screens/set-weekly-goal') && goalMissing) {
+      refetch();
+    }
+  }, [pathname, goalMissing, refetch]);
 
   useEffect(() => {
     // Avoid redirect loop: if we are already on the goal screen, do not replace again
     const onGoalScreen = pathname.startsWith('/screens/set-weekly-goal');
-    
-    // Only redirect once and when we're certain a goal is missing
-    if (!goalLoading && goalMissing && !onGoalScreen && !hasRedirected) {
-      setHasRedirected(true);
+
+    console.log('🎯 GoalRedirectWrapper: State check', {
+      goalLoading,
+      goalMissing,
+      onGoalScreen,
+      pathname
+    });
+
+    // Redirect when we're certain a goal is missing and not already on goal screen
+    if (!goalLoading && goalMissing && !onGoalScreen) {
+      console.log('🚀 GoalRedirectWrapper: Redirecting to goal setup');
       router.replace('/screens/set-weekly-goal' as any);
     }
-    
-    // Reset redirect flag when user navigates away from goal screen and goal exists
-    if (!goalMissing && onGoalScreen && hasRedirected) {
-      setHasRedirected(false);
-    }
-  }, [goalMissing, goalLoading, pathname, hasRedirected]);
+  }, [goalMissing, goalLoading, pathname]);
 
   return <>{children}</>;
 }

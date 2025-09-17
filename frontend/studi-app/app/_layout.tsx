@@ -30,7 +30,6 @@ import { applyDarkTheme, applyLightTheme, ThemeMode } from '../theme/applyTheme'
 import { dark } from '../theme/dark';
 import { light } from '../theme/light';
 import { useColorScheme } from '../hooks/useColorScheme';
-import { GoalRedirectWrapper } from '../components/GoalRedirectWrapper';
 import { ToastProvider } from '../components/error/ToastProvider';
 import { ErrorBoundary } from '../components/error/ErrorBoundary';
 import { PremiumProvider } from '../contexts/PremiumContext';
@@ -103,7 +102,6 @@ export default function RootLayout() {
           <ConversionProvider>
             <StudySessionProvider>
                 <ToastProvider>
-                  <GoalRedirectWrapper>
                   <NavigationThemeProvider value={themeMode === 'dark' ? DarkTheme : DefaultTheme}>
                   <ThemeContext.Provider value={{ mode: themeMode, toggle: toggleTheme }}>
                     <SafeAreaView edges={['left', 'right']} style={[{ flex: 1 }, themeStyles]}>
@@ -126,7 +124,6 @@ export default function RootLayout() {
                   <StatusBar translucent backgroundColor="transparent" style="light" />
                 </ThemeContext.Provider>
               </NavigationThemeProvider>
-                  </GoalRedirectWrapper>
                 </ToastProvider>
             </StudySessionProvider>
           </ConversionProvider>

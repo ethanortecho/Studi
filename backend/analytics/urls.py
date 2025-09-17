@@ -4,7 +4,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from .views.insights_api import DailyInsights, WeeklyInsights, MonthlyInsights
 from .views.create_api import CreateStudySession, EndStudySession, CreateSubject, CreateCategoryBlock, EndCategoryBlock, CancelStudySession, CleanupHangingSessions, UpdateSessionRating
 from .views.category_api import CategoryList, CategoryDetail, BreakCategory
-from .views.goal_api import WeeklyGoalView
+from .views.goal_api import WeeklyGoalView, HasGoalsView
 from .views.user_api import UserProfileView, UserTimezoneView, AccountDeletionView
 from .views.auth_api import (
     custom_token_obtain_pair, 
@@ -60,4 +60,5 @@ urlpatterns = [
     path('user/timezone/', UserTimezoneView.as_view(), name='user-timezone'),
     path('account/delete/', AccountDeletionView.as_view(), name='account-delete'),
     path('goals/weekly/', WeeklyGoalView.as_view(), name='weekly-goal'),
+    path('goals/has-goals/', HasGoalsView.as_view(), name='has-goals'),
 ] 

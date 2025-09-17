@@ -3,9 +3,8 @@ import { View, Text, Pressable, Switch, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { WEEKLY_GOAL_OPTIONS } from '../../constants/goalOptions';
-import { getApiUrl } from '../../config/api';
 import { useWeeklyGoal } from '../../hooks/useWeeklyGoal';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { apiClient } from '../../utils/apiClient';
 
 export default function SetWeeklyGoalScreen() {
   const params = useLocalSearchParams<{ edit?: string }>();
@@ -43,33 +42,24 @@ export default function SetWeeklyGoalScreen() {
         active_weekdays: selectedDays,
       };
 
-      // Use JWT authentication like our other API calls
-      const accessToken = await AsyncStorage.getItem('accessToken');
-      
-      if (!accessToken) {
-        throw new Error('User not authenticated - please login');
+      // Use API client for consistent authentication
+      const response = await apiClient.post('/goals/weekly/', body);
+
+      if (response.error) {
+        throw new Error(response.error.message);
       }
 
-      const res = await fetch(getApiUrl('/goals/weekly/'), {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json', 
-          'Authorization': `Bearer ${accessToken}` 
-        },
-        body: JSON.stringify(body),
-      });
-      if (!res.ok && res.status !== 201) {
-        const text = await res.text();
-        throw new Error(text);
-      }
+      // Goal setup completion is now automatically detected via API
+      // when the user creates their first goal
+
       await refetch(); // refresh guard state - wait for this to complete
-      
+
       // Add a small delay to ensure the layout re-renders with the new goal state
       setTimeout(() => {
         if (isEdit && router.canGoBack()) {
           router.back();
         } else {
-          router.replace('/' as any);
+          router.replace('/(tabs)/home' as any);
         }
       }, 100);
     } catch (error) {

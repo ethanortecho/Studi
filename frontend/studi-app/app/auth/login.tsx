@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, P
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
+import { apiClient } from '../../utils/apiClient';
 
 /**
  * LOGIN SCREEN EXPLANATION
@@ -62,10 +63,24 @@ export default function LoginScreen() {
       const result = await login(email.trim().toLowerCase(), password);
 
       if (result.success) {
-        console.log('✅ LoginScreen: Login successful, navigating to app');
+        console.log('✅ LoginScreen: Login successful, checking for goals...');
         // Small delay to ensure AuthContext state is updated
-        setTimeout(() => {
-          router.replace('/(tabs)/home');
+        setTimeout(async () => {
+          try {
+            // Check if user needs goal setup
+            const response = await apiClient.get<{ has_goals: boolean }>('/goals/has-goals/');
+            if (response.data && !response.data.has_goals) {
+              console.log('🎯 LoginScreen: User needs goal setup, redirecting...');
+              router.replace('/screens/set-weekly-goal' as any);
+            } else {
+              console.log('🏠 LoginScreen: User has goals, redirecting to home');
+              router.replace('/(tabs)/home');
+            }
+          } catch (error) {
+            console.error('Error checking goals:', error);
+            // If we can't check, go to home
+            router.replace('/(tabs)/home');
+          }
         }, 100);
       } else {
         console.log('❌ LoginScreen: Login failed:', result.error);

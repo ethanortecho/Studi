@@ -182,9 +182,7 @@ class ConversionTriggerManager {
     const eligibleTriggers = this.triggers
       .filter(trigger => {
         // Check condition
-        const conditionMet = trigger.condition(this.state!);
-        console.log(`TriggerManager: Checking ${trigger.type} - condition met: ${conditionMet}`);
-        if (!conditionMet) return false;
+        if (!trigger.condition(this.state!)) return false;
 
         // Check specific cooldown if defined
         if (trigger.cooldownHours && this.state!.lastTriggerShown) {

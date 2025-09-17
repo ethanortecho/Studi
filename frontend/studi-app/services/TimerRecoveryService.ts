@@ -45,11 +45,6 @@ export class TimerRecoveryService {
       } as TimerRecoveryState;
       
       await AsyncStorage.setItem(TIMER_STATE_KEY, JSON.stringify(fullState));
-      console.log('TimerRecovery: State saved successfully', {
-        sessionId: fullState.sessionId,
-        status: fullState.status,
-        timerType: fullState.timerType,
-      });
     } catch (error) {
       console.error('TimerRecovery: Failed to save state', error);
     }
@@ -79,12 +74,6 @@ export class TimerRecoveryService {
         return null;
       }
 
-      console.log('TimerRecovery: Loaded saved state', {
-        sessionId: state.sessionId,
-        status: state.status,
-        timerType: state.timerType,
-        hoursSinceLastSave: hoursSinceLastSave.toFixed(1),
-      });
 
       return state;
     } catch (error) {
@@ -100,7 +89,6 @@ export class TimerRecoveryService {
     try {
       await AsyncStorage.removeItem(TIMER_STATE_KEY);
       this.stopPeriodicSave();
-      console.log('TimerRecovery: State cleared');
     } catch (error) {
       console.error('TimerRecovery: Failed to clear state', error);
     }
@@ -140,7 +128,6 @@ export class TimerRecoveryService {
       }
     }, SAVE_INTERVAL);
     
-    console.log('TimerRecovery: Started periodic save');
   }
 
   /**
@@ -150,7 +137,6 @@ export class TimerRecoveryService {
     if (this.saveTimeout) {
       clearInterval(this.saveTimeout);
       this.saveTimeout = null;
-      console.log('TimerRecovery: Stopped periodic save');
     }
   }
 

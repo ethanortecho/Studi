@@ -182,9 +182,8 @@ export default function TimerScreen({
           onStop={async () => {
             try {
               await stopTimer();
-              // Navigate to home tab instead of going back to avoid navigation errors
-              // Using replace to ensure clean navigation stack
-              router.replace('/(tabs)/home');
+              // Don't navigate immediately - let the session stats modal handle navigation
+              // This keeps user on timer screen until they rate their focus
             } catch (error) {
               console.error("Timer stop error:", error);
             }

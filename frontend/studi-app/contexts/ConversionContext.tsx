@@ -24,7 +24,6 @@ export const ConversionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [currentTrigger, setCurrentTrigger] = useState<TriggerType | null>(null);
   const [triggerState, setTriggerState] = useState<TriggerState | null>(null);
 
-  console.log('ConversionProvider: Rendering with isPremium:', isPremium);
 
   // Initialize trigger manager on mount
   useEffect(() => {
@@ -39,14 +38,9 @@ export const ConversionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   // Check for triggers
   const checkForTriggers = useCallback(async () => {
-    if (isPremium) {
-      console.log('ConversionContext: Skipping trigger check - user is premium');
-      return;
-    }
+    if (isPremium) return;
 
-    console.log('ConversionContext: Checking for triggers...');
     const trigger = await conversionTriggerManager.checkTriggers(isPremium);
-    console.log('ConversionContext: Trigger check result:', trigger);
 
     if (trigger) {
       setCurrentTrigger(trigger);
@@ -85,29 +79,15 @@ export const ConversionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   // Handle session completion
   const onSessionComplete = useCallback(async () => {
-    try {
-      console.log('ConversionContext: onSessionComplete START, isPremium:', isPremium);
+    if (isPremium) return;
 
-      if (isPremium) {
-        console.log('ConversionContext: User is premium, skipping session complete trigger');
-        return;
-      }
+    await conversionTriggerManager.incrementSessionCount();
 
-      console.log('ConversionContext: Incrementing session count...');
-      await conversionTriggerManager.incrementSessionCount();
-      const newState = await conversionTriggerManager.getState();
-      console.log('ConversionContext: New session count:', newState?.sessionCount);
-
-      // Check for session-based triggers after a delay to allow navigation to complete
-      // and session stats modal to appear
-      console.log('ConversionContext: Scheduling trigger check in 2 seconds...');
-      setTimeout(async () => {
-        console.log('ConversionContext: Delayed trigger check executing...');
-        await checkForTriggers();
-      }, 2000); // 2 second delay to ensure smooth transition
-    } catch (error) {
-      console.error('ConversionContext: Error in onSessionComplete:', error);
-    }
+    // Check for session-based triggers after a delay to allow navigation to complete
+    // and session stats modal to appear
+    setTimeout(async () => {
+      await checkForTriggers();
+    }, 2000); // 2 second delay to ensure smooth transition
   }, [isPremium, checkForTriggers]);
 
   // Check for Day 7 trigger on app launch

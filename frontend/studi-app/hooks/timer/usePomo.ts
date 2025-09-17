@@ -25,7 +25,7 @@ export function usePomo(config: PomoConfig) {
     const currentCategory = categories.find(c => Number(c.id) === Number(currentCategoryId || config.selectedCategoryId));
 
     const baseTimer = useBaseTimer({
-        enableRecovery: false, // TEMPORARILY DISABLED FOR PERFORMANCE TESTING
+        enableRecovery: true,
         sessionId: sessionId || undefined,
         sessionStartTime: sessionStartTime || undefined,
         categoryId: currentCategoryId || (config.selectedCategoryId ? Number(config.selectedCategoryId) : null),

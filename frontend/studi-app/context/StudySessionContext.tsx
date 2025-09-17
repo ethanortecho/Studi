@@ -242,7 +242,7 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
     }
 
     // Check for recoverable timer state
-    // checkForRecoverableSession(); // TEMPORARILY DISABLED FOR PERFORMANCE TESTING
+    checkForRecoverableSession();
   }, []);
 
   // Handle app state changes - track background time for analytics only
@@ -317,8 +317,6 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
   }, []); // Empty dependency array - only run once on mount
 
   // Watch for session completion and trigger conversion checks
-  // TEMPORARILY DISABLED FOR PERFORMANCE TESTING
-  /*
   useEffect(() => {
     // Trigger when modal becomes visible (session just ended)
     if (sessionStatsModal.isVisible && !hasTriggeredForSession) {
@@ -335,7 +333,6 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
       setHasTriggeredForSession(false);
     }
   }, [sessionStatsModal.isVisible, hasTriggeredForSession, onSessionComplete]);
-  */
 
   const startSession = async () => {
     console.log("Hook: startSession called");

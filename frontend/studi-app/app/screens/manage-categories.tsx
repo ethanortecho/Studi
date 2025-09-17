@@ -1,5 +1,5 @@
-import React, { useContext, useEffect } from 'react';
-import { View, Text } from 'react-native';
+import React, { useContext } from 'react';
+import { View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import CategoryList from '../../components/category-management/CategoryList';
@@ -10,14 +10,15 @@ export default function ManageCategoriesScreen() {
     const isFirstTimeSetup = params.setup === 'true';
     const { categories } = useContext(StudySessionContext);
 
-    useEffect(() => {
-        // If this is first-time setup and user creates at least one category,
-        // they can proceed to home
-        if (isFirstTimeSetup && categories.length > 0) {
-            console.log('✅ ManageCategories: First category created, proceeding to home');
+    const handleDone = () => {
+        if (isFirstTimeSetup) {
+            // Navigate to home after setup
             router.replace('/(tabs)/home');
+        } else {
+            // Go back to previous screen (likely settings)
+            router.back();
         }
-    }, [categories.length, isFirstTimeSetup]);
+    };
 
     return (
         <SafeAreaView className="flex-1 bg-background">
@@ -36,7 +37,21 @@ export default function ManageCategoriesScreen() {
             <View className="border-b border-border" />
 
             {/* Category List */}
-            <CategoryList />
+            <View className="flex-1">
+                <CategoryList />
+            </View>
+
+            {/* Done Button */}
+            <View className="px-4 pb-4 pt-2">
+                <Pressable
+                    onPress={handleDone}
+                    className="bg-accent rounded-lg py-3 px-6"
+                >
+                    <Text className="text-center text-white font-semibold">
+                        Done
+                    </Text>
+                </Pressable>
+            </View>
         </SafeAreaView>
     );
 }

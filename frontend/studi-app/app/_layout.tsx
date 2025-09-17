@@ -116,7 +116,7 @@ export default function RootLayout() {
                   {/* Protected App Routes */}
                   <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                   <Stack.Screen name="screens/setup-orchestrator" options={{ headerShown: false }} />
-                  <Stack.Screen name="screens/manage-categories" options={{ headerShown: true, title: 'Manage Categories' }} />
+                  <Stack.Screen name="screens/manage-categories" options={{ headerShown: false }} />
                   <Stack.Screen name="screens/set-weekly-goal" options={{ headerShown: false }} />
                   <Stack.Screen name="screens/timer/stopwatch" options={{ headerShown: false }} />
                   <Stack.Screen name="screens/timer/countdown" options={{ headerShown: false }} />

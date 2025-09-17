@@ -182,8 +182,9 @@ export default function TimerScreen({
           onStop={async () => {
             try {
               await stopTimer();
-              // Navigate back to home after successful stop
-              router.back();
+              // Navigate to home tab instead of going back to avoid navigation errors
+              // Using replace to ensure clean navigation stack
+              router.replace('/(tabs)/home');
             } catch (error) {
               console.error("Timer stop error:", error);
             }

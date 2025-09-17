@@ -34,6 +34,8 @@ import { GoalRedirectWrapper } from '../components/GoalRedirectWrapper';
 import { ToastProvider } from '../components/error/ToastProvider';
 import { ErrorBoundary } from '../components/error/ErrorBoundary';
 import { PremiumProvider } from '../contexts/PremiumContext';
+import { ConversionProvider } from '../contexts/ConversionContext';
+import { SessionCompleteTrigger } from '../components/SessionCompleteTrigger';
 
 // Fix SafeAreaView compatibility with NativeWind
 cssInterop(SafeAreaView, { className: "style" });
@@ -99,10 +101,12 @@ export default function RootLayout() {
     <ErrorBoundary>
       <AuthProvider>
         <PremiumProvider>
-          <StudySessionProvider>
-            <ToastProvider>
-              <GoalRedirectWrapper>
-                <NavigationThemeProvider value={themeMode === 'dark' ? DarkTheme : DefaultTheme}>
+          <ConversionProvider>
+            <StudySessionProvider>
+              <SessionCompleteTrigger>
+                <ToastProvider>
+                  <GoalRedirectWrapper>
+                  <NavigationThemeProvider value={themeMode === 'dark' ? DarkTheme : DefaultTheme}>
                   <ThemeContext.Provider value={{ mode: themeMode, toggle: toggleTheme }}>
                     <SafeAreaView edges={['left', 'right']} style={[{ flex: 1 }, themeStyles]}>
                       <Stack>
@@ -117,16 +121,19 @@ export default function RootLayout() {
                   <Stack.Screen name="screens/timer/stopwatch" options={{ headerShown: false }} />
                   <Stack.Screen name="screens/timer/countdown" options={{ headerShown: false }} />
                   <Stack.Screen name="screens/timer/pomo" options={{ headerShown: false }} />
+                  <Stack.Screen name="screens/upgrade" options={{ headerShown: false, presentation: 'modal' }} />
                   <Stack.Screen name="+not-found" />
                     </Stack>
                   </SafeAreaView>
                   <StatusBar translucent backgroundColor="transparent" style="light" />
                 </ThemeContext.Provider>
               </NavigationThemeProvider>
-            </GoalRedirectWrapper>
-          </ToastProvider>
-        </StudySessionProvider>
-      </PremiumProvider>
+                  </GoalRedirectWrapper>
+                </ToastProvider>
+              </SessionCompleteTrigger>
+            </StudySessionProvider>
+          </ConversionProvider>
+        </PremiumProvider>
       </AuthProvider>
     </ErrorBoundary>
   );

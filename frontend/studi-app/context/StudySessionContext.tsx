@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, ReactNode, useCallback } from "react";
+import { useState, useEffect, createContext, ReactNode, useCallback, useContext } from "react";
 import { AppState } from 'react-native';
 import { fetchCategories, Category, fetchBreakCategory } from '../utils/studySession';
 import { createStudySession, endStudySession, createCategoryBlock, endCategoryBlock, cancelStudySession, updateSessionRating } from '../utils/studySession';
@@ -358,7 +358,10 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
           sessionDuration: durationMinutes,
           completedSessionId: currentSessionId, // Store completed session ID for rating update
         });
-        
+
+        // The SessionCompleteTrigger component will handle conversion checks
+        // when the stats modal appears
+
         return res;
       } catch (error) {
         console.error("Hook error in stopSession:", error);

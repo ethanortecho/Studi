@@ -3,8 +3,8 @@ import { View, Text, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, P
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
-import { apiClient } from '../../utils/apiClient';
 import { useThemeColor } from '../../hooks/useThemeColor';
+import { apiClient } from '../../utils/apiClient';
 
 /**
  * REGISTRATION SCREEN EXPLANATION
@@ -121,24 +121,11 @@ export default function RegisterScreen() {
       });
 
       if (result.success) {
-        console.log('✅ RegisterScreen: Registration successful, checking for goals...');
+        console.log('✅ RegisterScreen: Registration successful, redirecting to setup');
         // Small delay to ensure AuthContext state is updated
-        setTimeout(async () => {
-          try {
-            // Check if new user needs goal setup
-            const response = await apiClient.get<{ has_goals: boolean }>('/goals/has-goals/');
-            if (response.data && !response.data.has_goals) {
-              console.log('🎯 RegisterScreen: First-time user, redirecting to goal setup');
-              router.replace('/screens/set-weekly-goal' as any);
-            } else {
-              console.log('🏠 RegisterScreen: User has goals, redirecting to home');
-              router.replace('/(tabs)/home');
-            }
-          } catch (error) {
-            console.error('Error checking goals:', error);
-            // If we can't check, go to home
-            router.replace('/(tabs)/home');
-          }
+        setTimeout(() => {
+          // Let the setup orchestrator handle all setup logic
+          router.replace('/screens/setup-orchestrator' as any);
         }, 100);
       } else {
         console.log('❌ RegisterScreen: Registration failed:', result.error);

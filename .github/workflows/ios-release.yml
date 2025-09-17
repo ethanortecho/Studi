@@ -1,0 +1,110 @@
+name: iOS Release
+
+on:
+  push:
+    branches: [main]
+    paths: ['frontend/**']
+  workflow_dispatch:
+    inputs:
+      version_bump:
+        description: 'Version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - none
+
+env:
+  APP_DIR: frontend/studi-app
+
+jobs:
+  release-ios:
+    name: Build and Release iOS
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🏗️ Setup repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: 🏗️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: '${{ env.APP_DIR }}/package-lock.json'
+
+      - name: 🏗️ Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: 📦 Install dependencies
+        working-directory: ${{ env.APP_DIR }}
+        run: npm ci
+
+      - name: 🚀 Bump version and build number
+        working-directory: ${{ env.APP_DIR }}
+        run: |
+          BUMP_TYPE="${{ github.event.inputs.version_bump || 'patch' }}"
+          node scripts/bump-version.js $BUMP_TYPE
+        env:
+          GITHUB_OUTPUT: ${{ runner.temp }}/outputs
+
+      - name: 📝 Read version outputs
+        id: version
+        run: |
+          if [ -f "${{ runner.temp }}/outputs" ]; then
+            cat "${{ runner.temp }}/outputs" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 🏗️ Build iOS app
+        working-directory: ${{ env.APP_DIR }}
+        run: eas build --platform ios --profile production --non-interactive --wait
+
+      - name: 🚀 Submit to App Store
+        working-directory: ${{ env.APP_DIR }}
+        run: eas submit --platform ios --profile production --non-interactive
+
+      - name: 📝 Commit version bump
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add frontend/studi-app/app.json frontend/studi-app/package.json
+          git commit -m "🔖 Release v${{ steps.version.outputs.version }} (build ${{ steps.version.outputs.build_number }}) [skip ci]" || exit 0
+          git push
+
+      - name: 🏷️ Create release tag
+        run: |
+          git tag "v${{ steps.version.outputs.version }}"
+          git push origin "v${{ steps.version.outputs.version }}"
+
+      - name: 📱 Create GitHub release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          release_name: 🚀 Release v${{ steps.version.outputs.version }}
+          body: |
+            ## 📱 iOS App Release
+
+            **Version:** ${{ steps.version.outputs.version }}
+            **Build Number:** ${{ steps.version.outputs.build_number }}
+
+            ### 🚀 What's New
+            - Automatic build and release
+            - Submitted to App Store for review
+
+            ### 🔗 Links
+            - [App Store](https://apps.apple.com/app/id6749604338)
+            - [View Changes](https://github.com/${{ github.repository }}/compare/v${{ steps.version.outputs.previous_version }}...v${{ steps.version.outputs.version }})
+          draft: false
+          prerelease: false

@@ -2,7 +2,7 @@
 
 **A full-stack study tracking application built with React Native and Django**
 
-📱 **[Download on App Store](https://apps.apple.com/app/studi)** • 🎥 **[View Demo](https://your-demo-link)**
+📱 **[Download on App Store](https://apps.apple.com/us/app/studi-study-tracker/id6749604338)** • 🎥 **[View Demo](https://www.loom.com/share/408468ec0da94fe8b5318c9b2ce59ef0?sid=78dc10bd-70d3-43fd-ace1-f8f65a117958)**
 
 ## Overview
 
@@ -20,7 +20,10 @@ Studi is a comprehensive study session tracking app that helps users monitor the
 - **Session Analytics:** Focus ratings, flow scores, detailed breakdowns
 - **Goal Tracking:** Weekly targets with progress monitoring
 - **Premium Features:** Advanced analytics and insights
-- **Cross-platform:** iOS, Android, and web deployment
+
+## Future Features
+- Spotify Wrapped style semester recap
+
 
 ---
 

@@ -15,19 +15,19 @@ import { LinearGradient } from 'expo-linear-gradient';
 const PREMIUM_FEATURES = [
   {
     title: 'Full study history',
-    description: '',
+    description: 'so you never lose progress',
   },
   {
-    title: 'Performance metrics',
-    description: 'to measure learning performance',
+    title: 'Flow score analytics',
+    description: 'to measure session quality and performance',
   },
   {
-    title: 'Detailed Timeline',
-    description: 'to visualize exactly when you study',
+    title: 'Study Timelines',
+    description: 'To reveal your study patterns',
   },
   {
-    title: 'Monthly Insights',
-    description: 'to track semester progress',
+    title: 'Monthly Dashboard',
+    description: 'to keep you motivated all semester',
   },
 ];
 
@@ -36,24 +36,24 @@ const getTriggerMessage = (trigger?: string): { title: string; subtitle: string 
   switch (trigger) {
     case TriggerType.FIRST_SESSION_COMPLETE:
       return {
-        title: 'Level Up Your Study Habits',
-        subtitle: 'Get the insights top students use to stay focused, track progress, and crush their semester.',
+        title: 'Study With Purpose',
+        subtitle: 'Premium features for serious learners.',
       };
     case TriggerType.THREE_SESSIONS_COMPLETE:
       return {
-        title: 'Level Up Your Study Habits',
-        subtitle: 'Get the insights top students use to stay focused, track progress, and crush their semester.',
+        title: 'Study With Purpose',
+        subtitle: 'Premium features for serious learners.',
       };
     case TriggerType.DAY_7_NON_CONVERTER:
       return {
-        title: 'Level Up Your Study Habits',
-        subtitle: 'Get the insights top students use to stay focused, track progress, and crush their semester.',
+        title: 'Study With Purpose',
+        subtitle: 'Premium features for serious learners.',
       };
     case TriggerType.UPGRADE_BUTTON_CLICK:
     default:
       return {
-        title: 'Level Up Your Study Habits',
-        subtitle: 'Get the insights top students use to stay focused, track progress, and crush their semester.',
+        title: 'Study With Purpose',
+        subtitle: 'Get the analytics that help students level up their habits.',
       };
   }
 };
@@ -101,9 +101,23 @@ export default function UpgradeScreen() {
             <Text className="text-4xl font-bold text-white text-center mb-4">
               {message.title}
             </Text>
-            <Text className="text-lg text-white/90 text-center mb-12">
+            <Text className="text-lg text-white/90 text-center mb-6">
               {message.subtitle}
             </Text>
+
+            {/* Social Proof Tag */}
+            <View style={{
+              alignSelf: 'center',
+              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+              borderRadius: 20,
+              paddingHorizontal: 16,
+              paddingVertical: 8,
+              marginBottom: 16,
+            }}>
+              <Text className="text-white/90 text-sm font-medium text-center">
+                ✨ Designed by students, for students
+              </Text>
+            </View>
           </View>
 
           {/* Features Box */}
@@ -174,7 +188,7 @@ export default function UpgradeScreen() {
             </TouchableOpacity>
 
             <Text className="text-center text-white/80 text-base">
-              Then $4.99 billed monthly
+              Then $4.99 billed monthly, cancel anytime
             </Text>
           </View>
         </View>

@@ -106,7 +106,7 @@ export default function SessionStatsModal({
             
             {/* Title */}
             <Text className="text-xl font-bold text-white mb-4">
-              {isSubmitted ? 'Thanks for your feedback!' : 'Session Complete!'}
+              {isSubmitted ? 'Rating saved!' : 'Session Complete!'}
             </Text>
             
             {/* Rating Section */}

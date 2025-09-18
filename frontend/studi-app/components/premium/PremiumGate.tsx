@@ -223,19 +223,19 @@ const PremiumOverlayContent: React.FC<{
     }}>
       <View style={{
         alignItems: 'center',
-        paddingHorizontal: isChartMode ? 16 : 24,
-        paddingVertical: isChartMode ? 12 : 20,
+        paddingHorizontal: isChartMode ? 14 : 20,
+        paddingVertical: isChartMode ? 10 : 16,
         maxWidth: isChartMode ? '90%' : '85%',
-        backgroundColor: 'rgba(0, 0, 0, 0.7)', 
+        backgroundColor: 'rgba(0, 0, 0, 0.5)', 
         borderRadius: isChartMode ? 12 : 16,
       }}>
         {/* Primary Title Text */}
         <Text style={{
-          fontSize: isChartMode ? 16 : 22,
+          fontSize: isChartMode ? 15 : 20,
           fontWeight: '700',
           color: '#FFFFFF',
           textAlign: 'center',
-          marginBottom: isChartMode ? 4 : 8,
+          marginBottom: isChartMode ? 3 : 6,
           textShadowColor: 'rgba(0, 0, 0, 0.8)',
           textShadowOffset: { width: 0, height: 2 },
           textShadowRadius: 4,
@@ -245,11 +245,11 @@ const PremiumOverlayContent: React.FC<{
         
         {/* Secondary Subtitle Text */}
         <Text style={{
-          fontSize: isChartMode ? 12 : 14,
+          fontSize: isChartMode ? 11 : 13,
           fontWeight: '400',
           color: '#FFFFFF',
           textAlign: 'center',
-          marginBottom: isChartMode ? 12 : 20,
+          marginBottom: isChartMode ? 10 : 16,
           textShadowColor: 'rgba(0, 0, 0, 0.8)',
           textShadowOffset: { width: 0, height: 1 },
           textShadowRadius: 3,
@@ -262,15 +262,15 @@ const PremiumOverlayContent: React.FC<{
         <TouchableOpacity 
           style={{
             backgroundColor: '#8B5CF6', // Purple accent
-            paddingHorizontal: isChartMode ? 20 : 28,
-            paddingVertical: isChartMode ? 8 : 12,
+            paddingHorizontal: isChartMode ? 18 : 24,
+            paddingVertical: isChartMode ? 7 : 10,
             borderRadius: isChartMode ? 16 : 20,
             shadowColor: '#000',
             shadowOffset: { width: 0, height: 3 },
             shadowOpacity: 0.25,
             shadowRadius: 6,
             elevation: 5,
-            minWidth: isChartMode ? 120 : 160,
+            minWidth: isChartMode ? 110 : 140,
             alignItems: 'center',
             justifyContent: 'center',
           }}
@@ -284,7 +284,7 @@ const PremiumOverlayContent: React.FC<{
         >
           <Text style={{
             color: '#FFFFFF',
-            fontSize: isChartMode ? 12 : 14,
+            fontSize: isChartMode ? 11 : 13,
             fontWeight: '600',
             textAlign: 'center',
           }}>

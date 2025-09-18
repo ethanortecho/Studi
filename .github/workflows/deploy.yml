@@ -7,7 +7,7 @@ on:
     paths: ['backend/**']
   
   # Deploy to production on push to main
-  push:
+  :
     branches: [main]
     paths: ['backend/**']
 

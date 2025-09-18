@@ -1,14 +1,14 @@
-import { useState, useEffect, createContext, ReactNode, useCallback } from "react";
+import { useState, useEffect, createContext, ReactNode, useCallback, useContext } from "react";
 import { AppState } from 'react-native';
 import { fetchCategories, Category, fetchBreakCategory } from '../utils/studySession';
 import { createStudySession, endStudySession, createCategoryBlock, endCategoryBlock, cancelStudySession, updateSessionRating } from '../utils/studySession';
 import SessionStatsModal from '../components/modals/SessionStatsModal';
 import { detectUserTimezone } from '../utils/timezoneUtils';
-import { clearDashboardCache } from '../utils/fetchApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getEffectiveApiUrl } from '../config/api';
 import { TimerRecoveryService, TimerRecoveryState } from '../services/TimerRecoveryService';
 import { router } from 'expo-router';
+import { useConversion } from '../contexts/ConversionContext';
 
 
 interface StudySessionContextType {
@@ -84,10 +84,10 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
   const [breakCategory, setBreakCategory] = useState<Category | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
-  
+
   // Timezone state
   const [userTimezone, setUserTimezone] = useState<string>('UTC');
-  
+
   // Background session management - track for analytics only
   const [backgroundStartTime, setBackgroundStartTime] = useState<Date | null>(null);
 
@@ -100,6 +100,12 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
 
   // Store recovered timer state for timer components to use
   const [recoveredTimerState, setRecoveredTimerState] = useState<TimerRecoveryState | null>(null);
+
+  // Get conversion context for session completion triggers
+  const { onSessionComplete } = useConversion();
+
+  // Track if we've already triggered for this session to avoid duplicates
+  const [hasTriggeredForSession, setHasTriggeredForSession] = useState(false);
 
   // Computed property: session is paused if we have a paused category ID
   const isSessionPaused = pausedCategoryId !== null;
@@ -310,6 +316,24 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
     checkForHangingSessions();
   }, []); // Empty dependency array - only run once on mount
 
+  // Watch for session completion and trigger conversion checks
+  useEffect(() => {
+    // Trigger when modal becomes visible (session just ended)
+    if (sessionStatsModal.isVisible && !hasTriggeredForSession) {
+      setHasTriggeredForSession(true);
+
+      // Session just completed, check for triggers
+      if (onSessionComplete) {
+        onSessionComplete();
+      }
+    }
+
+    // Reset trigger flag when modal closes
+    if (!sessionStatsModal.isVisible && hasTriggeredForSession) {
+      setHasTriggeredForSession(false);
+    }
+  }, [sessionStatsModal.isVisible, hasTriggeredForSession, onSessionComplete]);
+
   const startSession = async () => {
     console.log("Hook: startSession called");
     try {
@@ -341,9 +365,7 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
         // End session immediately (without rating) to ensure data is saved
         const res = await endStudySession(currentSessionId, sessionEndTime);
         
-        // Clear dashboard cache to ensure fresh data after session completion
-        console.log('🔄 Session ended, clearing dashboard cache...');
-        clearDashboardCache();
+        // Dashboard will refresh naturally when navigating to it
         
         // Reset session state
         setSessionId(null);
@@ -361,7 +383,10 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
           sessionDuration: durationMinutes,
           completedSessionId: currentSessionId, // Store completed session ID for rating update
         });
-        
+
+        // Conversion triggers will be handled by the useEffect above
+        // when the stats modal appears
+
         return res;
       } catch (error) {
         console.error("Hook error in stopSession:", error);
@@ -479,9 +504,7 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
         const cancelTime = new Date(); // Use local time when cancelling
         const res = await cancelStudySession(String(sessionId), cancelTime);
         
-        // Clear dashboard cache to ensure fresh data after session cancellation
-        console.log('❌ Session cancelled, clearing dashboard cache...');
-        clearDashboardCache();
+        // Dashboard will refresh naturally when navigating to it
         
         // Reset all session state
         setSessionId(null);

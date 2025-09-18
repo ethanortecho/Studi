@@ -47,10 +47,7 @@ export default function SessionStatsModal({
       }
       
       setIsSubmitted(true);
-      // Auto-dismiss after longer delay to show flow score
-      setTimeout(() => {
-        handleDismiss();
-      }, 3000);
+      // Modal stays open - user must tap to dismiss
     } catch (error) {
       console.error('Failed to submit rating:', error);
       setIsSubmitting(false);

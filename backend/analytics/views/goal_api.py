@@ -105,4 +105,17 @@ class WeeklyGoalView(APIView):
             active_weekdays=active_weekdays,
             carry_over_enabled=carry_over_enabled,
         )
-        return Response(WeeklyGoalSerializer(goal).data, status=status.HTTP_200_OK) 
+        return Response(WeeklyGoalSerializer(goal).data, status=status.HTTP_200_OK)
+
+
+class HasGoalsView(APIView):
+    """Check if a user has ever created any goals."""
+
+    def get(self, request):
+        """Check if the authenticated user has any goals."""
+        user = request.user
+
+        # Check if user has any weekly goals
+        has_goals = WeeklyGoal.objects.filter(user=user).exists()
+
+        return Response({'has_goals': has_goals}, status=status.HTTP_200_OK) 

@@ -27,7 +27,7 @@ interface TimerConfigModalProps {
 }
 
 export default function TimerConfigModal({ visible, onClose, onStartSession }: TimerConfigModalProps) {
-  const [selectedMode, setSelectedMode] = useState<TimerMode>('free');
+  const [selectedMode, setSelectedMode] = useState<TimerMode>('timer');
   const [currentConfig, setCurrentConfig] = useState<any>({});
   
   const handleModeChange = (mode: TimerMode) => {
@@ -106,15 +106,6 @@ export default function TimerConfigModal({ visible, onClose, onStartSession }: T
           {/* Mode Selector */}
           <View className="flex-row rounded-full p-1 mb-6 bg-surface">
             <Pressable
-              onPress={() => handleModeChange('free')}
-              className={`flex-1 py-3 px-4 rounded-full ${selectedMode === 'free' ? 'bg-accent' : ''}`}
-            >
-              <Text className={`text-sm font-medium text-center ${selectedMode === 'free' ? 'text-white' : 'text-secondaryText'}`}>
-                FREE
-              </Text>
-            </Pressable>
-            
-            <Pressable
               onPress={() => handleModeChange('timer')}
               className={`flex-1 py-3 px-4 rounded-full ${selectedMode === 'timer' ? 'bg-accent' : ''}`}
             >
@@ -122,13 +113,22 @@ export default function TimerConfigModal({ visible, onClose, onStartSession }: T
                 TIMER
               </Text>
             </Pressable>
-            
+
+            <Pressable
+              onPress={() => handleModeChange('free')}
+              className={`flex-1 py-3 px-4 rounded-full ${selectedMode === 'free' ? 'bg-accent' : ''}`}
+            >
+              <Text className={`text-sm font-medium text-center ${selectedMode === 'free' ? 'text-white' : 'text-secondaryText'}`}>
+                STOPWATCH
+              </Text>
+            </Pressable>
+
             <Pressable
               onPress={() => handleModeChange('pomo')}
               className={`flex-1 py-3 px-4 rounded-full ${selectedMode === 'pomo' ? 'bg-accent' : ''}`}
             >
               <Text className={`text-sm font-medium text-center ${selectedMode === 'pomo' ? 'text-white' : 'text-secondaryText'}`}>
-                POMO
+                POMODORO
               </Text>
             </Pressable>
           </View>

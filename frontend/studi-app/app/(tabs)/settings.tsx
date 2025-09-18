@@ -5,6 +5,7 @@ import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import { resetOnboarding } from '../../utils/onboarding';
+import { debugConversionState, resetConversionState } from '../../utils/debugConversion';
 
 export default function SettingsScreen() {
   const { user, logout, togglePremiumStatus, deleteAccount } = useAuth();
@@ -170,12 +171,11 @@ export default function SettingsScreen() {
           icon="calendar"
           onPress={() => router.push('/screens/set-weekly-goal?edit=1' as any)}
         />
-        {/* TEMPORARILY DISABLED FOR APP STORE REVIEW */}
-        {/* <Row
+        <Row
           label="View Onboarding"
           icon="help-circle"
           onPress={handleViewOnboarding}
-        /> */}
+        />
         
         {/* Development only: Premium toggle - TEMPORARILY DISABLED FOR APP STORE REVIEW */}
         {/* {__DEV__ && togglePremiumStatus && user && (
@@ -185,6 +185,41 @@ export default function SettingsScreen() {
             onPress={handleTogglePremium}
           />
         )} */}
+
+        {/* Development only: Conversion debug tools */}
+        {__DEV__ && (
+          <>
+            <Row
+              label="Debug Conversion State"
+              icon="bug"
+              onPress={async () => {
+                await debugConversionState();
+                Alert.alert('Debug Info', 'Check console logs for conversion state');
+              }}
+            />
+            <Row
+              label="Reset Conversion State"
+              icon="refresh"
+              onPress={() => {
+                Alert.alert(
+                  'Reset Conversion State',
+                  'This will reset session count and trigger history. Continue?',
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    {
+                      text: 'Reset',
+                      style: 'destructive',
+                      onPress: async () => {
+                        await resetConversionState();
+                        Alert.alert('Success', 'Conversion state has been reset');
+                      },
+                    },
+                  ]
+                );
+              }}
+            />
+          </>
+        )}
         
         {/* Account Actions */}
         <View className="mt-8">

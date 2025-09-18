@@ -3,8 +3,10 @@ import { View, Text, TouchableOpacity, StyleSheet, Image, ImageSourcePropType, S
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { usePremium } from '../../contexts/PremiumContext';
+import { useConversion } from '../../contexts/ConversionContext';
 import { PREMIUM_FEATURES } from '../../config/premiumFeatures';
 import { getMockupForFeature } from '../../config/premiumMockups';
+import { TriggerType } from '../../services/ConversionTriggerManager';
 
 interface PremiumGateProps {
   feature: string;
@@ -30,6 +32,7 @@ export const PremiumGate: React.FC<PremiumGateProps> = ({
   displayMode = 'dashboard'
 }) => {
   const { canAccessFeature } = usePremium();
+  const { showUpgradeScreen } = useConversion();
   
   // Debug logging
   console.log('PremiumGate Debug:', {
@@ -155,18 +158,23 @@ export const PremiumGate: React.FC<PremiumGateProps> = ({
 };
 
 // Small floating CTA for blur mode
-const FloatingPremiumCTA: React.FC<{ feature: string; showUpgradePrompt: boolean }> = ({ 
-  feature, 
-  showUpgradePrompt 
+const FloatingPremiumCTA: React.FC<{ feature: string; showUpgradePrompt: boolean }> = ({
+  feature,
+  showUpgradePrompt
 }) => {
+  const { showUpgradeScreen } = useConversion();
+
   if (!showUpgradePrompt) return <View />;
-  
+
   return (
-    <TouchableOpacity 
+    <TouchableOpacity
       className="bg-surface rounded-full p-3 shadow-lg border border-accent"
       onPress={() => {
-        // TODO: Navigate to upgrade screen
-        console.log('Navigate to upgrade screen');
+        if (showUpgradeScreen) {
+          showUpgradeScreen(TriggerType.UPGRADE_BUTTON_CLICK);
+        } else {
+          console.warn('showUpgradeScreen is not available in FloatingPremiumCTA');
+        }
       }}
       style={{
         shadowColor: '#000',
@@ -182,15 +190,17 @@ const FloatingPremiumCTA: React.FC<{ feature: string; showUpgradePrompt: boolean
 };
 
 // Overlay content component for mockup images with center positioning
-const PremiumOverlayContent: React.FC<{ 
-  feature: string; 
-  showUpgradePrompt: boolean; 
+const PremiumOverlayContent: React.FC<{
+  feature: string;
+  showUpgradePrompt: boolean;
   displayMode?: 'dashboard' | 'chart';
-}> = ({ 
-  feature, 
+}> = ({
+  feature,
   showUpgradePrompt,
   displayMode = 'dashboard'
 }) => {
+  const { showUpgradeScreen } = useConversion();
+
   if (!showUpgradePrompt) return null;
   
   const mockup = getMockupForFeature(feature);
@@ -265,8 +275,11 @@ const PremiumOverlayContent: React.FC<{
             justifyContent: 'center',
           }}
           onPress={() => {
-            // TODO: Navigate to upgrade screen
-            console.log('Navigate to upgrade screen');
+            if (showUpgradeScreen) {
+              showUpgradeScreen(TriggerType.UPGRADE_BUTTON_CLICK);
+            } else {
+              console.warn('showUpgradeScreen is not available');
+            }
           }}
         >
           <Text style={{
@@ -284,10 +297,11 @@ const PremiumOverlayContent: React.FC<{
 };
 
 // Full overlay component for non-blur mode (fallback)
-const PremiumOverlay: React.FC<{ feature: string; showUpgradePrompt: boolean }> = ({ 
-  feature, 
-  showUpgradePrompt 
+const PremiumOverlay: React.FC<{ feature: string; showUpgradePrompt: boolean }> = ({
+  feature,
+  showUpgradePrompt
 }) => {
+  const { showUpgradeScreen } = useConversion();
   const featureInfo = Object.values(PREMIUM_FEATURES).find(f => f.id === feature);
   
   return (
@@ -309,8 +323,11 @@ const PremiumOverlay: React.FC<{ feature: string; showUpgradePrompt: boolean }> 
         <TouchableOpacity 
           className="bg-accent px-6 py-3 rounded-full mt-2"
           onPress={() => {
-            // TODO: Navigate to upgrade screen
-            console.log('Navigate to upgrade screen');
+            if (showUpgradeScreen) {
+              showUpgradeScreen(TriggerType.UPGRADE_BUTTON_CLICK);
+            } else {
+              console.warn('showUpgradeScreen is not available');
+            }
           }}
         >
           <Text className="text-primaryText font-semibold">Upgrade to Premium</Text>

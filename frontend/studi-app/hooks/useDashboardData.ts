@@ -198,20 +198,35 @@ export function useDashboardData({ dailyDate, weeklyDate, monthlyDate }: UseDash
         // 📊 Goal percentage calculation (daily)
         let goalMinutes: number | null = null;
         let percentGoal: number | null = null;
-        if (weeklyGoal) {
-            // Try find explicit DailyGoal entry first
-            const dayGoal = weeklyGoal.daily_goals?.find(g => g.date === dailyDateStr);
-            if (dayGoal) {
-                goalMinutes = dayGoal.target_minutes;
-            } else {
-                // fallback: even split across active weekdays or 7
-                const activeDays = weeklyGoal.active_weekdays?.length || 7;
-                goalMinutes = Math.round(weeklyGoal.total_minutes / activeDays);
-            }
+        let isRestDay = false;
 
-            const studiedMinutes = parseInt(dailyData.aggregate.total_duration) / 60;
-            if (goalMinutes > 0) {
-                percentGoal = Math.min(100, Math.round((studiedMinutes / goalMinutes) * 100));
+        if (weeklyGoal) {
+            // Check if today is an active study day
+            const currentDate = new Date(dailyDateStr);
+            const dayOfWeek = currentDate.getDay();
+            // Convert JS day (0=Sun) to backend format (0=Mon)
+            const backendDayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+
+            if (!weeklyGoal.active_weekdays?.includes(backendDayIndex)) {
+                // This is a rest day - no goal
+                isRestDay = true;
+                goalMinutes = null;
+                percentGoal = null;
+            } else {
+                // Try find explicit DailyGoal entry first
+                const dayGoal = weeklyGoal.daily_goals?.find(g => g.date === dailyDateStr);
+                if (dayGoal) {
+                    goalMinutes = dayGoal.target_minutes;
+                } else {
+                    // fallback: even split across active weekdays only
+                    const activeDays = weeklyGoal.active_weekdays?.length || 7;
+                    goalMinutes = Math.round(weeklyGoal.total_minutes / activeDays);
+                }
+
+                const studiedMinutes = parseInt(dailyData.aggregate.total_duration) / 60;
+                if (goalMinutes > 0) {
+                    percentGoal = Math.min(100, Math.round((studiedMinutes / goalMinutes) * 100));
+                }
             }
         }
         
@@ -227,6 +242,7 @@ export function useDashboardData({ dailyDate, weeklyDate, monthlyDate }: UseDash
             goal: weeklyGoal,
             goalMinutes,
             percentGoal,
+            isRestDay,
             productivityScore: dailyData.aggregate?.productivity_score ?? null,
             allTimeAvgProductivity: dailyData.all_time_avg_productivity ?? null,
             flowScore: dailyData.aggregate?.flow_score ?? null,

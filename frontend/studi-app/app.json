@@ -11,7 +11,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.ethanortecho.studi",
-      "buildNumber": "3",
+      "buildNumber": "4",
       "infoPlist": {
         "NSCameraUsageDescription": "Camera access is used to capture study notes and materials.",
         "NSPhotoLibraryUsageDescription": "Photo library access allows you to save and organize study-related images.",

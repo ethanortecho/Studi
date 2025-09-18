@@ -3,6 +3,8 @@ import { View, Text, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, P
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
+import { apiClient } from '../../utils/apiClient';
+import { useThemeColor } from '../../hooks/useThemeColor';
 
 /**
  * REGISTRATION SCREEN EXPLANATION
@@ -29,9 +31,12 @@ export default function RegisterScreen() {
     lastName: '',
   });
   const [isLoading, setIsLoading] = useState(false);
-  
+
   // Get register function from our AuthContext
   const { register } = useAuth();
+
+  // Get theme-aware placeholder color
+  const placeholderColor = useThemeColor({}, 'secondaryText');
 
   // ==================
   // FORM HELPERS
@@ -116,10 +121,24 @@ export default function RegisterScreen() {
       });
 
       if (result.success) {
-        console.log('✅ RegisterScreen: Registration successful, navigating to app');
+        console.log('✅ RegisterScreen: Registration successful, checking for goals...');
         // Small delay to ensure AuthContext state is updated
-        setTimeout(() => {
-          router.replace('/(tabs)/home');
+        setTimeout(async () => {
+          try {
+            // Check if new user needs goal setup
+            const response = await apiClient.get<{ has_goals: boolean }>('/goals/has-goals/');
+            if (response.data && !response.data.has_goals) {
+              console.log('🎯 RegisterScreen: First-time user, redirecting to goal setup');
+              router.replace('/screens/set-weekly-goal' as any);
+            } else {
+              console.log('🏠 RegisterScreen: User has goals, redirecting to home');
+              router.replace('/(tabs)/home');
+            }
+          } catch (error) {
+            console.error('Error checking goals:', error);
+            // If we can't check, go to home
+            router.replace('/(tabs)/home');
+          }
         }, 100);
       } else {
         console.log('❌ RegisterScreen: Registration failed:', result.error);
@@ -147,7 +166,7 @@ export default function RegisterScreen() {
   // ==================
   
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-background">
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
@@ -155,15 +174,15 @@ export default function RegisterScreen() {
         <ScrollView 
           contentContainerStyle={{ flexGrow: 1 }}
           keyboardShouldPersistTaps="handled"
-          className="px-6"
+          className="px-6 font-sans"
         >
           <View className="flex-1 justify-center min-h-[600px] py-8">
             {/* Header Section */}
             <View className="mb-8">
-              <Text className="text-3xl font-bold text-gray-900 text-center mb-2">
+              <Text className="text-3xl font-bold text-primaryText text-center mb-2">
                 Create Account
               </Text>
-              <Text className="text-lg text-gray-600 text-center">
+              <Text className="text-lg text-secondaryText text-center">
                 Join us and start tracking your study sessions
               </Text>
             </View>
@@ -173,93 +192,93 @@ export default function RegisterScreen() {
               {/* Name Fields */}
               <View className="flex-row space-x-3">
                 <View className="flex-1">
-                  <Text className="text-sm font-medium text-gray-700 mb-2">
+                  <Text className="text-sm font-medium text-primaryText mb-2">
                     First Name *
                   </Text>
                   <TextInput
                     value={formData.firstName}
                     onChangeText={(value) => updateFormData('firstName', value)}
                     placeholder="First name"
-                    placeholderTextColor="#9CA3AF"
+                    placeholderTextColor={placeholderColor}
                     autoCapitalize="words"
                     editable={!isLoading}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 text-base"
+                    className="w-full px-4 py-3 border border-surface rounded-lg bg-surface text-primaryText text-base font-sans"
                   />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-sm font-medium text-gray-700 mb-2">
+                  <Text className="text-sm font-medium text-primaryText mb-2">
                     Last Name *
                   </Text>
                   <TextInput
                     value={formData.lastName}
                     onChangeText={(value) => updateFormData('lastName', value)}
                     placeholder="Last name"
-                    placeholderTextColor="#9CA3AF"
+                    placeholderTextColor={placeholderColor}
                     autoCapitalize="words"
                     editable={!isLoading}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 text-base"
+                    className="w-full px-4 py-3 border border-surface rounded-lg bg-surface text-primaryText text-base font-sans"
                   />
                 </View>
               </View>
 
               {/* Email Input */}
               <View>
-                <Text className="text-sm font-medium text-gray-700 mb-2">
+                <Text className="text-sm font-medium text-primaryText mb-2">
                   Email Address *
                 </Text>
                 <TextInput
                   value={formData.email}
                   onChangeText={(value) => updateFormData('email', value)}
                   placeholder="Enter your email"
-                  placeholderTextColor="#9CA3AF"
+                  placeholderTextColor="rgb(163, 163, 163)"
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoCorrect={false}
                   editable={!isLoading}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 text-base"
+                  className="w-full px-4 py-3 border border-surface rounded-lg bg-surface text-primaryText text-base font-sans"
                 />
               </View>
 
               {/* Password Input */}
               <View>
-                <Text className="text-sm font-medium text-gray-700 mb-2">
+                <Text className="text-sm font-medium text-primaryText mb-2">
                   Password *
                 </Text>
                 <TextInput
                   value={formData.password}
                   onChangeText={(value) => updateFormData('password', value)}
                   placeholder="Enter your password"
-                  placeholderTextColor="#9CA3AF"
+                  placeholderTextColor="rgb(163, 163, 163)"
                   secureTextEntry
                   editable={!isLoading}
                   autoComplete="off"
                   textContentType="none"
                   autoCorrect={false}
                   spellCheck={false}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 text-base"
+                  className="w-full px-4 py-3 border border-surface rounded-lg bg-surface text-primaryText text-base font-sans"
                 />
-                <Text className="text-xs text-gray-500 mt-1">
+                <Text className="text-xs text-secondaryText mt-1 font-sans">
                   Must be at least 8 characters
                 </Text>
               </View>
 
               {/* Confirm Password Input */}
               <View>
-                <Text className="text-sm font-medium text-gray-700 mb-2">
+                <Text className="text-sm font-medium text-primaryText mb-2">
                   Confirm Password *
                 </Text>
                 <TextInput
                   value={formData.confirmPassword}
                   onChangeText={(value) => updateFormData('confirmPassword', value)}
                   placeholder="Confirm your password"
-                  placeholderTextColor="#9CA3AF"
+                  placeholderTextColor="rgb(163, 163, 163)"
                   secureTextEntry
                   editable={!isLoading}
                   autoComplete="off"
                   textContentType="none"
                   autoCorrect={false}
                   spellCheck={false}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 text-base"
+                  className="w-full px-4 py-3 border border-surface rounded-lg bg-surface text-primaryText text-base font-sans"
                 />
               </View>
             </View>
@@ -269,23 +288,23 @@ export default function RegisterScreen() {
               onPress={handleRegister}
               disabled={isLoading}
               className={`w-full py-4 rounded-lg mb-4 ${
-                isLoading 
-                  ? 'bg-blue-300' 
-                  : 'bg-blue-600'
+                isLoading
+                  ? 'bg-primary opacity-50'
+                  : 'bg-primary'
               }`}
             >
-              <Text className="text-white text-center text-lg font-semibold">
+              <Text className="text-white text-center text-lg font-semibold font-sans">
                 {isLoading ? 'Creating Account...' : 'Create Account'}
               </Text>
             </TouchableOpacity>
 
             {/* Login Link */}
             <View className="flex-row justify-center">
-              <Text className="text-gray-600">
+              <Text className="text-secondaryText font-sans">
                 Already have an account?{' '}
               </Text>
               <TouchableOpacity onPress={goToLogin} disabled={isLoading}>
-                <Text className="text-blue-600 font-semibold">
+                <Text className="text-primary font-semibold font-sans">
                   Sign In
                 </Text>
               </TouchableOpacity>

@@ -182,8 +182,8 @@ export default function TimerScreen({
           onStop={async () => {
             try {
               await stopTimer();
-              // Navigate back to home after successful stop
-              router.back();
+              // Don't navigate immediately - let the session stats modal handle navigation
+              // This keeps user on timer screen until they rate their focus
             } catch (error) {
               console.error("Timer stop error:", error);
             }

@@ -3,6 +3,8 @@ import { View, Text, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, P
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
+import { apiClient } from '../../utils/apiClient';
+import { useThemeColor } from '../../hooks/useThemeColor';
 
 /**
  * LOGIN SCREEN EXPLANATION
@@ -24,9 +26,12 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  
+
   // Get login function from our AuthContext
   const { login } = useAuth();
+
+  // Get theme-aware placeholder color
+  const placeholderColor = useThemeColor({}, 'secondaryText');
 
   // ==================
   // FORM HANDLING
@@ -62,10 +67,24 @@ export default function LoginScreen() {
       const result = await login(email.trim().toLowerCase(), password);
 
       if (result.success) {
-        console.log('✅ LoginScreen: Login successful, navigating to app');
+        console.log('✅ LoginScreen: Login successful, checking for goals...');
         // Small delay to ensure AuthContext state is updated
-        setTimeout(() => {
-          router.replace('/(tabs)/home');
+        setTimeout(async () => {
+          try {
+            // Check if user needs goal setup
+            const response = await apiClient.get<{ has_goals: boolean }>('/goals/has-goals/');
+            if (response.data && !response.data.has_goals) {
+              console.log('🎯 LoginScreen: User needs goal setup, redirecting...');
+              router.replace('/screens/set-weekly-goal' as any);
+            } else {
+              console.log('🏠 LoginScreen: User has goals, redirecting to home');
+              router.replace('/(tabs)/home');
+            }
+          } catch (error) {
+            console.error('Error checking goals:', error);
+            // If we can't check, go to home
+            router.replace('/(tabs)/home');
+          }
         }, 100);
       } else {
         console.log('❌ LoginScreen: Login failed:', result.error);
@@ -93,7 +112,7 @@ export default function LoginScreen() {
   // ==================
   
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-background">
       {/* KeyboardAvoidingView ensures form stays visible when keyboard opens */}
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -102,15 +121,15 @@ export default function LoginScreen() {
         <ScrollView 
           contentContainerStyle={{ flexGrow: 1 }}
           keyboardShouldPersistTaps="handled"
-          className="px-6"
+          className="px-6 font-sans"
         >
           {/* Header Section */}
           <View className="flex-1 justify-center min-h-[400px]">
             <View className="mb-8">
-              <Text className="text-3xl font-bold text-gray-900 text-center mb-2">
+              <Text className="text-3xl font-bold text-primaryText text-center mb-2">
                 Welcome Back
               </Text>
-              <Text className="text-lg text-gray-600 text-center">
+              <Text className="text-lg text-secondaryText text-center">
                 Sign in to continue studying
               </Text>
             </View>
@@ -119,39 +138,39 @@ export default function LoginScreen() {
             <View className="space-y-4 mb-6">
               {/* Email Input */}
               <View>
-                <Text className="text-sm font-medium text-gray-700 mb-2">
+                <Text className="text-sm font-medium text-primaryText mb-2">
                   Email Address
                 </Text>
                 <TextInput
                   value={email}
                   onChangeText={setEmail}
                   placeholder="Enter your email"
-                  placeholderTextColor="#9CA3AF"
+                  placeholderTextColor={placeholderColor}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoCorrect={false}
                   editable={!isLoading}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 text-base"
+                  className="w-full px-4 py-3 border border-surface rounded-lg bg-surface text-primaryText text-base font-sans"
                 />
               </View>
 
               {/* Password Input */}
               <View>
-                <Text className="text-sm font-medium text-gray-700 mb-2">
+                <Text className="text-sm font-medium text-primaryText mb-2">
                   Password
                 </Text>
                 <TextInput
                   value={password}
                   onChangeText={setPassword}
                   placeholder="Enter your password"
-                  placeholderTextColor="#9CA3AF"
+                  placeholderTextColor={placeholderColor}
                   secureTextEntry
                   editable={!isLoading}
                   autoComplete="off"
                   textContentType="none"
                   autoCorrect={false}
                   spellCheck={false}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 text-base"
+                  className="w-full px-4 py-3 border border-surface rounded-lg bg-surface text-primaryText text-base font-sans"
                 />
               </View>
             </View>
@@ -161,23 +180,23 @@ export default function LoginScreen() {
               onPress={handleLogin}
               disabled={isLoading}
               className={`w-full py-4 rounded-lg mb-4 ${
-                isLoading 
-                  ? 'bg-blue-300' 
-                  : 'bg-blue-600'
+                isLoading
+                  ? 'bg-primary opacity-50'
+                  : 'bg-primary'
               }`}
             >
-              <Text className="text-white text-center text-lg font-semibold">
+              <Text className="text-white text-center text-lg font-semibold font-sans">
                 {isLoading ? 'Signing In...' : 'Sign In'}
               </Text>
             </TouchableOpacity>
 
             {/* Register Link */}
             <View className="flex-row justify-center">
-              <Text className="text-gray-600">
+              <Text className="text-secondaryText font-sans">
                 Don't have an account?{' '}
               </Text>
               <TouchableOpacity onPress={goToRegister} disabled={isLoading}>
-                <Text className="text-blue-600 font-semibold">
+                <Text className="text-primary font-semibold font-sans">
                   Sign Up
                 </Text>
               </TouchableOpacity>

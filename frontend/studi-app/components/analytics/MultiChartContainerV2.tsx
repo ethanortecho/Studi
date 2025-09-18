@@ -48,9 +48,9 @@ export default function MultiChartContainerV2({
       <DashboardCard className="bg-background border border-surface rounded-[35px]">
         <View className="items-center justify-center py-16">
           <Text className="text-md text-secondaryText">
-            {`No data available for this ${
-              dashboardData.timeframe === 'weekly' ? 'week' : 
-              dashboardData.timeframe === 'monthly' ? 'month' : 
+            {`No sessions recorded this ${
+              dashboardData.timeframe === 'weekly' ? 'week' :
+              dashboardData.timeframe === 'monthly' ? 'month' :
               'day'
             }.`}
           </Text>

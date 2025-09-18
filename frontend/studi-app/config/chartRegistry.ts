@@ -84,7 +84,7 @@ const sessionsChartConfig: ChartConfig<SessionsChartData> = {
  */
 const dailyMapChartConfig: ChartConfig<DailyMapChartData> = {
   id: 'map',
-  label: 'Map',
+  label: 'Timeline',
   component: DailyMapChart,
   requiresPremium: true,
   isAvailable: (data: DashboardData) => {
@@ -112,7 +112,7 @@ const dailyMapChartConfig: ChartConfig<DailyMapChartData> = {
  */
 const weeklyMapChartConfig: ChartConfig<WeeklyMapChartData> = {
   id: 'map',
-  label: 'Map',
+  label: 'Timeline',
   component: WeeklyMapChart,
   requiresPremium: true,
   isAvailable: (data: DashboardData) => {
@@ -140,7 +140,7 @@ const weeklyMapChartConfig: ChartConfig<WeeklyMapChartData> = {
  */
 const monthlyMapChartConfig: ChartConfig<MonthlyMapChartData> = {
   id: 'map',
-  label: 'Map',
+  label: 'Timeline',
   component: MonthlyMapChart,
   isAvailable: (data: DashboardData) => {
     return Boolean(

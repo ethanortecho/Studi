@@ -177,14 +177,14 @@ export default function SettingsScreen() {
           onPress={handleViewOnboarding}
         />
         
-        {/* Development only: Premium toggle - TEMPORARILY DISABLED FOR APP STORE REVIEW */}
-        {/* {__DEV__ && togglePremiumStatus && user && (
+        {/* Development only: Premium toggle */}
+        {__DEV__ && togglePremiumStatus && user && (
           <Row
             label={`Premium Status: ${user.is_premium ? 'ON' : 'OFF'}`}
             icon={user.is_premium ? "checkmark-circle" : "close-circle"}
             onPress={handleTogglePremium}
           />
-        )} */}
+        )}
 
         {/* Development only: Conversion debug tools */}
         {__DEV__ && (

@@ -121,7 +121,7 @@ export default function RootLayout() {
                   <Stack.Screen name="screens/timer/stopwatch" options={{ headerShown: false }} />
                   <Stack.Screen name="screens/timer/countdown" options={{ headerShown: false }} />
                   <Stack.Screen name="screens/timer/pomo" options={{ headerShown: false }} />
-                  <Stack.Screen name="screens/upgrade" options={{ headerShown: false, presentation: 'modal' }} />
+                  <Stack.Screen name="screens/upgrade" options={{ headerShown: false }} />
                   <Stack.Screen name="+not-found" />
                     </Stack>
                   </SafeAreaView>

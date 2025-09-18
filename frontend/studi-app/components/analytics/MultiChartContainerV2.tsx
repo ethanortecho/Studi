@@ -99,7 +99,7 @@ export default function MultiChartContainerV2({
               hasComponent: !!activeChart?.component,
               hasData: !!activeChartData,
               dataKeys: activeChartData ? Object.keys(activeChartData) : null,
-              timelineLength: activeChartData?.timelineData?.length
+              timelineLength: activeChartData && 'timelineData' in activeChartData ? activeChartData.timelineData?.length : undefined
             });
           }
           

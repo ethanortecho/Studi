@@ -10,7 +10,7 @@ import { TriggerType } from '../../services/ConversionTriggerManager';
 
 interface PremiumGateProps {
   feature: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   fallback?: React.ReactNode;
   showUpgradePrompt?: boolean;
   mockupImage?: ImageSourcePropType; // Static mockup image for premium preview

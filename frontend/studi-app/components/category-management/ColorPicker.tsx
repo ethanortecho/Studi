@@ -21,7 +21,7 @@ export default function ColorPicker({ selectedColor, onColorSelect, usedColors =
             key={color.value}
             onPress={() => !isDisabled && onColorSelect(color.value)}
             className={`w-12 h-12 rounded-full border-2 ${
-              isSelected ? 'border-gray-800' : 'border-gray-300'
+              isSelected ? 'border-primaryText' : 'border-border'
             } ${isDisabled ? 'opacity-50' : ''}`}
             style={{ backgroundColor: color.value }}
             disabled={isDisabled}

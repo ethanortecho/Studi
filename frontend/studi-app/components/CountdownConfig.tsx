@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, TextInput } from 'react-native';
 
 interface CountdownConfigProps {
@@ -6,11 +6,11 @@ interface CountdownConfigProps {
 }
 
 export default function CountdownConfig({ onConfigChange }: CountdownConfigProps) {
-  const [selectedPreset, setSelectedPreset] = useState<number | null>(40);
+  const [selectedPreset, setSelectedPreset] = useState<number | null>(30);
   const [customMinutes, setCustomMinutes] = useState('');
 
   const presets = [
-    { label: '40 minutes', value: 40 },
+    { label: '30 minutes', value: 30 },
     { label: '45 minutes', value: 45 },
     { label: '60 minutes', value: 60 },
   ];
@@ -29,6 +29,13 @@ export default function CountdownConfig({ onConfigChange }: CountdownConfigProps
       onConfigChange({ duration: minutes }); // Pass minutes directly
     }
   };
+
+  // Communicate initial preset selection to parent on mount
+  useEffect(() => {
+    if (selectedPreset) {
+      onConfigChange({ duration: selectedPreset });
+    }
+  }, []); // Empty dependency array - only run on mount
 
   return (
     <View>
@@ -80,7 +87,7 @@ export default function CountdownConfig({ onConfigChange }: CountdownConfigProps
           <TextInput
             value={customMinutes}
             onChangeText={handleCustomChange}
-            placeholder="30"
+            placeholder="25"
             placeholderTextColor="#888"
             keyboardType="numeric"
             className="flex-1 p-3 border border-gray-700 rounded-lg bg-gray-800 text-primaryText"

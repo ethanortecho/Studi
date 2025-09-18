@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, ReactNode, useCallback, useContext } from "react";
+import { useState, useEffect, createContext, ReactNode, useCallback, useContext, useRef } from "react";
 import { AppState } from 'react-native';
 import { fetchCategories, Category, fetchBreakCategory } from '../utils/studySession';
 import { createStudySession, endStudySession, createCategoryBlock, endCategoryBlock, cancelStudySession, updateSessionRating } from '../utils/studySession';
@@ -9,6 +9,7 @@ import { getEffectiveApiUrl } from '../config/api';
 import { TimerRecoveryService, TimerRecoveryState } from '../services/TimerRecoveryService';
 import { router } from 'expo-router';
 import { useConversion } from '../contexts/ConversionContext';
+import { useAuth } from '../contexts/AuthContext';
 
 
 interface StudySessionContextType {
@@ -101,11 +102,17 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
   // Store recovered timer state for timer components to use
   const [recoveredTimerState, setRecoveredTimerState] = useState<TimerRecoveryState | null>(null);
 
+  // Get auth context to watch for user changes
+  const { user } = useAuth();
+
   // Get conversion context for session completion triggers
   const { onSessionComplete } = useConversion();
 
   // Track if we've already triggered for this session to avoid duplicates
   const [hasTriggeredForSession, setHasTriggeredForSession] = useState(false);
+
+  // Track previous user ID to detect account changes
+  const prevUserIdRef = useRef<number | null>(null);
 
   // Computed property: session is paused if we have a paused category ID
   const isSessionPaused = pausedCategoryId !== null;
@@ -230,7 +237,7 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     // Don't fetch categories on mount - they'll be fetched when needed
     // This prevents "User not authenticated" errors on app startup
-    
+
     // Initialize timezone detection
     try {
       const timezone = detectUserTimezone();
@@ -244,6 +251,50 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
     // Check for recoverable timer state
     checkForRecoverableSession();
   }, []);
+
+  // Clear session state when user changes (logout or account switch)
+  useEffect(() => {
+    const currentUserId = user?.id || null;
+
+    // If user changed (including logout when user becomes null)
+    if (prevUserIdRef.current !== currentUserId) {
+      console.log('🔐 StudySessionContext: User changed, clearing session state...', {
+        previousUserId: prevUserIdRef.current,
+        currentUserId: currentUserId
+      });
+
+      // Clear all session-related state
+      setSessionId(null);
+      setCurrentCategoryBlockId(null);
+      setCurrentCategoryId(null);
+      setPausedCategoryId(null);
+      setSessionStartTime(null);
+      setBackgroundStartTime(null);
+
+      // Clear categories (they're user-specific from backend)
+      setCategories([]);
+      setBreakCategory(null);
+
+      // Clear modal states
+      setSessionStatsModal({
+        isVisible: false,
+        sessionDuration: 0,
+        completedSessionId: undefined,
+      });
+
+      // Clear recovery state
+      setRecoveredTimerState(null);
+      setHasTriggeredForSession(false);
+
+      // Clear any ongoing timer recovery
+      TimerRecoveryService.clearTimerState();
+
+      console.log('✅ StudySessionContext: Session state cleared for user change');
+    }
+
+    // Update tracked user ID
+    prevUserIdRef.current = currentUserId;
+  }, [user]);
 
   // Handle app state changes - track background time for analytics only
   useEffect(() => {

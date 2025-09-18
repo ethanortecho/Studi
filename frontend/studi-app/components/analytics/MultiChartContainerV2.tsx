@@ -30,7 +30,7 @@ export default function MultiChartContainerV2({
 }: MultiChartContainerV2Props) {
   const { isPremium } = usePremium();
   
-  // Get available charts for the current timeframe
+  // Get available charts for 1 current timeframe
   const chartsForTimeframe = getChartsForTimeframe(dashboardData.timeframe);
   
   // Use chart navigation hook for state management
@@ -99,7 +99,7 @@ export default function MultiChartContainerV2({
               hasComponent: !!activeChart?.component,
               hasData: !!activeChartData,
               dataKeys: activeChartData ? Object.keys(activeChartData) : null,
-              timelineLength: activeChartData?.timelineData?.length
+              timelineLength: activeChartData && 'timelineData' in activeChartData ? activeChartData.timelineData?.length : undefined
             });
           }
           

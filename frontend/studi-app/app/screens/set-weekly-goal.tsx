@@ -59,7 +59,8 @@ export default function SetWeeklyGoalScreen() {
         if (isEdit && router.canGoBack()) {
           router.back();
         } else {
-          router.replace('/(tabs)/home' as any);
+          // Go back to orchestrator to check for next setup step
+          router.replace('/screens/setup-orchestrator' as any);
         }
       }, 100);
     } catch (error) {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Pressable, Modal, Alert } from 'react-native';
 import ColorPicker from './ColorPicker';
 import { createCategory } from '../../utils/studySession';
@@ -16,6 +16,20 @@ export default function AddCategoryModal({ visible, onClose, onCategoryAdded, us
   const [selectedColor, setSelectedColor] = useState(CATEGORY_COLORS[0].value);
   const [loading, setLoading] = useState(false);
 
+  // Helper function to get first available color
+  const getFirstAvailableColor = () => {
+    const availableColor = CATEGORY_COLORS.find(color => !usedColors.includes(color.value));
+    return availableColor ? availableColor.value : CATEGORY_COLORS[0].value;
+  };
+
+  // Update selected color when modal opens or usedColors changes
+  useEffect(() => {
+    if (visible) {
+      const firstAvailableColor = getFirstAvailableColor();
+      setSelectedColor(firstAvailableColor);
+    }
+  }, [visible, usedColors]);
+
   const handleSubmit = async () => {
     if (!name.trim()) {
       Alert.alert('Error', 'Please enter a category name');
@@ -26,7 +40,7 @@ export default function AddCategoryModal({ visible, onClose, onCategoryAdded, us
     try {
       await createCategory(name.trim(), selectedColor);
       setName('');
-      setSelectedColor(CATEGORY_COLORS[0].value);
+      // After creating, usedColors will be updated, so we'll get a new available color via useEffect
       onCategoryAdded();
       onClose();
     } catch (error) {
@@ -38,44 +52,45 @@ export default function AddCategoryModal({ visible, onClose, onCategoryAdded, us
 
   const handleClose = () => {
     setName('');
-    setSelectedColor(CATEGORY_COLORS[0].value);
+    setSelectedColor(getFirstAvailableColor());
     onClose();
   };
 
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View className="flex-1 bg-black/50 justify-center items-center p-4">
-        <View className="bg-white rounded-lg p-6 w-full max-w-sm">
-          <Text className="text-xl font-bold mb-4">Add Category</Text>
-          
-          <Text className="text-gray-700 mb-2">Category Name</Text>
+        <View className="bg-surface rounded-lg p-6 w-full max-w-sm">
+          <Text className="text-xl font-bold mb-4 text-primaryText">Add Category</Text>
+
+          <Text className="text-secondaryText mb-2">Category Name</Text>
           <TextInput
             value={name}
             onChangeText={setName}
             placeholder="Enter category name"
-            className="border border-gray-300 rounded-lg p-3 mb-4"
+            placeholderTextColor="rgb(var(--color-secondaryText))"
+            className="border border-border rounded-lg p-3 mb-4 text-primaryText bg-background"
             maxLength={50}
           />
-          
-          <Text className="text-gray-700 mb-3">Color</Text>
+
+          <Text className="text-secondaryText mb-3">Color</Text>
           <ColorPicker
             selectedColor={selectedColor}
             onColorSelect={setSelectedColor}
             usedColors={usedColors}
           />
-          
+
           <View className="flex-row gap-3 mt-6">
             <Pressable
               onPress={handleClose}
-              className="flex-1 py-3 px-4 border border-gray-300 rounded-lg"
+              className="flex-1 py-3 px-4 border border-border rounded-lg"
             >
-              <Text className="text-center text-gray-700">Cancel</Text>
+              <Text className="text-center text-secondaryText">Cancel</Text>
             </Pressable>
-            
+
             <Pressable
               onPress={handleSubmit}
               disabled={loading}
-              className="flex-1 py-3 px-4 bg-blue-500 rounded-lg"
+              className="flex-1 py-3 px-4 bg-accent rounded-lg"
             >
               <Text className="text-center text-white">
                 {loading ? 'Creating...' : 'Create'}

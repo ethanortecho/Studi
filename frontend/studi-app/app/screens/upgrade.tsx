@@ -11,6 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { TriggerType } from '../../services/ConversionTriggerManager';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useStudiIAP, loadSubscriptionProducts, purchaseSubscription, testConnection, SUBSCRIPTION_ID } from '../../services/IAPService';
+import { useAuth } from '../../contexts/AuthContext';
 
 // Define premium features to display
 const PREMIUM_FEATURES = [
@@ -64,6 +65,9 @@ export default function UpgradeScreen() {
   const message = getTriggerMessage(trigger);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Get setPremiumStatus function from AuthContext
+  const { setPremiumStatus } = useAuth();
+
   // Use the modern IAP hook
   const {
     connected,
@@ -74,7 +78,7 @@ export default function UpgradeScreen() {
     getAvailablePurchases,
     getActiveSubscriptions,
     requestPurchase,
-  } = useStudiIAP();
+  } = useStudiIAP(setPremiumStatus);
 
   const fetchedProductsOnceRef = useRef(false);
 
@@ -95,13 +99,15 @@ export default function UpgradeScreen() {
 
   // Debug subscription products state
   useEffect(() => {
-    console.log('🔍 Subscriptions state changed:', {
-      count: subscriptions.length,
-      products: subscriptions.map(sub => ({
-        id: sub.productId,
-        price: sub.localizedPrice || sub.displayPrice
-      }))
-    });
+    if (__DEV__) {
+      console.log('🔍 Subscriptions state changed:', {
+        count: subscriptions.length,
+        products: subscriptions.map(sub => ({
+          id: sub.productId,
+          price: sub.localizedPrice || sub.displayPrice
+        }))
+      });
+    }
   }, [subscriptions]);
 
   const handleDismiss = () => {
@@ -159,11 +165,13 @@ export default function UpgradeScreen() {
 
     try {
       setIsLoading(true);
-      console.log('🚀 Starting subscription purchase...');
-      console.log('🔍 Available subscriptions at purchase time:', {
-        count: subscriptions.length,
-        products: subscriptions.map(sub => sub.productId)
-      });
+      if (__DEV__) {
+        console.log('🚀 Starting subscription purchase...');
+        console.log('🔍 Available subscriptions at purchase time:', {
+          count: subscriptions.length,
+          products: subscriptions.map(sub => sub.productId)
+        });
+      }
 
       // Add visual feedback
       alert('Starting IAP process...');

@@ -7,12 +7,13 @@ from .views.category_api import CategoryList, CategoryDetail, BreakCategory
 from .views.goal_api import WeeklyGoalView, HasGoalsView
 from .views.user_api import UserProfileView, UserTimezoneView, AccountDeletionView
 from .views.auth_api import (
-    custom_token_obtain_pair, 
-    register_user, 
+    custom_token_obtain_pair,
+    register_user,
     logout_user,
     request_password_reset,
     confirm_password_reset,
-    get_user_profile
+    get_user_profile,
+    update_premium_status
 )
 
 urlpatterns = [
@@ -26,7 +27,12 @@ urlpatterns = [
     path('auth/password-reset/', request_password_reset, name='auth-password-reset'),
     path('auth/password-reset/confirm/', confirm_password_reset, name='auth-password-reset-confirm'),
     path('auth/profile/', get_user_profile, name='auth-profile'),
-    
+
+    # ========================
+    # PREMIUM/IAP ENDPOINTS
+    # ========================
+    path('user/premium-status/', update_premium_status, name='update-premium-status'),
+
     # ========================
     # STUDY SESSION ENDPOINTS
     # ========================

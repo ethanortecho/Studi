@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, Pressable, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -6,9 +6,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import { resetOnboarding } from '../../utils/onboarding';
 import { debugConversionState, resetConversionState } from '../../utils/debugConversion';
+import { FeedbackBottomSheet } from '../../components/feedback/FeedbackBottomSheet';
 
 export default function SettingsScreen() {
   const { user, logout, togglePremiumStatus, deleteAccount } = useAuth();
+  const [showFeedback, setShowFeedback] = useState(false);
 
   /**
    * EXPLANATION: handleLogout()
@@ -220,7 +222,7 @@ export default function SettingsScreen() {
             />
           </>
         )}
-        
+
         {/* Account Actions */}
         <View className="mt-8">
           {/* Delete Account Button - Dangerous action */}
@@ -238,7 +240,40 @@ export default function SettingsScreen() {
             isLast
           />
         </View>
+
+        {/* Feedback Section */}
+        <View className="mt-8 items-center py-6">
+          <Pressable
+            onPress={() => setShowFeedback(true)}
+            className="items-center"
+          >
+            {({ pressed }) => (
+              <View className={`items-center ${pressed ? 'opacity-70' : 'opacity-100'}`}>
+                {/* Large Chat Icon */}
+                <View className="w-16 h-16 bg-[#2A2D47] rounded-full items-center justify-center border border-[#34364A] mb-3">
+                  <Ionicons name="chatbubble-ellipses" size={28} color="#60A5FA" />
+                </View>
+
+                {/* Title */}
+                <Text className="text-primaryText font-semibold text-base mb-1">
+                  Send Feedback
+                </Text>
+
+                {/* Subtitle */}
+                <Text className="text-gray-400 text-sm text-center max-w-[280px] leading-5">
+                  Help us improve by reporting bugs, requesting features, or sharing suggestions
+                </Text>
+              </View>
+            )}
+          </Pressable>
+        </View>
       </View>
+
+      {/* Feedback Bottom Sheet */}
+      <FeedbackBottomSheet
+        isVisible={showFeedback}
+        onClose={() => setShowFeedback(false)}
+      />
     </SafeAreaView>
   );
 } 

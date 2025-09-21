@@ -355,3 +355,45 @@ class DailyGoal(models.Model):
     def __str__(self):
         return f"{self.weekly_goal.user.username} – {self.date} ({self.accumulated_minutes}/{self.target_minutes})"
 
+
+class Feedback(models.Model):
+    """User feedback for bug reports, feature requests, and general suggestions."""
+
+    FEEDBACK_TYPE_CHOICES = [
+        ('bug', 'Bug Report'),
+        ('feature', 'Feature Request'),
+        ('improvement', 'Improvement Suggestion'),
+        ('general', 'General Feedback'),
+        ('other', 'Other'),
+    ]
+
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    feedback_type = models.CharField(max_length=20, choices=FEEDBACK_TYPE_CHOICES)
+    description = models.TextField(help_text='User feedback description')
+    user_email = models.EmailField(help_text='User email for follow-up')
+    device_info = models.JSONField(
+        null=True,
+        blank=True,
+        help_text='Device and app info (platform, version, etc.)'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # Admin fields for tracking
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ('open', 'Open'),
+            ('in_progress', 'In Progress'),
+            ('resolved', 'Resolved'),
+            ('closed', 'Closed'),
+        ],
+        default='open'
+    )
+    admin_notes = models.TextField(blank=True, help_text='Internal admin notes')
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.get_feedback_type_display()} from {self.user.username} - {self.created_at.strftime('%Y-%m-%d')}"
+

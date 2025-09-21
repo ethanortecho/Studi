@@ -15,6 +15,7 @@ from .views.auth_api import (
     get_user_profile,
     update_premium_status
 )
+from .views.feedback_api import submit_feedback, get_feedback_types
 
 urlpatterns = [
     # ========================
@@ -32,6 +33,12 @@ urlpatterns = [
     # PREMIUM/IAP ENDPOINTS
     # ========================
     path('user/premium-status/', update_premium_status, name='update-premium-status'),
+
+    # ========================
+    # FEEDBACK ENDPOINTS
+    # ========================
+    path('feedback/', submit_feedback, name='submit-feedback'),
+    path('feedback/types/', get_feedback_types, name='get-feedback-types'),
 
     # ========================
     # STUDY SESSION ENDPOINTS

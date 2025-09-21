@@ -83,11 +83,9 @@ export const ConversionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     await conversionTriggerManager.incrementSessionCount();
 
-    // Check for session-based triggers after a delay to allow navigation to complete
-    // and session stats modal to appear
-    setTimeout(async () => {
-      await checkForTriggers();
-    }, 2000); // 2 second delay to ensure smooth transition
+    // Check for session-based triggers
+    // Note: StudySessionContext now handles timing relative to modal dismissal
+    await checkForTriggers();
   }, [isPremium, checkForTriggers]);
 
   // Check for Day 7 trigger on app launch

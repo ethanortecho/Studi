@@ -111,6 +111,9 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
   // Track if we've already triggered for this session to avoid duplicates
   const [hasTriggeredForSession, setHasTriggeredForSession] = useState(false);
 
+  // Track if we need to trigger conversion after modal dismisses
+  const [pendingConversionTrigger, setPendingConversionTrigger] = useState(false);
+
   // Track previous user ID to detect account changes
   const prevUserIdRef = useRef<number | null>(null);
 
@@ -285,6 +288,7 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
       // Clear recovery state
       setRecoveredTimerState(null);
       setHasTriggeredForSession(false);
+      setPendingConversionTrigger(false);
 
       // Clear any ongoing timer recovery
       TimerRecoveryService.clearTimerState();
@@ -369,21 +373,31 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
 
   // Watch for session completion and trigger conversion checks
   useEffect(() => {
-    // Trigger when modal becomes visible (session just ended)
+    // When modal becomes visible (session just ended), mark that we need to trigger
     if (sessionStatsModal.isVisible && !hasTriggeredForSession) {
       setHasTriggeredForSession(true);
+      setPendingConversionTrigger(true); // Mark that we need to trigger after modal closes
+    }
 
-      // Session just completed, check for triggers
+    // When modal closes, trigger conversion if we have a pending trigger
+    if (!sessionStatsModal.isVisible && hasTriggeredForSession && pendingConversionTrigger) {
+      setHasTriggeredForSession(false);
+      setPendingConversionTrigger(false);
+
+      // Session just completed and modal dismissed, check for triggers
       if (onSessionComplete) {
-        onSessionComplete();
+        // Small delay to ensure smooth modal transition
+        setTimeout(() => {
+          onSessionComplete();
+        }, 300);
       }
     }
 
-    // Reset trigger flag when modal closes
-    if (!sessionStatsModal.isVisible && hasTriggeredForSession) {
+    // If modal closes without a pending trigger, just reset the flag
+    if (!sessionStatsModal.isVisible && hasTriggeredForSession && !pendingConversionTrigger) {
       setHasTriggeredForSession(false);
     }
-  }, [sessionStatsModal.isVisible, hasTriggeredForSession, onSessionComplete]);
+  }, [sessionStatsModal.isVisible, hasTriggeredForSession, pendingConversionTrigger, onSessionComplete]);
 
   const startSession = async () => {
     console.log("Hook: startSession called");

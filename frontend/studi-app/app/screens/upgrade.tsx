@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { TriggerType } from '../../services/ConversionTriggerManager';
 import { LinearGradient } from 'expo-linear-gradient';
-import { iapService } from '../../services/IAPService';
+import { useStudiIAP, loadSubscriptionProducts, purchaseSubscription, testConnection, SUBSCRIPTION_ID } from '../../services/IAPService';
 
 // Define premium features to display
 const PREMIUM_FEATURES = [
@@ -64,8 +64,94 @@ export default function UpgradeScreen() {
   const message = getTriggerMessage(trigger);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Use the modern IAP hook
+  const {
+    connected,
+    subscriptions,
+    availablePurchases,
+    activeSubscriptions,
+    fetchProducts,
+    getAvailablePurchases,
+    getActiveSubscriptions,
+    requestPurchase,
+  } = useStudiIAP();
+
+  const fetchedProductsOnceRef = useRef(false);
+
+  // Load subscription products when connected
+  useEffect(() => {
+    if (connected && !fetchedProductsOnceRef.current) {
+      console.log('Connected to store, loading subscription products...');
+      loadSubscriptionProducts(fetchProducts)
+        .then(() => {
+          console.log('Products loaded successfully');
+          fetchedProductsOnceRef.current = true;
+        })
+        .catch((error) => {
+          console.error('Failed to load products:', error);
+        });
+    }
+  }, [connected, fetchProducts]);
+
+  // Debug subscription products state
+  useEffect(() => {
+    console.log('🔍 Subscriptions state changed:', {
+      count: subscriptions.length,
+      products: subscriptions.map(sub => ({
+        id: sub.productId,
+        price: sub.localizedPrice || sub.displayPrice
+      }))
+    });
+  }, [subscriptions]);
+
   const handleDismiss = () => {
     router.back();
+  };
+
+  const handleTestConnection = async () => {
+    if (isLoading) return;
+
+    try {
+      setIsLoading(true);
+      console.log('🔧 Testing IAP connection...');
+
+      // Try loading products directly first
+      console.log('🔧 Attempting direct product load...');
+      await loadSubscriptionProducts(fetchProducts);
+
+      // Wait a moment for state to update
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      const result = await testConnection(connected, fetchProducts, subscriptions);
+
+      let message = `Connection: ${result.connected ? '✅ Success' : '❌ Failed'}\n`;
+      message += `Products found: ${result.products.length}\n`;
+      message += `Subscriptions state: ${subscriptions.length}\n`;
+
+      if (result.errors.length > 0) {
+        message += `\nErrors:\n${result.errors.join('\n')}`;
+      }
+
+      if (result.products.length > 0) {
+        const product = result.products[0];
+        message += `\nProduct: ${product.productId}\nPrice: ${product.localizedPrice || product.displayPrice || 'N/A'}`;
+      }
+
+      // Additional diagnostic info
+      message += `\nDiagnostics:\n`;
+      message += `- Connected: ${connected}\n`;
+      message += `- Bundle ID: Check if matches App Store Connect\n`;
+      message += `- Sandbox Account: Must be signed in to device\n`;
+      message += `- Product Status: Must be approved in App Store Connect`;
+
+      alert(message);
+      setIsLoading(false);
+
+    } catch (error: any) {
+      console.error('❌ Connection test failed:', error);
+      setIsLoading(false);
+      alert(`Connection test failed: ${error.message}`);
+    }
   };
 
   const handleUpgrade = async () => {
@@ -74,14 +160,18 @@ export default function UpgradeScreen() {
     try {
       setIsLoading(true);
       console.log('🚀 Starting subscription purchase...');
+      console.log('🔍 Available subscriptions at purchase time:', {
+        count: subscriptions.length,
+        products: subscriptions.map(sub => sub.productId)
+      });
 
       // Add visual feedback
       alert('Starting IAP process...');
 
-      await iapService.purchaseSubscription();
+      await purchaseSubscription(requestPurchase, subscriptions);
 
-      // Note: Success will be handled by the purchase listener
-      // For now, don't dismiss - let the user see what happens
+      // Note: Success will be handled by the onPurchaseSuccess callback in useStudiIAP
+      // The purchase result will be logged automatically
       alert('Purchase request completed - check for Apple dialog');
 
     } catch (error: any) {
@@ -185,6 +275,31 @@ export default function UpgradeScreen() {
         {/* Fixed Bottom CTA */}
         <View className="absolute bottom-0 left-0 right-0" style={{ paddingBottom: 40 }}>
           <View className="px-6 py-6">
+            {/* Test Connection Button */}
+            <TouchableOpacity
+              onPress={handleTestConnection}
+              disabled={isLoading}
+              style={{
+                backgroundColor: isLoading ? '#888888' : 'rgba(255, 255, 255, 0.2)',
+                borderRadius: 16,
+                paddingVertical: 12,
+                paddingHorizontal: 24,
+                marginBottom: 12,
+                borderWidth: 1,
+                borderColor: 'rgba(255, 255, 255, 0.3)',
+              }}
+            >
+              <Text style={{
+                color: isLoading ? '#CCCCCC' : '#FFFFFF',
+                textAlign: 'center',
+                fontSize: 16,
+                fontWeight: '500',
+              }}>
+                {isLoading ? 'Testing...' : '🔧 Test IAP Connection'}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Main Purchase Button */}
             <TouchableOpacity
               onPress={handleUpgrade}
               disabled={isLoading}

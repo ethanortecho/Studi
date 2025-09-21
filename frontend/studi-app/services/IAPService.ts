@@ -1,107 +1,185 @@
-import {
-  initConnection,
-  purchaseUpdatedListener,
-  purchaseErrorListener,
-  getSubscriptions,
-  requestSubscription,
-  finishTransaction,
-  Purchase,
-  PurchaseError,
-  Subscription,
-} from 'react-native-iap';
+import { useIAP, type ProductSubscription, type PurchaseError, type Purchase } from 'react-native-iap';
 
-class IAPService {
-  private isInitialized = false;
-  private readonly PRODUCT_ID = 'com.studi.premium.monthly';
+// Product ID for the monthly subscription
+export const SUBSCRIPTION_ID = 'com.studi.premium.monthly';
 
-  async initialize(): Promise<boolean> {
-    try {
-      console.log('🔧 Initializing IAP connection...');
-
-      const result = await initConnection();
-      console.log('✅ IAP connection result:', result);
-
-      this.setupPurchaseListeners();
-      this.isInitialized = true;
-
-      return true;
-    } catch (error) {
-      console.error('❌ Failed to initialize IAP:', error);
-      return false;
-    }
-  }
-
-  private setupPurchaseListeners(): void {
-    // Listen for successful purchases
-    purchaseUpdatedListener(async (purchase: Purchase) => {
-      console.log('🎉 Purchase successful:', purchase);
+// Custom hook that wraps useIAP for Studi app
+export const useStudiIAP = () => {
+  const {
+    connected,
+    subscriptions,
+    availablePurchases,
+    activeSubscriptions,
+    fetchProducts,
+    finishTransaction,
+    getAvailablePurchases,
+    getActiveSubscriptions,
+    requestPurchase,
+  } = useIAP({
+    onPurchaseSuccess: async (purchase: Purchase) => {
+      console.log('🎉 Purchase successful:', purchase.productId);
 
       try {
-        // Finish the transaction to complete the purchase
-        await finishTransaction({ purchase });
+        // IMPORTANT: In production, validate receipt on server here
+        // const isValid = await validateReceiptOnServer(purchase.purchaseToken);
+        // if (!isValid) {
+        //   throw new Error('Receipt validation failed');
+        // }
+
+        // Finish the transaction for subscriptions (isConsumable: false)
+        await finishTransaction({
+          purchase,
+          isConsumable: false,
+        });
+
         console.log('✅ Transaction finished successfully');
 
-        // TODO: Update user premium status in backend
+        // Refresh subscription status
+        await getActiveSubscriptions([SUBSCRIPTION_ID]);
+        await getAvailablePurchases();
+
       } catch (error) {
         console.error('❌ Error finishing transaction:', error);
       }
+    },
+    onPurchaseError: (error: PurchaseError) => {
+      console.error('❌ Purchase failed:', error);
+    },
+    onSyncError: (error: Error) => {
+      console.error('❌ Sync error:', error);
+    },
+  });
+
+  return {
+    connected,
+    subscriptions,
+    availablePurchases,
+    activeSubscriptions,
+    fetchProducts,
+    finishTransaction,
+    getAvailablePurchases,
+    getActiveSubscriptions,
+    requestPurchase,
+  };
+};
+
+// Helper functions for subscription management
+export const loadSubscriptionProducts = async (fetchProducts: any) => {
+  try {
+    console.log('🔧 Loading subscription products...');
+    console.log('🔧 Requesting products for SKU:', [SUBSCRIPTION_ID]);
+
+    const result = await fetchProducts({
+      skus: [SUBSCRIPTION_ID],
+      type: 'subs',
     });
 
-    // Listen for purchase errors
-    purchaseErrorListener((error: PurchaseError) => {
-      console.log('⚠️ Purchase error:', error);
-
-      if (error.code === 'E_USER_CANCELLED') {
-        console.log('👤 User cancelled the purchase');
-      } else {
-        console.error('❌ Purchase failed:', error.message);
-      }
-    });
+    console.log('🔧 fetchProducts result:', result);
+    console.log('✅ Subscription products loaded');
+    return result;
+  } catch (error) {
+    console.error('❌ Failed to load subscription products:', error);
+    console.error('❌ Error details:', JSON.stringify(error, null, 2));
+    throw error;
   }
+};
 
-  async purchaseSubscription(): Promise<void> {
-    try {
-      console.log('🔧 purchaseSubscription called, isInitialized:', this.isInitialized);
+export const purchaseSubscription = async (requestPurchase: any, subscriptions: ProductSubscription[]) => {
+  try {
+    console.log('🚀 Starting subscription purchase...');
+    console.log('🔍 Looking for subscription ID:', SUBSCRIPTION_ID);
+    console.log('🔍 Available subscription products:', subscriptions.map(sub => ({
+      productId: sub.productId,
+      id: sub.id,
+      title: sub.title || 'No title'
+    })));
 
-      // Initialize if not already done
-      if (!this.isInitialized) {
-        console.log('🔧 Initializing IAP...');
-        const initialized = await this.initialize();
-        console.log('🔧 Initialize result:', initialized);
-        if (!initialized) {
-          throw new Error('Failed to initialize IAP');
-        }
-      }
-
-      console.log('🛒 Loading subscription products for:', this.PRODUCT_ID);
-
-      // Load available subscriptions
-      const subscriptions = await getSubscriptions({ skus: [this.PRODUCT_ID] });
-      console.log('📦 Available subscriptions count:', subscriptions.length);
-      console.log('📦 Subscriptions details:', subscriptions);
-
-      if (subscriptions.length === 0) {
-        const errorMsg = `Subscription ${this.PRODUCT_ID} not found in App Store`;
-        console.error('❌', errorMsg);
-        throw new Error(errorMsg);
-      }
-
-      console.log('🚀 Requesting subscription purchase for:', this.PRODUCT_ID);
-
-      // Request the subscription purchase
-      await requestSubscription({
-        sku: this.PRODUCT_ID,
-      });
-
-      console.log('⏳ Purchase request sent to Apple successfully');
-
-    } catch (error: any) {
-      console.error('❌ Subscription purchase failed:', error);
-      console.error('❌ Error details:', JSON.stringify(error, null, 2));
-      throw error;
+    // Find the subscription product - check both productId and id fields
+    const subscription = subscriptions.find((sub) => sub.productId === SUBSCRIPTION_ID || sub.id === SUBSCRIPTION_ID);
+    if (!subscription) {
+      console.log('❌ Product not found. Available products:', subscriptions.map(s => s.productId || s.id));
+      throw new Error(`Subscription ${SUBSCRIPTION_ID} not found in available products`);
     }
-  }
-}
 
-// Export a singleton instance
-export const iapService = new IAPService();
+    console.log('✅ Found subscription product:', {
+      productId: subscription.productId,
+      id: subscription.id,
+      title: subscription.title
+    });
+
+    // Request purchase using the modern API
+    await requestPurchase({
+      request: {
+        ios: {
+          sku: SUBSCRIPTION_ID,
+        },
+        android: {
+          skus: [SUBSCRIPTION_ID],
+          subscriptionOffers:
+            subscription &&
+            'subscriptionOfferDetailsAndroid' in subscription &&
+            subscription.subscriptionOfferDetailsAndroid
+              ? subscription.subscriptionOfferDetailsAndroid.map((offer: any) => ({
+                  sku: SUBSCRIPTION_ID,
+                  offerToken: offer.offerToken,
+                }))
+              : [],
+        },
+      },
+      type: 'subs',
+    });
+
+    console.log('⏳ Purchase request sent successfully');
+  } catch (error) {
+    console.error('❌ Purchase request failed:', error);
+    throw error;
+  }
+};
+
+export const testConnection = async (
+  connected: boolean,
+  fetchProducts: any,
+  subscriptions: ProductSubscription[]
+): Promise<{ connected: boolean; products: ProductSubscription[]; errors: string[] }> => {
+  const errors: string[] = [];
+
+  try {
+    console.log('🔧 Testing IAP connection...');
+
+    // Test 1: Check connection
+    if (!connected) {
+      errors.push('Not connected to IAP service');
+      return { connected: false, products: [], errors };
+    }
+
+    console.log('✅ IAP connection successful');
+
+    // Test 2: Try to load products
+    try {
+      await loadSubscriptionProducts(fetchProducts);
+    } catch (error: any) {
+      errors.push(`Product loading failed: ${error.message}`);
+    }
+
+    // Test 3: Check if products were loaded
+    if (subscriptions.length === 0) {
+      errors.push(`Subscription ${SUBSCRIPTION_ID} not found in App Store Connect`);
+    } else {
+      console.log('📦 Found subscription products:', subscriptions.length);
+      subscriptions.forEach(sub => {
+        console.log('📦 Product:', sub.productId, 'Price:', sub.localizedPrice || sub.displayPrice);
+      });
+    }
+
+    return {
+      connected: true,
+      products: subscriptions,
+      errors
+    };
+
+  } catch (error: any) {
+    errors.push(`Connection test failed: ${error.message}`);
+    console.error('❌ Connection test error:', error);
+    return { connected: false, products: [], errors };
+  }
+};

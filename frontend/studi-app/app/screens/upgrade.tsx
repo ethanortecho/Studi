@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { TriggerType } from '../../services/ConversionTriggerManager';
 import { LinearGradient } from 'expo-linear-gradient';
+import { iapService } from '../../services/IAPService';
 
 // Define premium features to display
 const PREMIUM_FEATURES = [
@@ -61,16 +62,33 @@ const getTriggerMessage = (trigger?: string): { title: string; subtitle: string 
 export default function UpgradeScreen() {
   const { trigger } = useLocalSearchParams<{ trigger?: string }>();
   const message = getTriggerMessage(trigger);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleDismiss = () => {
     router.back();
   };
 
-  const handleUpgrade = () => {
-    // TODO: Implement actual upgrade flow (payment integration)
-    console.log('Initiating upgrade flow...');
-    // For now, just dismiss
-    router.back();
+  const handleUpgrade = async () => {
+    if (isLoading) return; // Prevent double-clicks
+
+    try {
+      setIsLoading(true);
+      console.log('🚀 Starting subscription purchase...');
+
+      // Add visual feedback
+      alert('Starting IAP process...');
+
+      await iapService.purchaseSubscription();
+
+      // Note: Success will be handled by the purchase listener
+      // For now, don't dismiss - let the user see what happens
+      alert('Purchase request completed - check for Apple dialog');
+
+    } catch (error: any) {
+      console.error('❌ Purchase failed:', error);
+      setIsLoading(false);
+      alert(`Purchase failed: ${error.message}`);
+    }
   };
 
   return (
@@ -169,8 +187,9 @@ export default function UpgradeScreen() {
           <View className="px-6 py-6">
             <TouchableOpacity
               onPress={handleUpgrade}
+              disabled={isLoading}
               style={{
-                backgroundColor: '#FFFFFF',
+                backgroundColor: isLoading ? '#CCCCCC' : '#FFFFFF',
                 borderRadius: 16,
                 paddingVertical: 16,
                 paddingHorizontal: 24,
@@ -178,12 +197,12 @@ export default function UpgradeScreen() {
               }}
             >
               <Text style={{
-                color: '#000000',
+                color: isLoading ? '#666666' : '#000000',
                 textAlign: 'center',
                 fontSize: 18,
                 fontWeight: '600',
               }}>
-                Start Free Trial
+                {isLoading ? 'Processing...' : 'Start Free Trial'}
               </Text>
             </TouchableOpacity>
 

@@ -53,9 +53,13 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
+          "dark": {
+            "image": "./assets/images/splash-icon.png",
+            "backgroundColor": "#181727"
+          },
+          "imageWidth": 250,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#181727"
         }
       ],
       "react-native-iap",

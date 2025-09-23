@@ -373,31 +373,28 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
 
   // Watch for session completion and trigger conversion checks
   useEffect(() => {
-    // When modal becomes visible (session just ended), mark that we need to trigger
-    if (sessionStatsModal.isVisible && !hasTriggeredForSession) {
-      setHasTriggeredForSession(true);
-      setPendingConversionTrigger(true); // Mark that we need to trigger after modal closes
-    }
+    console.log('📊 Session modal state:', {
+      isVisible: sessionStatsModal.isVisible,
+      hasTriggeredForSession,
+      pendingConversionTrigger
+    });
 
     // When modal closes, trigger conversion if we have a pending trigger
-    if (!sessionStatsModal.isVisible && hasTriggeredForSession && pendingConversionTrigger) {
-      setHasTriggeredForSession(false);
+    if (!sessionStatsModal.isVisible && pendingConversionTrigger) {
+      console.log('🎯 Modal closed with pending trigger, calling onSessionComplete');
       setPendingConversionTrigger(false);
+      setHasTriggeredForSession(false);
 
       // Session just completed and modal dismissed, check for triggers
       if (onSessionComplete) {
         // Small delay to ensure smooth modal transition
         setTimeout(() => {
+          console.log('🚀 Calling onSessionComplete after delay');
           onSessionComplete();
         }, 300);
       }
     }
-
-    // If modal closes without a pending trigger, just reset the flag
-    if (!sessionStatsModal.isVisible && hasTriggeredForSession && !pendingConversionTrigger) {
-      setHasTriggeredForSession(false);
-    }
-  }, [sessionStatsModal.isVisible, hasTriggeredForSession, pendingConversionTrigger, onSessionComplete]);
+  }, [sessionStatsModal.isVisible, pendingConversionTrigger, onSessionComplete]);
 
   const startSession = async () => {
     console.log("Hook: startSession called");
@@ -449,8 +446,9 @@ export const StudySessionProvider = ({ children }: { children: ReactNode }) => {
           completedSessionId: currentSessionId, // Store completed session ID for rating update
         });
 
-        // Conversion triggers will be handled by the useEffect above
-        // when the stats modal appears
+        // Mark that we need to check for conversion triggers after modal dismisses
+        setHasTriggeredForSession(true);
+        setPendingConversionTrigger(true);
 
         return res;
       } catch (error) {

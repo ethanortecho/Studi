@@ -106,6 +106,9 @@ export default function RootLayout() {
                   <ThemeContext.Provider value={{ mode: themeMode, toggle: toggleTheme }}>
                     <SafeAreaView edges={['left', 'right']} style={[{ flex: 1 }, themeStyles]}>
                       <Stack>
+                  {/* Root Index Route */}
+                  <Stack.Screen name="index" options={{ headerShown: false }} />
+
                   {/* Onboarding Route */}
                   <Stack.Screen name="onboarding/index" options={{ headerShown: false }} />
 

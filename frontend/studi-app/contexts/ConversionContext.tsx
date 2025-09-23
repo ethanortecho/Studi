@@ -38,26 +38,36 @@ export const ConversionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   // Check for triggers
   const checkForTriggers = useCallback(async () => {
-    if (isPremium) return;
+    console.log('🔍 checkForTriggers called, isPremium:', isPremium);
+    if (isPremium) {
+      console.log('❌ User is premium, skipping');
+      return;
+    }
 
     const trigger = await conversionTriggerManager.checkTriggers(isPremium);
+    console.log('🎯 Trigger check result:', trigger);
 
     if (trigger) {
+      console.log('✅ Trigger found:', trigger, '- showing upgrade screen');
       setCurrentTrigger(trigger);
       await conversionTriggerManager.recordTriggerShown(trigger);
 
       // Navigate to upgrade screen with trigger context
       // Small delay to ensure smooth transition
       setTimeout(() => {
+        console.log('🚀 Navigating to upgrade screen with trigger:', trigger);
         router.push({
           pathname: '/screens/upgrade',
           params: { trigger },
         });
       }, 500);
+    } else {
+      console.log('❌ No trigger conditions met');
     }
 
     // Update state for debugging
     const state = await conversionTriggerManager.getState();
+    console.log('📊 Current trigger state:', state);
     setTriggerState(state);
   }, [isPremium]);
 
@@ -79,12 +89,18 @@ export const ConversionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   // Handle session completion
   const onSessionComplete = useCallback(async () => {
-    if (isPremium) return;
+    console.log('🎉 ConversionContext: onSessionComplete called, isPremium:', isPremium);
+    if (isPremium) {
+      console.log('❌ User is premium, skipping trigger check');
+      return;
+    }
 
+    console.log('📈 Incrementing session count...');
     await conversionTriggerManager.incrementSessionCount();
 
     // Check for session-based triggers
     // Note: StudySessionContext now handles timing relative to modal dismissal
+    console.log('🔍 Checking for triggers...');
     await checkForTriggers();
   }, [isPremium, checkForTriggers]);
 

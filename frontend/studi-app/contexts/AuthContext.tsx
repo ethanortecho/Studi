@@ -143,20 +143,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    */
   const clearAuth = async () => {
     try {
+      // Import conversion trigger manager to clear its state
+      const { conversionTriggerManager } = await import('../services/ConversionTriggerManager');
+
       // Remove all auth data from phone's storage
       await Promise.all([
         AsyncStorage.removeItem('accessToken'),
         AsyncStorage.removeItem('refreshToken'),
         AsyncStorage.removeItem('user')
       ]);
-      
+
       // Clear app's state
       setAccessToken(null);
       setRefreshToken(null);
       setUser(null);
-      
+
       // Clear API cache when user logs out to prevent data leaks
       apiClient.clearCache();
+
+      // Clear conversion state to prevent it from persisting across accounts
+      await conversionTriggerManager.resetState();
+      console.log('✅ AuthContext: Conversion state cleared on logout');
     } catch (error) {
       console.error('❌ AuthContext: Failed to clear auth:', error);
     }
@@ -191,13 +198,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (response.ok) {
         console.log('✅ AuthContext: Login successful');
-        
+
+        // Clear any previous conversion state to ensure fresh start for new user
+        const { conversionTriggerManager } = await import('../services/ConversionTriggerManager');
+        await conversionTriggerManager.resetState();
+        console.log('✅ AuthContext: Conversion state reset for new user login');
+
         // Store the tokens and user data
         await storeAuth(
           { access: data.access, refresh: data.refresh },
           data.user
         );
-        
+
         return { success: true };
       } else {
         console.log('❌ AuthContext: Login failed:', data.error);
@@ -231,13 +243,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (response.ok) {
         console.log('✅ AuthContext: Registration successful');
-        
+
+        // Clear any previous conversion state to ensure fresh start for new user
+        const { conversionTriggerManager } = await import('../services/ConversionTriggerManager');
+        await conversionTriggerManager.resetState();
+        console.log('✅ AuthContext: Conversion state reset for new user registration');
+
         // User is automatically logged in after registration
         await storeAuth(
           { access: data.access, refresh: data.refresh },
           data.user
         );
-        
+
         return { success: true };
       } else {
         console.log('❌ AuthContext: Registration failed:', data.error);

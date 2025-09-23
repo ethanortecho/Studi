@@ -283,8 +283,8 @@ export default function UpgradeScreen() {
         {/* Fixed Bottom CTA */}
         <View className="absolute bottom-0 left-0 right-0" style={{ paddingBottom: 40 }}>
           <View className="px-6 py-6">
-            {/* Test Connection Button */}
-            <TouchableOpacity
+            {/* Test Connection Button - Commented out for production */}
+            {/* <TouchableOpacity
               onPress={handleTestConnection}
               disabled={isLoading}
               style={{
@@ -305,7 +305,7 @@ export default function UpgradeScreen() {
               }}>
                 {isLoading ? 'Testing...' : '🔧 Test IAP Connection'}
               </Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             {/* Main Purchase Button */}
             <TouchableOpacity

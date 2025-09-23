@@ -173,23 +173,24 @@ export default function SettingsScreen() {
           icon="calendar"
           onPress={() => router.push('/screens/set-weekly-goal?edit=1' as any)}
         />
-        <Row
+        {/* Removed for production submission */}
+        {/* <Row
           label="View Onboarding"
           icon="help-circle"
           onPress={handleViewOnboarding}
-        />
-        
-        {/* Development only: Premium toggle */}
-        {__DEV__ && togglePremiumStatus && user && (
+        /> */}
+
+        {/* Development only: Premium toggle - Commented out for production */}
+        {/* {__DEV__ && togglePremiumStatus && user && (
           <Row
             label={`Premium Status: ${user.is_premium ? 'ON' : 'OFF'}`}
             icon={user.is_premium ? "checkmark-circle" : "close-circle"}
             onPress={handleTogglePremium}
           />
-        )}
+        )} */}
 
-        {/* Development only: Conversion debug tools */}
-        {__DEV__ && (
+        {/* Development only: Conversion debug tools - Commented out for production */}
+        {/* {__DEV__ && (
           <>
             <Row
               label="Debug Conversion State"
@@ -221,10 +222,10 @@ export default function SettingsScreen() {
               }}
             />
           </>
-        )}
+        )} */}
 
         {/* Account Actions */}
-        <View className="mt-8">
+        <View className="mt-4">
           {/* Delete Account Button - Dangerous action */}
           <Row
             label="Delete Account"

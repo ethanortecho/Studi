@@ -1,15 +1,16 @@
 name: Deploy Django App
 
 on:
-  # Deploy to staging on pull requests
-  pull_request:
-    branches: [main]
-    paths: ['backend/**']
-  
-  # Deploy to production on push to main
-  :
-    branches: [main]
-    paths: ['backend/**']
+  # Manual deployment only
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
 
 permissions:
   contents: read
@@ -71,7 +72,7 @@ jobs:
     name: Deploy to Staging
     needs: test
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    if: github.event.inputs.environment == 'staging'
     
     steps:
     - uses: actions/checkout@v4
@@ -110,7 +111,7 @@ jobs:
     name: Deploy to Production
     needs: test
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event.inputs.environment == 'production'
     
     steps:
     - uses: actions/checkout@v4

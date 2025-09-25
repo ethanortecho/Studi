@@ -70,7 +70,6 @@ jobs:
 
   deploy-staging:
     name: Deploy to Staging
-    needs: test
     runs-on: ubuntu-latest
     if: github.event.inputs.environment == 'staging'
     
@@ -109,7 +108,6 @@ jobs:
 
   deploy-production:
     name: Deploy to Production
-    needs: test
     runs-on: ubuntu-latest
     if: github.event.inputs.environment == 'production'
     

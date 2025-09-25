@@ -2,7 +2,7 @@
   "expo": {
     "name": "Studi",
     "slug": "studi-app",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "studi",
@@ -11,7 +11,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.ethanortecho.studi",
-      "buildNumber": "4",
+      "buildNumber": "5",
       "infoPlist": {
         "NSCameraUsageDescription": "Camera access is used to capture study notes and materials.",
         "NSPhotoLibraryUsageDescription": "Photo library access allows you to save and organize study-related images.",
@@ -53,9 +53,22 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
+          "dark": {
+            "image": "./assets/images/splash-icon.png",
+            "backgroundColor": "#181727"
+          },
+          "imageWidth": 250,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#181727"
+        }
+      ],
+      "react-native-iap",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "16.0"
+          }
         }
       ]
     ],

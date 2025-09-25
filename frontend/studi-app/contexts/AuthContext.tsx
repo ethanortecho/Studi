@@ -39,7 +39,8 @@ interface AuthContextType {
   logout: () => Promise<void>;
   refreshAccessToken: () => Promise<boolean>;
   deleteAccount: () => Promise<void>;
-  
+  setPremiumStatus: (isPremium: boolean) => Promise<void>;
+
   // Development helper (only available in __DEV__)
   togglePremiumStatus?: () => void;
 }
@@ -142,20 +143,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    */
   const clearAuth = async () => {
     try {
+      // Import conversion trigger manager to clear its state
+      const { conversionTriggerManager } = await import('../services/ConversionTriggerManager');
+
       // Remove all auth data from phone's storage
       await Promise.all([
         AsyncStorage.removeItem('accessToken'),
         AsyncStorage.removeItem('refreshToken'),
         AsyncStorage.removeItem('user')
       ]);
-      
+
       // Clear app's state
       setAccessToken(null);
       setRefreshToken(null);
       setUser(null);
-      
+
       // Clear API cache when user logs out to prevent data leaks
       apiClient.clearCache();
+
+      // Clear conversion state to prevent it from persisting across accounts
+      await conversionTriggerManager.resetState();
+      console.log('✅ AuthContext: Conversion state cleared on logout');
     } catch (error) {
       console.error('❌ AuthContext: Failed to clear auth:', error);
     }
@@ -190,13 +198,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (response.ok) {
         console.log('✅ AuthContext: Login successful');
-        
+
+        // Clear any previous conversion state to ensure fresh start for new user
+        const { conversionTriggerManager } = await import('../services/ConversionTriggerManager');
+        await conversionTriggerManager.resetState();
+        console.log('✅ AuthContext: Conversion state reset for new user login');
+
         // Store the tokens and user data
         await storeAuth(
           { access: data.access, refresh: data.refresh },
           data.user
         );
-        
+
         return { success: true };
       } else {
         console.log('❌ AuthContext: Login failed:', data.error);
@@ -230,13 +243,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (response.ok) {
         console.log('✅ AuthContext: Registration successful');
-        
+
+        // Clear any previous conversion state to ensure fresh start for new user
+        const { conversionTriggerManager } = await import('../services/ConversionTriggerManager');
+        await conversionTriggerManager.resetState();
+        console.log('✅ AuthContext: Conversion state reset for new user registration');
+
         // User is automatically logged in after registration
         await storeAuth(
           { access: data.access, refresh: data.refresh },
           data.user
         );
-        
+
         return { success: true };
       } else {
         console.log('❌ AuthContext: Registration failed:', data.error);
@@ -380,8 +398,53 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   /**
+   * PRODUCTION: setPremiumStatus()
+   *
+   * Updates user's premium status both on server and locally.
+   * Used after successful IAP purchase.
+   */
+  const setPremiumStatus = async (isPremium: boolean): Promise<void> => {
+    if (!user || !accessToken) {
+      throw new Error('User must be logged in to update premium status');
+    }
+
+    try {
+      // Call backend API to update premium status
+      const response = await fetchApi('/user/premium-status/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          is_premium: isPremium
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update premium status: ${response.status}`);
+      }
+
+      // Update local user state (same pattern as togglePremiumStatus)
+      const updatedUser = {
+        ...user,
+        is_premium: isPremium
+      };
+      setUser(updatedUser);
+
+      // Update stored user data
+      await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
+
+      console.log(`✅ Premium status updated to ${isPremium ? 'ON' : 'OFF'}`);
+    } catch (error) {
+      console.error('❌ Failed to update premium status:', error);
+      throw error;
+    }
+  };
+
+  /**
    * DEVELOPMENT HELPER: togglePremiumStatus()
-   * 
+   *
    * Temporarily toggles the user's premium status for testing.
    * Only available in development mode.
    */
@@ -392,10 +455,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         is_premium: !user.is_premium
       };
       setUser(updatedUser);
-      
+
       // Update stored user data
       AsyncStorage.setItem('user', JSON.stringify(updatedUser));
-      
+
       console.log(`🔧 DEV: Premium status toggled to ${updatedUser.is_premium ? 'ON' : 'OFF'}`);
     }
   };
@@ -415,6 +478,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     logout,
     refreshAccessToken,
     deleteAccount,
+    setPremiumStatus,
     ...__DEV__ && { togglePremiumStatus }, // Only include in development
   };
 

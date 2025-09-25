@@ -66,8 +66,9 @@ export default function ProductivityGauge({
   if (score === null) {
     return (
       <View className="items-center justify-center" style={{ width: size, height: size }}>
-        <Text className="text-secondaryText text-base">No flow score data</Text>
-        <Text className="text-secondaryText text-sm mt-1">Complete a session to start tracking</Text>
+        <Text className="text-secondaryText text-base text-center">
+          Complete a 15+ minute session to view your flow score
+        </Text>
       </View>
     );
   }

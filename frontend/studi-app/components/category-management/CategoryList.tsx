@@ -37,7 +37,10 @@ export default function CategoryList() {
 
     /** Row component */
     const Row = ({ onPress, children, isLast = false }: { onPress: () => void; children: React.ReactNode; isLast?: boolean }) => (
-        <Pressable onPress={onPress} className={`border-b ${isLast ? '' : 'border-border'}`}>
+        <Pressable
+            onPress={onPress}
+            className={`border-b border-[#34364A] ${isLast ? '' : ''}`}
+        >
             {({ pressed }) => (
                 <View className={`flex-row items-center px-4 py-4 ${pressed ? 'bg-surface' : 'bg-transparent'}`}>
                     {children}
@@ -50,8 +53,8 @@ export default function CategoryList() {
         <View className="flex-1">
             {/* Add Category Row */}
             <Row onPress={handleAddPress} isLast={categories.length === 0}>
-                <Ionicons name="add" size={24} color="rgb(var(--color-accent))" style={{ marginRight: 12 }} />
-                <Text className="text-primaryText font-medium flex-1">
+                <Ionicons name="add" size={22} color="#9BA1A6" style={{ marginRight: 14 }} />
+                <Text className="text-primaryText font-semibold flex-1 text-base">
                     Add New Category ({categories.length}/5)
                 </Text>
             </Row>
@@ -69,8 +72,14 @@ export default function CategoryList() {
                                 className="w-6 h-6 rounded-full mr-3"
                                 style={{ backgroundColor: category.color }}
                             />
-                            <Text className="text-primaryText flex-1">{category.name}</Text>
-                            <Text className="text-secondaryText">Tap to edit</Text>
+                            <Text className="text-primaryText font-semibold flex-1 text-base">
+                                {category.name}
+                            </Text>
+                            <Ionicons
+                                name="chevron-forward"
+                                size={22}
+                                color="#9BA1A6"
+                            />
                         </Row>
                     ))}
                 </ScrollView>

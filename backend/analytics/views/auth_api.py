@@ -470,4 +470,59 @@ def get_user_profile(request):
         'first_name': user.first_name,
         'last_name': user.last_name,
         'timezone': user.timezone,
+        'is_premium': user.is_premium,
     }, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def update_premium_status(request):
+    """
+    Update User Premium Status
+
+    Updates the authenticated user's premium status after successful IAP purchase.
+    This endpoint is called by the mobile app after in-app purchase completion.
+
+    Request Body:
+    {
+        "is_premium": true
+    }
+
+    Response:
+    {
+        "message": "Premium status updated successfully",
+        "is_premium": true
+    }
+    """
+
+    try:
+        is_premium = request.data.get('is_premium')
+
+        # Validate input
+        if is_premium is None:
+            return Response(
+                {'error': 'is_premium field is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not isinstance(is_premium, bool):
+            return Response(
+                {'error': 'is_premium must be a boolean value'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Update user's premium status
+        user = request.user
+        user.is_premium = is_premium
+        user.save(update_fields=['is_premium'])
+
+        return Response({
+            'message': 'Premium status updated successfully',
+            'is_premium': user.is_premium
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response(
+            {'error': f'Failed to update premium status: {str(e)}'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

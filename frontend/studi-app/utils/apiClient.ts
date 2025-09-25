@@ -285,7 +285,7 @@ class ApiClient {
             retryable: true,
           };
 
-          await new Promise(resolve => setTimeout(resolve, delay));
+          await new Promise(resolve => setTimeout(resolve, 1000));
           attempt++;
           continue;
         }
@@ -338,7 +338,7 @@ class ApiClient {
         };
 
         if (attempt < maxRetries) {
-          await new Promise(resolve => setTimeout(resolve, delay));
+          await new Promise(resolve => setTimeout(resolve, 1000));
           attempt++;
           continue;
         }

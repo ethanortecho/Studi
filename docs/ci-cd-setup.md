@@ -49,7 +49,8 @@ This is automatically provided by GitHub Actions - no setup needed.
    - `patch`: 1.0.0 → 1.0.1 (bug fixes)
    - `minor`: 1.0.0 → 1.1.0 (new features)
    - `major`: 1.0.0 → 2.0.0 (breaking changes)
-   - `none`: Only increment build number
+   - `none`: Only increment 
+   
 
 ## 📱 Current Configuration
 

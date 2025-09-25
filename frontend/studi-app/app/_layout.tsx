@@ -106,6 +106,9 @@ export default function RootLayout() {
                   <ThemeContext.Provider value={{ mode: themeMode, toggle: toggleTheme }}>
                     <SafeAreaView edges={['left', 'right']} style={[{ flex: 1 }, themeStyles]}>
                       <Stack>
+                  {/* Root Index Route */}
+                  <Stack.Screen name="index" options={{ headerShown: false }} />
+
                   {/* Onboarding Route */}
                   <Stack.Screen name="onboarding/index" options={{ headerShown: false }} />
 
@@ -121,7 +124,7 @@ export default function RootLayout() {
                   <Stack.Screen name="screens/timer/stopwatch" options={{ headerShown: false }} />
                   <Stack.Screen name="screens/timer/countdown" options={{ headerShown: false }} />
                   <Stack.Screen name="screens/timer/pomo" options={{ headerShown: false }} />
-                  <Stack.Screen name="screens/upgrade" options={{ headerShown: false, presentation: 'modal' }} />
+                  <Stack.Screen name="screens/upgrade" options={{ headerShown: false }} />
                   <Stack.Screen name="+not-found" />
                     </Stack>
                   </SafeAreaView>

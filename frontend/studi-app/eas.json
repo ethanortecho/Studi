@@ -10,7 +10,7 @@
         "NODE_ENV": "production"
       },
       "ios": {
-        "image": "macos-sonoma-14.6-xcode-16.1"
+        "image": "macos-sequoia-15.4-xcode-16.3"
       }
     },
     "development": {
@@ -30,6 +30,9 @@
       "channel": "preview",
       "env": {
         "EXPO_PUBLIC_ENVIRONMENT": "staging"
+      },
+      "cache": {
+        "key": "hermes-sync-0795-v1"
       },
       "ios": {
         "resourceClass": "m-medium"

@@ -23,7 +23,7 @@ export default function ManageCategoriesScreen() {
     return (
         <SafeAreaView className="flex-1 bg-background">
             {/* Header */}
-            <View className="px-4 pt-4 pb-3 bg-background">
+            <View className="items-center px-4 pt-4 mb-3 bg-background">
                 <Text className="text-2xl font-bold text-primaryText">
                     {isFirstTimeSetup ? 'Set Up Your Categories' : 'Manage Categories'}
                 </Text>
@@ -33,8 +33,6 @@ export default function ManageCategoriesScreen() {
                     </Text>
                 )}
             </View>
-            {/* Divider */}
-            <View className="border-b border-border" />
 
             {/* Category List */}
             <View className="flex-1">

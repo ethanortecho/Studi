@@ -2,7 +2,7 @@
   "expo": {
     "name": "Studi",
     "slug": "studi-app",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "studi",
@@ -11,7 +11,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.ethanortecho.studi",
-      "buildNumber": "4",
+      "buildNumber": "5",
       "infoPlist": {
         "NSCameraUsageDescription": "Camera access is used to capture study notes and materials.",
         "NSPhotoLibraryUsageDescription": "Photo library access allows you to save and organize study-related images.",

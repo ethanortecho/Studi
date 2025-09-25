@@ -1,9 +1,6 @@
 name: iOS Release
 
 on:
-  push:
-    branches: [main]
-    paths: ['frontend/**']
   workflow_dispatch:
     inputs:
       version_bump:
